@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class PostRequestDto {
+    private String imageUrl;
     private String title;
     private LocalDateTime recruitmentStartDate;
     private LocalDateTime recruitmentEndDate;

@@ -77,13 +77,15 @@ public class PlanService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid Post ID"));
 
         // Update only the modifiable fields
+        post.setImageUrl(postRequestDto.getImageUrl());
         post.setTitle(postRequestDto.getTitle());
         post.setRecruitmentStartDate(postRequestDto.getRecruitmentStartDate());
         post.setRecruitmentEndDate(postRequestDto.getRecruitmentEndDate());
         post.setDocumentResultDate(postRequestDto.getDocumentResultDate());
         post.setFinalResultDate(postRequestDto.getFinalResultDate());
         post.setRecruitmentNumber(postRequestDto.getRecruitmentNumber());
-        post.setActivityPeriod(postRequestDto.getActivityPeriod());
+        post.setActivityStart(postRequestDto.getActivityStart());
+        post.setActivityEnd(postRequestDto.getActivityEnd());
         post.setActivitySchedule(postRequestDto.getActivitySchedule());
         post.setClubFee(postRequestDto.getClubFee());
         post.setContent(postRequestDto.getContent());
