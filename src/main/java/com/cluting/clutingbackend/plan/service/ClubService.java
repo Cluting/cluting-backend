@@ -1,0 +1,38 @@
+package com.cluting.clutingbackend.plan.service;
+
+import com.cluting.clutingbackend.plan.domain.Club;
+import com.cluting.clutingbackend.plan.domain.User;
+import com.cluting.clutingbackend.plan.dto.request.ClubCreateRequestDto;
+import com.cluting.clutingbackend.plan.dto.response.ClubResponseDto;
+import com.cluting.clutingbackend.plan.repository.ClubRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+@Service
+@RequiredArgsConstructor
+public class ClubService {
+    private final ClubRepository clubRepository;
+    private final AwsS3Service awsS3Service;
+
+    // 가장 인기 있는 동아리
+
+    // 동아리 추가
+    @Transactional
+    public ClubResponseDto create(User user, ClubCreateRequestDto clubCreateRequestDto, MultipartFile profile) {
+        // user 검증 로직 필요
+
+        String fileUrl;
+        if (profile == null) fileUrl = "https://cluting.s3.ap-northeast-2.amazonaws.com/default.png";
+        else fileUrl = awsS3Service.uploadFile(profile);
+
+        Club club = clubRepository.save(
+                clubCreateRequestDto.toEntity(fileUrl)
+        );
+        return ClubResponseDto.toDto(club);
+    }
+
+    // 동아리 리크루팅 시작
+
+}
