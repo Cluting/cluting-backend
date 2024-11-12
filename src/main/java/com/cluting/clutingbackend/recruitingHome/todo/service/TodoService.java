@@ -2,8 +2,8 @@ package com.cluting.clutingbackend.recruitingHome.todo.service;
 
 import com.cluting.clutingbackend.recruitingHome.todo.exception.TodoNotFoundException;
 import com.cluting.clutingbackend.recruitingHome.todo.repository.TodoRepository;
-import com.cluting.clutingbackend.recruitingHome.todo.domain.User;
-import com.cluting.clutingbackend.recruitingHome.todo.domain.Todo;
+import com.cluting.clutingbackend.plan.domain.User;
+import com.cluting.clutingbackend.plan.domain.Todo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +28,7 @@ public class TodoService {
                 .filter(todo -> todo.getUser().getUserId().equals(user.getUserId())) // userId만 비교
                 .map(todo -> {
                     todo.setContent(todoDetails.getContent()); // Todo 내용 업데이트
-                    todo.setStatus(todoDetails.isStatus()); // Todo 완료 상태 업데이트
+                    todo.setStatus(todoDetails.getStatus()); // Todo 완료 상태 업데이트
                     return todoRepository.save(todo);
                 })
                 .orElseThrow(() -> TodoNotFoundException.withId(todoId));
@@ -40,7 +40,7 @@ public class TodoService {
         Todo todo = todoRepository.findById(todoId)
                 .filter(t -> t.getUser().getUserId().equals(user.getUserId())) // userId만 비교
                 .orElseThrow(() -> TodoNotFoundException.withId(todoId)); // Todo를 찾지 못한 경우 예외 처리
-        todo.setStatus(!todo.isStatus());  // 상태 반전
+        todo.setStatus(!todo.getStatus());  // 상태 반전
         return todoRepository.save(todo);
     }
 

@@ -1,6 +1,6 @@
 package com.cluting.clutingbackend.recruitingHome.todo.repository;
 
-import com.cluting.clutingbackend.recruitingHome.todo.domain.Todo;
+import com.cluting.clutingbackend.plan.domain.Todo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

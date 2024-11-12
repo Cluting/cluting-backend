@@ -1,6 +1,6 @@
 package com.cluting.clutingbackend.recruitingHome.todo.response;
 
-import com.cluting.clutingbackend.recruitingHome.todo.domain.Todo;
+import com.cluting.clutingbackend.plan.domain.Todo;
 import lombok.Getter;
 
 @Getter

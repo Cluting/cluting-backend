@@ -1,7 +1,7 @@
 package com.cluting.clutingbackend.recruitingHome.todo.controller;
 
-import com.cluting.clutingbackend.recruitingHome.todo.domain.Todo;
-import com.cluting.clutingbackend.recruitingHome.todo.domain.User;
+import com.cluting.clutingbackend.plan.domain.Todo;
+import com.cluting.clutingbackend.plan.domain.User;
 import com.cluting.clutingbackend.recruitingHome.todo.exception.TodoNotFoundException;
 import com.cluting.clutingbackend.recruitingHome.todo.response.TodoResponse;
 import com.cluting.clutingbackend.recruitingHome.todo.service.TodoService;
