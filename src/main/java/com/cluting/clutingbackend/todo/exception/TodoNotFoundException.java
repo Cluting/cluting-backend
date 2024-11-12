@@ -1,4 +1,4 @@
-package com.cluting.clutingbackend.recruitingHome.todo.exception;
+package com.cluting.clutingbackend.todo.exception;
 
 import lombok.Getter;
 

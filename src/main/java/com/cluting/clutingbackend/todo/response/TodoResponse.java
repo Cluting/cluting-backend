@@ -1,4 +1,4 @@
-package com.cluting.clutingbackend.recruitingHome.todo.response;
+package com.cluting.clutingbackend.todo.response;
 
 import com.cluting.clutingbackend.plan.domain.Todo;
 import lombok.Getter;

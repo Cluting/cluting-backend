@@ -1,7 +1,7 @@
-package com.cluting.clutingbackend.recruitingHome.todo.service;
+package com.cluting.clutingbackend.todo.service;
 
-import com.cluting.clutingbackend.recruitingHome.todo.exception.TodoNotFoundException;
-import com.cluting.clutingbackend.recruitingHome.todo.repository.TodoRepository;
+import com.cluting.clutingbackend.todo.exception.TodoNotFoundException;
+import com.cluting.clutingbackend.todo.repository.TodoRepository;
 import com.cluting.clutingbackend.plan.domain.User;
 import com.cluting.clutingbackend.plan.domain.Todo;
 import org.springframework.stereotype.Service;

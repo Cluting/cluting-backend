@@ -1,11 +1,11 @@
-package com.cluting.clutingbackend.recruitingHome.todo.controller;
+package com.cluting.clutingbackend.todo.controller;
 
 import com.cluting.clutingbackend.plan.domain.Todo;
 import com.cluting.clutingbackend.plan.domain.User;
-import com.cluting.clutingbackend.recruitingHome.todo.exception.TodoNotFoundException;
-import com.cluting.clutingbackend.recruitingHome.todo.response.TodoResponse;
-import com.cluting.clutingbackend.recruitingHome.todo.service.TodoService;
-import com.cluting.clutingbackend.recruitingHome.todo.response.ErrorResponse;
+import com.cluting.clutingbackend.todo.exception.TodoNotFoundException;
+import com.cluting.clutingbackend.todo.response.TodoResponse;
+import com.cluting.clutingbackend.todo.service.TodoService;
+import com.cluting.clutingbackend.todo.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
