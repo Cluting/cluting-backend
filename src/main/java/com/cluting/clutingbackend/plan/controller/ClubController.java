@@ -10,6 +10,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/club")
@@ -17,6 +19,11 @@ public class ClubController {
     private final ClubService clubService;
 
     // 가장 인기 있는 동아리
+    @GetMapping("/popular")
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<ClubResponseDto> popular() {
+        return clubService.popular();
+    }
 
     // 동아리 추가
     @PostMapping("/create")
@@ -30,6 +37,7 @@ public class ClubController {
 
     // 리크루팅 시작
     @PutMapping("/start-recruiting/{clubId}")
+    @ResponseStatus(value = HttpStatus.OK)
     public ClubResponseDto startRecruiting(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam("clubId") Long clubId) {
