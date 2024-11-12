@@ -1,7 +1,8 @@
 package com.cluting.clutingbackend.plan.controller;
 
-import com.cluting.clutingbackend.plan.domain.TalentProfile;
-import com.cluting.clutingbackend.plan.dto.request.Plan1UpdateRequestDto;
+import com.cluting.clutingbackend.plan.domain.Post;
+import com.cluting.clutingbackend.plan.dto.request.PlanUpdateRequestDto;
+import com.cluting.clutingbackend.plan.dto.request.PostRequestDto;
 import com.cluting.clutingbackend.plan.service.PlanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +19,8 @@ public class PlanController {
     private PlanService planService;
 
     @PostMapping("/stage1/{postId}")
-    public ResponseEntity<String> updatePartNums(@PathVariable Long postId,@RequestBody List<Plan1UpdateRequestDto> plan1UpdateRequestDtoList) {
-        planService.updatePartNums(plan1UpdateRequestDtoList);
+    public ResponseEntity<String> updatePartNums(@PathVariable Long postId,@RequestBody List<PlanUpdateRequestDto> planUpdateRequestDtoList) {
+        planService.updatePartNums(planUpdateRequestDtoList);
         return ResponseEntity.ok("Parts updated successfully");
     }
 
@@ -36,6 +37,11 @@ public class PlanController {
     public ResponseEntity<Map<String, List<String>>> getTalentProfilesByPost(@PathVariable Long postId) {
         Map<String, List<String>> profiles = planService.getTalentProfilesByPost(postId);
         return ResponseEntity.ok(profiles);
+    }
+    @PostMapping("/stage3/{postId}")
+    public ResponseEntity<Post> createPost(@PathVariable Long postId,@RequestBody PostRequestDto postRequestDto) {
+        Post createdPost = planService.updatePost(postId, postRequestDto);
+        return ResponseEntity.ok(createdPost);
     }
 
 }

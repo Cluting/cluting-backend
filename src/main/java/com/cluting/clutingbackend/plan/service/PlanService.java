@@ -1,14 +1,17 @@
 package com.cluting.clutingbackend.plan.service;
 
 import com.cluting.clutingbackend.plan.domain.Part;
+import com.cluting.clutingbackend.plan.domain.Post;
 import com.cluting.clutingbackend.plan.domain.TalentProfile;
-import com.cluting.clutingbackend.plan.dto.request.Plan1UpdateRequestDto;
+import com.cluting.clutingbackend.plan.dto.request.PlanUpdateRequestDto;
+import com.cluting.clutingbackend.plan.dto.request.PostRequestDto;
+import com.cluting.clutingbackend.plan.repository.ClubRepository;
 import com.cluting.clutingbackend.plan.repository.PartRepository;
+import com.cluting.clutingbackend.plan.repository.PostRepository;
 import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +24,13 @@ public class PlanService {
     private PartRepository partRepository;
     @Autowired
     private TalentProfileRepository talentProfileRepository;
+    @Autowired
+    private ClubRepository clubRepository;
+    @Autowired
+    private PostRepository postRepository;
 
-    public void updatePartNums(List<Plan1UpdateRequestDto> plan1UpdateRequestDtoList) {
-        for (Plan1UpdateRequestDto dto : plan1UpdateRequestDtoList) {
+    public void updatePartNums(List<PlanUpdateRequestDto> planUpdateRequestDtoList) {
+        for (PlanUpdateRequestDto dto : planUpdateRequestDtoList) {
             Part part = partRepository.findById(dto.getPartId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Part ID: " + dto.getPartId()));
 
@@ -65,6 +72,24 @@ public class PlanService {
         return result;
     }
 
+    public Post updatePost(Long postId, PostRequestDto postRequestDto) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Post ID"));
+
+        // Update only the modifiable fields
+        post.setTitle(postRequestDto.getTitle());
+        post.setRecruitmentStartDate(postRequestDto.getRecruitmentStartDate());
+        post.setRecruitmentEndDate(postRequestDto.getRecruitmentEndDate());
+        post.setDocumentResultDate(postRequestDto.getDocumentResultDate());
+        post.setFinalResultDate(postRequestDto.getFinalResultDate());
+        post.setRecruitmentNumber(postRequestDto.getRecruitmentNumber());
+        post.setActivityPeriod(postRequestDto.getActivityPeriod());
+        post.setActivitySchedule(postRequestDto.getActivitySchedule());
+        post.setClubFee(postRequestDto.getClubFee());
+        post.setContent(postRequestDto.getContent());
+
+        return postRepository.save(post);
+    }
 
 
 }

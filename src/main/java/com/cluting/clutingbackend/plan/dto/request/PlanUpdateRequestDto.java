@@ -5,10 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Plan1UpdateRequestDto {
+public class PlanUpdateRequestDto {
     private Long partId;
     private Integer numDoc;
     private Integer numFinal;
-
-
 }
