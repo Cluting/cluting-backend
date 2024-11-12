@@ -1,6 +1,6 @@
 package com.cluting.clutingbackend.util.security;
 
-import com.cluting.clutingbackend.user.domain.User;
+import com.cluting.clutingbackend.plan.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

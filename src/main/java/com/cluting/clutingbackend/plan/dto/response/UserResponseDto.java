@@ -1,8 +1,8 @@
-package com.cluting.clutingbackend.user.dto;
+package com.cluting.clutingbackend.plan.dto.response;
 
-import com.cluting.clutingbackend.user.domain.enums.Role;
-import com.cluting.clutingbackend.user.domain.enums.Semester;
-import com.cluting.clutingbackend.user.domain.User;
+import com.cluting.clutingbackend.plan.domain.enums.Role;
+import com.cluting.clutingbackend.plan.domain.enums.Semester;
+import com.cluting.clutingbackend.plan.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.cluting.clutingbackend.user.domain.enums;
+package com.cluting.clutingbackend.plan.domain.enums;
 
 public enum Semester {
     FIRST_YEAR_FIRST_SEMESTER,

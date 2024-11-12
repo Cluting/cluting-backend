@@ -1,17 +1,17 @@
-package com.cluting.clutingbackend.user.controller;
+package com.cluting.clutingbackend.plan.controller;
 
-import com.cluting.clutingbackend.user.dto.UserResponseDto;
-import com.cluting.clutingbackend.user.dto.UserSignInRequestDto;
-import com.cluting.clutingbackend.user.dto.UserSignInResponseDto;
-import com.cluting.clutingbackend.user.dto.UserSignUpRequestDto;
-import com.cluting.clutingbackend.user.service.UserService;
+import com.cluting.clutingbackend.plan.dto.response.UserResponseDto;
+import com.cluting.clutingbackend.plan.dto.request.UserSignInRequestDto;
+import com.cluting.clutingbackend.plan.dto.response.UserSignInResponseDto;
+import com.cluting.clutingbackend.plan.dto.request.UserSignUpRequestDto;
+import com.cluting.clutingbackend.plan.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/user")
+@RequestMapping("/api/v1/user")
 public class UserController {
     private final UserService userService;
 

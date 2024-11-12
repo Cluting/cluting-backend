@@ -1,7 +1,7 @@
-package com.cluting.clutingbackend.user.domain;
+package com.cluting.clutingbackend.plan.domain;
 
-import com.cluting.clutingbackend.user.domain.enums.Role;
-import com.cluting.clutingbackend.user.domain.enums.Semester;
+import com.cluting.clutingbackend.plan.domain.enums.Role;
+import com.cluting.clutingbackend.plan.domain.enums.Semester;
 import jakarta.persistence.*;
 import lombok.*;
 

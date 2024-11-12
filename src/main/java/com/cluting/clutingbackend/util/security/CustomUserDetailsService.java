@@ -1,7 +1,7 @@
 package com.cluting.clutingbackend.util.security;
 
-import com.cluting.clutingbackend.user.domain.User;
-import com.cluting.clutingbackend.user.repository.UserRepository;
+import com.cluting.clutingbackend.plan.domain.User;
+import com.cluting.clutingbackend.plan.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
