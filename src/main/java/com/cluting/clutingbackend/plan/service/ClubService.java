@@ -6,9 +6,11 @@ import com.cluting.clutingbackend.plan.dto.request.ClubCreateRequestDto;
 import com.cluting.clutingbackend.plan.dto.response.ClubResponseDto;
 import com.cluting.clutingbackend.plan.repository.ClubRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -34,5 +36,16 @@ public class ClubService {
     }
 
     // 동아리 리크루팅 시작
+    @Transactional
+    public ClubResponseDto startRecruiting(User user, Long clubId) {
+        Club club = clubRepository.findById(clubId).orElseThrow(
+                () -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "존재하지 않는 동아리입니다."
+                )
+        );
+
+        club.setIsRecruiting(true);
+        return ClubResponseDto.toDto(clubRepository.save(club));
+    }
 
 }

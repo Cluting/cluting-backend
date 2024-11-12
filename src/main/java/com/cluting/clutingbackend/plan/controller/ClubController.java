@@ -29,5 +29,11 @@ public class ClubController {
     }
 
     // 리크루팅 시작
+    @PutMapping("/start-recruiting/{clubId}")
+    public ClubResponseDto startRecruiting(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam("clubId") Long clubId) {
+        return clubService.startRecruiting(userDetails.getUser(), clubId);
+    }
 
 }

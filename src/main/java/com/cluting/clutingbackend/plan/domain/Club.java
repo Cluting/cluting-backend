@@ -34,6 +34,7 @@ public class Club {
     @Column(length = 100, nullable = true)
     private String keyword;
 
+    @Setter
     @Column(nullable = true)
     private Boolean isRecruiting;
 
