@@ -58,6 +58,19 @@ public class Post {
     @Column(length = 1000, nullable = false)
     private String content; // 본문
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private CurrentStage currentStage;  // 현재 진행중인 리크루팅 단계
+
+    @Column(nullable = true)
+    private Boolean isInterview; // true : 면접까지 진행 | false : 서류까지 진행
+
+    @Column(nullable = true)
+    private Integer generation; // 동아리 기수
+
+    public enum CurrentStage {
+        PREP, PLAN, DOC, DOC_PASS, EVAL, FINAL_PASS
+    }
 }
 
 
