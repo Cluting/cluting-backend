@@ -40,7 +40,7 @@ public class ClubController {
     @ResponseStatus(value = HttpStatus.OK)
     public ClubResponseDto startRecruiting(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam("clubId") Long clubId) {
+            @PathVariable("clubId") Long clubId) {
         return clubService.startRecruiting(userDetails.getUser(), clubId);
     }
 
