@@ -56,4 +56,9 @@ public class UserService {
                 jwtProvider.createRefreshToken()
         );
     }
+
+    @Transactional(readOnly = true)
+    public UserResponseDto me(User user) {
+        return UserResponseDto.toDto(user);
+    }
 }

@@ -28,11 +28,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 if (jwtProvider.validateToken(token)) {
                     Authentication auth = jwtProvider.getAuthentication(token);
-                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    if (auth != null) {
+                        log.debug("Authentication created successfully: {}", auth.getPrincipal());
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    } else {
+                        log.warn("Authentication is null. Failed to create authentication.");
+                    }
                 }
             } catch (Exception e) {
                 SecurityContextHolder.clearContext();
                 request.setAttribute("exception", e);
+                log.error("Authentication error: {}", e.getMessage());
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.getMessage());
                 return;
             }

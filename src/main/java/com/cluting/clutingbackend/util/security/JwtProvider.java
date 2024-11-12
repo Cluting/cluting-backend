@@ -6,6 +6,7 @@ import io.jsonwebtoken.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 import java.util.Base64;
 import java.util.Date;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtProvider {
@@ -55,34 +57,41 @@ public class JwtProvider {
     public Authentication getAuthentication(String token) {
         String email = getUserEmail(token);
         UserDetails userDetails = userDetailsService.loadUserByUserId(email);
+        log.debug("Authentication created for user: {}", email);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     public String getUserEmail(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getSubject();
     }
 
-
     public String resolveToken(HttpServletRequest request) {
-        String bearerToken =  request.getHeader("Authorization");
+        String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
         return null;
     }
 
-    //ACCESS TOKEN만 Validate합니다.
     public boolean validateToken(String jwtToken) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(this.secretKey)
                     .build()
                     .parseClaimsJws(jwtToken);
+            log.debug("JWT token is valid.");
             return true;
 
         } catch (ExpiredJwtException e) {
+            log.warn("Expired JWT token.");
             throw new CredentialsExpiredException("Expired JWT token", e);
         } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid JWT token.", e);
             throw new BadCredentialsException("Invalid JWT token", e);
         }
     }

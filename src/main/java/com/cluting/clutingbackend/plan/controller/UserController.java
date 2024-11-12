@@ -5,8 +5,10 @@ import com.cluting.clutingbackend.plan.dto.request.UserSignInRequestDto;
 import com.cluting.clutingbackend.plan.dto.response.UserSignInResponseDto;
 import com.cluting.clutingbackend.plan.dto.request.UserSignUpRequestDto;
 import com.cluting.clutingbackend.plan.service.UserService;
+import com.cluting.clutingbackend.util.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,5 +27,10 @@ public class UserController {
     @ResponseStatus(value = HttpStatus.OK)
     public UserSignInResponseDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
         return userService.signIn(userSignInRequestDto);
+    }
+
+    @GetMapping("/me")
+    public UserResponseDto me(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        return userService.me(userDetails.getUser());
     }
 }
