@@ -1,14 +1,18 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
 
-@Getter
 @Entity
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_club")
 public class Club {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long clubId;
+    private Long id;
 
     @Column(length = 100, nullable = true)
     private String name;
@@ -30,6 +34,7 @@ public class Club {
     @Column(length = 100, nullable = true)
     private String keyword;
 
+    @Setter
     @Column(nullable = true)
     private Boolean isRecruiting;
 
@@ -40,6 +45,4 @@ public class Club {
     public enum Type {
         INTERNAL, EXTERNAL
     }
-
-    // Getters and Setters
 }
