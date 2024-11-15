@@ -6,6 +6,9 @@ import com.cluting.clutingbackend.todo.exception.TodoNotFoundException;
 import com.cluting.clutingbackend.todo.response.TodoResponse;
 import com.cluting.clutingbackend.todo.service.TodoService;
 import com.cluting.clutingbackend.todo.response.ErrorResponse;
+import com.cluting.clutingbackend.util.security.CustomUserDetails;
+import com.cluting.clutingbackend.util.security.CustomUserDetailsService;
+import com.cluting.clutingbackend.util.security.JwtProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,22 +18,24 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/recruiting/todo")
 public class TodoController {
 
+    private final JwtProvider jwtProvider;
+    private final CustomUserDetailsService customUserDetailsService;
     private final TodoService todoService;
 
-    public TodoController(TodoService todoService) {
+    public TodoController(JwtProvider jwtProvider, CustomUserDetailsService customUserDetailsService, TodoService todoService) {
+        this.jwtProvider = jwtProvider;
+        this.customUserDetailsService = customUserDetailsService;
         this.todoService = todoService;
     }
 
     // Todo 생성
     @PostMapping
     public ResponseEntity<?> createTodo(@RequestBody Todo todo, @RequestHeader("Authorization") String token) {
-//        // 토큰에서 userId를 추출하여 User 객체를 조회
-//        Long userId = jwtTokenProvider.getUserIdFromToken(token);  // JWT 토큰에서 userId 추출 (실제 구현에 맞게 변경)
-//        User user = userService.getUserById(userId);  // userId를 통해 실제 User 객체 조회
+        // 토큰에서 이메일 추출
+        String email = jwtProvider.getUserEmail(token);
 
-        //아래는 임시 코드
-        User user = new User();
-        user.setUserId(1L);  // 임시로 User 객체의 ID를 1로 설정
+        // 이메일을 통해 User 객체 조회
+        User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
 
         // Todo 생성
         Todo createdTodo = todoService.createTodo(todo, user);
@@ -40,13 +45,11 @@ public class TodoController {
     // Todo 수정
     @PatchMapping("/{todoId}")
     public ResponseEntity<TodoResponse> updateTodo(@PathVariable Long todoId, @RequestBody Todo todo, @RequestHeader("Authorization") String token) {
-//        // 토큰에서 userId를 추출하여 User 객체를 조회
-//        Long userId = jwtTokenProvider.getUserIdFromToken(token);  // JWT 토큰에서 userId 추출
-//        User user = userService.getUserById(userId);  // userId를 통해 실제 User 객체 조회
+        // 토큰에서 이메일 추출
+        String email = jwtProvider.getUserEmail(token);
 
-        //아래는 임시 코드
-        User user = new User();
-        user.setUserId(1L);  // 임시로 User 객체의 ID를 1로 설정
+        // 이메일을 통해 User 객체 조회
+        User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
 
         try {
             Todo updatedTodo = todoService.updateTodo(todoId, todo, user);
@@ -59,13 +62,12 @@ public class TodoController {
     // Todo 상태 변경 (완료/미완료)
     @PatchMapping("/{todoId}/check")
     public ResponseEntity<TodoResponse> toggleTodoStatus(@PathVariable Long todoId, @RequestHeader("Authorization") String token) {
-//        // 토큰에서 userId를 추출하여 User 객체를 조회
-//        Long userId = jwtTokenProvider.getUserIdFromToken(token);  // JWT 토큰에서 userId 추출
-//        User user = userService.getUserById(userId);  // userId를 통해 실제 User 객체 조회
 
-        //아래는 임시 코드
-        User user = new User();
-        user.setUserId(1L);  // 임시로 User 객체의 ID를 1로 설정
+        // 토큰에서 이메일 추출
+        String email = jwtProvider.getUserEmail(token);
+
+        // 이메일을 통해 User 객체 조회
+        User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
 
         try {
             Todo updatedTodo = todoService.toggleTodoStatus(todoId, user);
