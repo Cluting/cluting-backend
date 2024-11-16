@@ -1,13 +1,18 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
-import java.util.Set;
+import lombok.*;
 
 @Entity
+@Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userId;
+    private Long id;
 
     @Column(length = 100, nullable = true)
     private String email;
@@ -54,7 +59,4 @@ public class User {
     public enum Semester {
         S1_1, S1_2, S2_1, S2_2, S3_1, S3_2, S4_1, S4_2
     }
-
-    // Getters and Setters
 }
-

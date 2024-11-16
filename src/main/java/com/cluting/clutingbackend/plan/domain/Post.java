@@ -1,21 +1,21 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
-@Setter
 @Getter
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_post")
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long postId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "clubId", nullable = false)
@@ -58,6 +58,35 @@ public class Post {
     @Column(length = 1000, nullable = false)
     private String content; // 본문
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private CurrentStage currentStage;  // 현재 진행중인 리크루팅 단계
+
+    @Column(nullable = true)
+    private Boolean isInterview; // true : 면접까지 진행 | false : 서류까지 진행
+
+    @Column(nullable = true)
+    private Integer generation; // 동아리 기수
+
+    @Column(nullable = true)
+    private String description;
+
+    @Column(length = 255, nullable = true)
+    private String profile;
+
+    @Column(nullable = true)
+    private Boolean isDone;
+
+    @Column(length = 255, nullable = true)
+    private String caution;
+
+    @Column(nullable = true)
+    private LocalDateTime deadLine;
+
+    @Column(nullable = true)
+    private LocalDateTime createdAt;
+
+    public enum CurrentStage {
+        PREP, PLAN, DOC, DOC_PASS, EVAL, FINAL_PASS
+    }
 }
-
-
