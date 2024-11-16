@@ -1,7 +1,5 @@
 package com.cluting.clutingbackend.plan.dto.request;
 
-import com.cluting.clutingbackend.plan.domain.enums.Role;
-import com.cluting.clutingbackend.plan.domain.enums.Semester;
 import com.cluting.clutingbackend.plan.domain.User;
 import lombok.Getter;
 
