@@ -46,6 +46,6 @@ public class TodoService {
 
     // Todo 목록 가져오기 (User 객체를 기준으로)
     public List<Todo> getTodosByUser(User user) {
-        return todoRepository.findByUserUserId(user.getId());
+        return todoRepository.findByUserId(user.getId());
     }
 }

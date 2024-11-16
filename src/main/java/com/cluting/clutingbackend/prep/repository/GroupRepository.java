@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface GroupRepository extends JpaRepository<RecruitGroup, Long> {
-    List<RecruitGroup> findByPostPostId(Long postId);
+    List<RecruitGroup> findByPostId(Long postId);
 
 }

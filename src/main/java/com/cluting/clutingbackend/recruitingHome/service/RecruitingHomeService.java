@@ -40,21 +40,21 @@ public class RecruitingHomeService {
 
     // 2. Post 데이터를 clubId로 찾기 (currentStage, isInterview, generation)
     public Optional<Post> getPostByClubId(Long clubId, Long postId) {
-        return postRecruitingHomeRepository.findByClub_ClubIdAndPostId(clubId, postId);
+        return postRecruitingHomeRepository.findByClubIdAndId(clubId, postId);
     }
 
     // 3. RecruitSchedule 데이터를 postId로 찾기
     public List<RecruitSchedule> getRecruitSchedulesByPostId(Long postId) {
-        return recruitScheduleHomeRepository.findByPost_PostId(postId);
+        return recruitScheduleHomeRepository.findByPostId(postId);
     }
 
     // 4. ClubUser 데이터를 clubId로 찾기 (모든 user 리스트)
     public List<ClubUser> getClubUsersByClubId(Long clubId) {
-        return clubUserRecruitingHomeRepository.findByClub_ClubId(clubId);
+        return clubUserRecruitingHomeRepository.findByClubId(clubId);
     }
 
     // 5. Todo 데이터를 userId로 찾기 (Authorization 토큰에 포함된 userId 사용)
     public List<Todo> getTodosByUserId(Long userId) {
-        return todoRecruitingHomeRepository.findByUser_UserId(userId);
+        return todoRecruitingHomeRepository.findByUserId(userId);
     }
 }

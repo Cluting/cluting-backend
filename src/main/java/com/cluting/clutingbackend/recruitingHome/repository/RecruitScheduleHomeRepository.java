@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface RecruitScheduleHomeRepository extends JpaRepository<RecruitSchedule, Long> {
-    List<RecruitSchedule> findByPost_PostId(Long postId);
+    List<RecruitSchedule> findByPostId(Long postId);
 
 }

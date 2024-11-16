@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface PartRepository extends JpaRepository<Part, Long> {
 
-    List<Part> findByPost_PostId(Long postId);
+//    List<Part> findByPost_PostId(Long postId);
+
+    List<Part> findByPostId(Long postId);
 }

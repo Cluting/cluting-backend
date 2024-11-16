@@ -59,7 +59,7 @@ public class PlanService {
 
     // postId로 모든 파트의 인재상 조회 및 포맷팅
     public Map<String, List<String>> getTalentProfilesByPost(Long postId) {
-        List<Part> parts = partRepository.findByPost_PostId(postId);
+        List<Part> parts = partRepository.findByPostId(postId);
         Map<String, List<String>> result = new HashMap<>();
 
         for (Part part : parts) {

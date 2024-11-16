@@ -38,5 +38,5 @@ out/
 
 
 ## yml 관리 ##
-!**/src/main/resources/application-dev.yml
+/src/main/resources/application-dev.yml
 dump.rdb

@@ -11,7 +11,7 @@ import com.cluting.clutingbackend.prep.dto.*;
 import com.cluting.clutingbackend.prep.repository.GroupRepository;
 import com.cluting.clutingbackend.prep.repository.PrepStageClubUserRepository;
 import com.cluting.clutingbackend.prep.repository.PrepStageRepository;
-import com.cluting.clutingbackend.prep.repository.UserRepository;
+import com.cluting.clutingbackend.plan.repository.UserRepository;
 import com.cluting.clutingbackend.recruitingHome.repository.ClubUserRecruitingHomeRepository;
 import com.cluting.clutingbackend.recruitingHome.repository.RecruitScheduleHomeRepository;
 import jakarta.transaction.Transactional;
@@ -52,32 +52,32 @@ public class PrepService {
     }
 
     public List<RecruitSchedule> getRecruitSchedules(Long postId) {
-        return recruitScheduleHomeRepository.findByPost_PostId(postId);
+        return recruitScheduleHomeRepository.findByPostId(postId);
     }
 
     public List<String> getPrepStages(Long postId) {
-        return prepStageRepository.findByPost_PostIdOrderByStageOrderAsc(postId)
+        return prepStageRepository.findByPostIdOrderByStageOrderAsc(postId)
                 .stream()
                 .map(PrepStage::getStageName)
                 .collect(Collectors.toList());
     }
 
     public List<String> getClubUserNames(Long clubId) {
-        return clubUserRecruitingHomeRepository.findByClub_ClubId(clubId)
+        return clubUserRecruitingHomeRepository.findByClubId(clubId)
                 .stream()
                 .map(clubUser -> clubUser.getUser().getName())
                 .collect(Collectors.toList());
     }
 
     public List<String> getGroupNames(Long postId) {
-        return groupRepository.findByPostPostId(postId)
+        return groupRepository.findByPostId(postId)
                 .stream()
                 .map(RecruitGroup::getGroupName)
                 .collect(Collectors.toList());
     }
 
     public List<PrepStageDto> getPrepStagesWithUserNames(Long postId) {
-        List<PrepStage> prepStages = prepStageRepository.findByPost_PostId(postId);
+        List<PrepStage> prepStages = prepStageRepository.findByPostId(postId);
         return prepStages.stream()
                 .map(PrepStageDto::new)
                 .collect(Collectors.toList());

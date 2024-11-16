@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Builder
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_post")
+//@Table(name = "tb_post")
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
