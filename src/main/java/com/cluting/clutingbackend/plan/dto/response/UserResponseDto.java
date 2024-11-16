@@ -1,7 +1,5 @@
 package com.cluting.clutingbackend.plan.dto.response;
 
-import com.cluting.clutingbackend.plan.domain.enums.Role;
-import com.cluting.clutingbackend.plan.domain.enums.Semester;
 import com.cluting.clutingbackend.plan.domain.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,12 +10,12 @@ public class UserResponseDto {
     private Long id;
     private String email;
     private String name;
-    private Role role;
+    private User.Role role;
     private String phone;
     private String location;
     private String school;
     private Boolean isOnLeaver;
-    private Semester semester;
+    private User.Semester semester;
     private String major;
     private String doubleMajor;
 //    private String profile;
