@@ -36,8 +36,9 @@ public class User {
     @Column(length = 100, nullable = true)
     private String school;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    private Boolean isOnLeaver;
+    private StudentStatus studentStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
@@ -52,8 +53,21 @@ public class User {
     @Column(length = 255, nullable = true)
     private String profile;
 
+    @Column(nullable = false)
+    private Boolean termsOfService; // 클루팅 이용약관 동의 여부 (필수)
+
+    @Column(nullable = false)
+    private Boolean privacyPolicy; // 개인정보 수집 및 이용 동의 여부 (필수)
+
+    @Column(nullable = true)
+    private Boolean marketingConsent; // 마케팅 이벤트 메일 수신 동의 여부 (선택)
+
     public enum Role {
         ADMIN, USER, GUEST
+    }
+
+    public enum StudentStatus {
+        ENROLLED, LEAVE_OR_ABSENCE
     }
 
     public enum Semester {

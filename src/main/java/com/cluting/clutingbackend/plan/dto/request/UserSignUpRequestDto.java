@@ -11,10 +11,13 @@ public class UserSignUpRequestDto {
     private String phone;
     private String location;
     private String school;
-    private Boolean isOnLeaver;
+    private User.StudentStatus studentStatus;
     private User.Semester semester;
     private String major;
     private String doubleMajor;
+    private Boolean termsOfService;
+    private Boolean privacyPolicy;
+    private Boolean marketingConsent;
 
     public User toEntity(String encoded) {
         return User.builder()
@@ -25,10 +28,13 @@ public class UserSignUpRequestDto {
                 .phone(phone)
                 .location(location)
                 .school(school)
-                .isOnLeaver(isOnLeaver)
+                .studentStatus(studentStatus)
                 .semester(semester)
                 .major(major)
                 .doubleMajor(doubleMajor)
+                .termsOfService(termsOfService)
+                .privacyPolicy(privacyPolicy)
+                .marketingConsent(marketingConsent)
                 .build();
     }
 }
