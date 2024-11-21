@@ -29,6 +29,9 @@ public class Evaluation {
     @Column(nullable = true)
     private Integer score;
 
+    @Column(length = 500, nullable = true)
+    private String comment;
+
     public enum Stage {
         DOCUMENT, INTERVIEW
     }

@@ -15,4 +15,6 @@ public interface Evaluation2Repository extends JpaRepository<Evaluation, Long> {
             "WHERE e.application.applicationId = :applicationId")
     Long countDistinctClubUsersByApplication(@Param("applicationId") Long applicationId);
     List<Evaluation> findByApplication_ApplicationId(Long applicationId);
+    List<Evaluation> findByClubUser_UserIdAndApplication_ApplicationId(Long clubUserId, Long applicationId);
+
 }

@@ -1,7 +1,9 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
+@Getter
 @Entity
 public class Criteria {
     @Id
@@ -19,6 +21,11 @@ public class Criteria {
     @Column(length = 255, nullable = true)
     private String content;
 
+    @Column(length = 50, nullable = true)
+    private String name;
+
+    @Column(nullable = true)
+    private Integer score;
     // Getters and Setters
 }
 

@@ -34,9 +34,6 @@ public class Application {
     @Column(length = 100, nullable = true)
     private String part;
 
-    @Column(length = 500, nullable = true)
-    private String comment;
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
