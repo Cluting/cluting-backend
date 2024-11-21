@@ -5,6 +5,7 @@ import com.cluting.clutingbackend.docEval.repository.*;
 import com.cluting.clutingbackend.plan.domain.*;
 import com.cluting.clutingbackend.plan.repository.PartRepository;
 import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,8 @@ public class Evaluation2Service {
     private final User2Repository userRepository;
     private final TalentProfile2Repository talentProfileRepository;
     private final Criteria2Repository criteriaRepository;
-    private final PartRepository partRepository; // 추가된 부분
+    private final PartRepository partRepository;
+    private final ClubUser2Repository clubUserRepository;
 
     public EvaluationResponse getEvaluationDetails(Long applicationId, Long clubId, Long postId, Long clubUserId) {
 
@@ -103,5 +105,54 @@ public class Evaluation2Service {
                 .talentProfiles(talentProfiles) // 인재상 정보 포함
                 .adminEvaluations(new ArrayList<>(adminEvaluations.values()))
                 .build();
+    }
+
+    @Transactional
+    public void evaluateDocument(Long applicationId, Long clubId, Long postId, Long clubUserId, EvaluationRequest evaluationRequest) {
+
+        // 1. 기준 이름별 점수 저장
+        for (CriteriaScoreDto scoreDto : evaluationRequest.getCriteriaScores()) {
+            // 기준 이름을 통해 Criteria 엔티티를 찾음
+            Criteria criteria = criteriaRepository.findByName(scoreDto.getName())
+                    .orElseThrow(() -> new IllegalArgumentException("Criteria not found for name: " + scoreDto.getName()));
+
+            // 점수 저장
+            criteria.setScore(scoreDto.getScore());
+            criteriaRepository.save(criteria);
+
+            // 평가 객체 생성 및 저장
+            Application application = applicationRepository.findById(applicationId)
+                    .orElseThrow(() -> new IllegalArgumentException("Application not found with id: " + applicationId));
+
+            ClubUser clubUser = clubUserRepository.findById(clubUserId)
+                    .orElseThrow(() -> new IllegalArgumentException("ClubUser not found with id: " + clubUserId));
+
+            Evaluation evaluation = new Evaluation();
+            evaluation.setCriteria(criteria);
+            evaluation.setApplication(application);
+            evaluation.setClubUser(clubUser);
+            evaluation.setStage(Evaluation.Stage.DOCUMENT);
+            evaluation.setScore(scoreDto.getScore());
+
+            evaluationRepository.save(evaluation);
+        }
+// 2. 코멘트 저장
+        String comment = evaluationRequest.getComment();
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("Application not found with id: " + applicationId));
+
+        // 기존 평가 정보를 찾을 때 첫 번째 평가를 찾고 없으면 예외를 던짐
+        List<Evaluation> evaluations = evaluationRepository.findByApplicationAndClubUserAndStage(application,
+                clubUserRepository.findById(clubUserId).get(), Evaluation.Stage.DOCUMENT);
+
+        if (evaluations.isEmpty()) {
+            throw new IllegalArgumentException("Evaluation not found for application and clubUser");
+        }
+
+        // 첫 번째 평가 객체 가져오기 (필요한 경우 여러 평가가 있을 수 있으므로, 조건에 맞는 평가를 찾아야 함)
+        Evaluation evaluationForComment = evaluations.get(0);
+
+        evaluationForComment.setComment(comment);
+        evaluationRepository.save(evaluationForComment);
     }
 }

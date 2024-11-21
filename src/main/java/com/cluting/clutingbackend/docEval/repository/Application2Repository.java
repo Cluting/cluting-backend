@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface Application2Repository extends JpaRepository<Application, Long> {
     List<Application> findByPostId(Long postId);
     Optional<Application> findByUserAndPostId(User user, Long postId);
+    Optional<Application> findById(Long applicationId);
 }

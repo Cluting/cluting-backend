@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.docEval.controller;
 
+import com.cluting.clutingbackend.docEval.dto.EvaluationRequest;
 import com.cluting.clutingbackend.docEval.dto.EvaluationResponse;
 import com.cluting.clutingbackend.docEval.service.Evaluation2Service;
 import com.cluting.clutingbackend.plan.domain.User;
@@ -36,5 +37,25 @@ public class Evaluation2Controller {
 
         EvaluationResponse response = evaluationService.getEvaluationDetails(applicationId, clubId, postId, clubUserId);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/evaluate/{applicationId}")
+    public ResponseEntity<String> evaluateDocument(
+            @PathVariable Long applicationId,
+            @RequestParam Long clubId,
+            @RequestParam Long postId,
+            @RequestHeader("Authorization") String token,
+            @RequestBody EvaluationRequest evaluationRequest) {
+
+        // 토큰에서 이메일 추출
+        String email = jwtProvider.getUserEmail(token);
+
+        // 이메일을 통해 User 객체 조회
+        User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
+        Long clubUserId = user.getId();
+
+        evaluationService.evaluateDocument(applicationId, clubId, postId, clubUserId, evaluationRequest);
+
+        return ResponseEntity.ok("Evaluation submitted successfully");
     }
 }
