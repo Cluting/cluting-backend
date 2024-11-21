@@ -1,8 +1,13 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 import java.util.Set;
 
+@Getter
 @Entity
 public class Application {
     @Id
@@ -27,9 +32,20 @@ public class Application {
     @Column(length = 100, nullable = true)
     private String part;
 
+    @Column(length = 500, nullable = true)
+    private String comment;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     public enum State {
-        SUBMITTED, REVIEWED, APPROVED
+        BEFORE, INPROCESS, AFTER, COMPLETED,
+        OBJECTION, RESOLVE, PASS, FAIL
     }
+//    public enum State {
+//        SUBMITTED, REVIEWED, APPROVED
+//    }
 
     // Getters and Setters
 }

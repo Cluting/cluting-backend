@@ -13,7 +13,7 @@ public class Criteria {
     private Part part;
 
     @ManyToOne
-    @JoinColumn(name = "interviewId", nullable = false)
+    @JoinColumn(name = "interviewId", nullable = true)
     private Interview interview;
 
     @Column(length = 255, nullable = true)
