@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ApplicationService {
+public class Application2Service {
 
     private final Application2Repository applicationRepository;
     private final Evaluation2Repository evaluationRepository;

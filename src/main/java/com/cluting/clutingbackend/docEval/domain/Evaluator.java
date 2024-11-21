@@ -5,7 +5,9 @@ import com.cluting.clutingbackend.plan.domain.ClubUser;
 import com.cluting.clutingbackend.plan.domain.Criteria;
 import com.cluting.clutingbackend.plan.domain.Part;
 import jakarta.persistence.*;
+import lombok.Getter;
 
+@Getter
 @Entity
 public class Evaluator {
     @Id

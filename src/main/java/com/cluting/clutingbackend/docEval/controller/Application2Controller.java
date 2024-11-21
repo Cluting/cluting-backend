@@ -1,7 +1,7 @@
 package com.cluting.clutingbackend.docEval.controller;
 
 import com.cluting.clutingbackend.docEval.dto.ApplicationResponse;
-import com.cluting.clutingbackend.docEval.service.ApplicationService;
+import com.cluting.clutingbackend.docEval.service.Application2Service;
 import com.cluting.clutingbackend.plan.domain.User;
 import com.cluting.clutingbackend.util.security.CustomUserDetails;
 import com.cluting.clutingbackend.util.security.CustomUserDetailsService;
@@ -15,9 +15,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class ApplicationController {
+public class Application2Controller {
 
-    private final ApplicationService applicationService;
+    private final Application2Service applicationService;
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService customUserDetailsService;
 
