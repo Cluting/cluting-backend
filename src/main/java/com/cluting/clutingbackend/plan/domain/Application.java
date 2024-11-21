@@ -2,12 +2,14 @@ package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.Set;
 
 @Getter
+@Setter
 @Entity
 public class Application {
     @Id

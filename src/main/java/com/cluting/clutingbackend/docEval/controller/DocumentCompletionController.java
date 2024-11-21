@@ -1,6 +1,8 @@
 package com.cluting.clutingbackend.docEval.controller;
 
 import com.cluting.clutingbackend.docEval.dto.ApplicationDto;
+import com.cluting.clutingbackend.docEval.dto.ApplicationStateRequest;
+import com.cluting.clutingbackend.docEval.service.Application2Service;
 import com.cluting.clutingbackend.docEval.service.DocumentCompletionService;
 import com.cluting.clutingbackend.plan.domain.User;
 import com.cluting.clutingbackend.util.security.CustomUserDetails;
@@ -19,11 +21,13 @@ public class DocumentCompletionController {
     private final JwtProvider jwtProvider;
     private final CustomUserDetailsService customUserDetailsService;
     private final DocumentCompletionService documentCompletionService;
+    private final Application2Service applicationService;
 
-    public DocumentCompletionController(JwtProvider jwtProvider, CustomUserDetailsService customUserDetailsService, DocumentCompletionService documentCompletionService) {
+    public DocumentCompletionController(JwtProvider jwtProvider, CustomUserDetailsService customUserDetailsService, DocumentCompletionService documentCompletionService, Application2Service applicationService) {
         this.jwtProvider = jwtProvider;
         this.customUserDetailsService = customUserDetailsService;
         this.documentCompletionService = documentCompletionService;
+        this.applicationService = applicationService;
     }
 
     @GetMapping("/complete")
@@ -41,5 +45,14 @@ public class DocumentCompletionController {
 
         Map<String, List<ApplicationDto>> response = documentCompletionService.getCompletedApplications(postId);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/complete")
+    public ResponseEntity<String> updateApplicationState(
+            @RequestParam Long clubId,
+            @RequestParam Long postId,
+            @RequestBody List<ApplicationStateRequest> applicationStateRequests) {
+        applicationService.updateApplicationStates(clubId, postId, applicationStateRequests);
+        return ResponseEntity.ok("Application states updated successfully.");
     }
 }

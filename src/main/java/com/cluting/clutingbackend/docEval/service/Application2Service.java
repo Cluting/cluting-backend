@@ -1,12 +1,11 @@
 package com.cluting.clutingbackend.docEval.service;
 
 import com.cluting.clutingbackend.docEval.dto.ApplicationResponse;
-import com.cluting.clutingbackend.docEval.repository.Application2Repository;
-import com.cluting.clutingbackend.docEval.repository.Evaluation2Repository;
-import com.cluting.clutingbackend.docEval.repository.Evaluator2Repository;
-import com.cluting.clutingbackend.docEval.repository.Part2Repository;
+import com.cluting.clutingbackend.docEval.dto.ApplicationStateRequest;
+import com.cluting.clutingbackend.docEval.repository.*;
 import com.cluting.clutingbackend.plan.domain.Application;
 import com.cluting.clutingbackend.plan.domain.User;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,7 @@ public class Application2Service {
 
     private final Application2Repository applicationRepository;
     private final Evaluation2Repository evaluationRepository;
-    private final Part2Repository partRepository;
+    private final User2Repository userRepository;
     private final Evaluator2Repository evaluatorRepository;
 
     public List<ApplicationResponse> getApplicationList(Long clubId, Long postId, Long clubUserId) {
@@ -56,5 +55,23 @@ public class Application2Service {
         }
 
         return responses;
+    }
+
+
+    @Transactional
+    public void updateApplicationStates(Long clubId, Long postId, List<ApplicationStateRequest> applicationStateRequests) {
+        for (ApplicationStateRequest request : applicationStateRequests) {
+            // User 찾기
+            User user = userRepository.findByNameAndPhone(request.getName(), request.getPhone())
+                    .orElseThrow(() -> new IllegalArgumentException("User not found with name: " + request.getName() + " and phone: " + request.getPhone()));
+
+            // Application 찾기
+            Application application = applicationRepository.findByUserAndPostId(user, postId)
+                    .orElseThrow(() -> new IllegalArgumentException("Application not found for user: " + user.getName() + " and postId: " + postId));
+
+            // State 업데이트
+            application.setState(request.getState());
+            applicationRepository.save(application);
+        }
     }
 }
