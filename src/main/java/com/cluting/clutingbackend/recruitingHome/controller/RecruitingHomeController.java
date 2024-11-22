@@ -6,6 +6,9 @@ import com.cluting.clutingbackend.recruitingHome.service.RecruitingHomeService;
 import com.cluting.clutingbackend.util.security.CustomUserDetails;
 import com.cluting.clutingbackend.util.security.CustomUserDetailsService;
 import com.cluting.clutingbackend.util.security.JwtProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+
+@Tag(name = "리크루팅 홈", description = "리크루팅 홈 관련 API (시작 후)")
 @RestController
 @RequestMapping("/api/v1/recruiting")
 public class RecruitingHomeController {
@@ -30,6 +35,16 @@ public class RecruitingHomeController {
         this.customUserDetailsService = customUserDetailsService;
     }
 
+
+    @Operation(
+            summary = "리크루팅 홈 데이터 조회",
+            description = "클럽 ID와 모집 공고 ID를 기반으로 리크루팅 홈 데이터를 반환합니다. 반환 데이터에는 동아리 정보, 모집 공고 정보, 리크루팅 일정, 운영진 목록, TODO 목록이 포함됩니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "리크루팅 홈 데이터 조회 성공"),
+                    @ApiResponse(responseCode = "400", description = "클럽 또는 모집 공고를 찾을 수 없음"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            }
+    )
     @GetMapping
     public ResponseEntity<?> getRecruitingData(
             @RequestParam Long clubId,
