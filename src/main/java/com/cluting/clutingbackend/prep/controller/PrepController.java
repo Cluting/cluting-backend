@@ -52,13 +52,13 @@ public class PrepController {
 
         List<PrepStageDto> prepStagesWithUserNames = prepService.getPrepStagesWithUserNames(postId);
         List<String> clubUserNames = prepService.getClubUserNames(clubId);
-        List<String> groupNames = prepService.getGroupNames(postId);
+        List<String> partNames = prepService.getPartNames(postId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("recruitSchedules", recruitScheduleDtos);
         response.put("prepStages", prepStagesWithUserNames);
         response.put("clubUserNames", clubUserNames);
-        response.put("groupNames", groupNames);
+        response.put("partNames", partNames);
 
         return ResponseEntity.ok(response);
     }
