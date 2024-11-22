@@ -14,7 +14,7 @@ public class UserResponseDto {
     private String phone;
     private String location;
     private String school;
-    private Boolean isOnLeaver;
+    private User.StudentStatus studentStatus;
     private User.Semester semester;
     private String major;
     private String doubleMajor;
@@ -29,7 +29,7 @@ public class UserResponseDto {
                 .phone(entity.getPhone())
                 .location(entity.getLocation())
                 .school(entity.getSchool())
-                .isOnLeaver(entity.getIsOnLeaver())
+                .studentStatus(entity.getStudentStatus())
                 .semester(entity.getSemester())
                 .major(entity.getMajor())
                 .doubleMajor(entity.getDoubleMajor())

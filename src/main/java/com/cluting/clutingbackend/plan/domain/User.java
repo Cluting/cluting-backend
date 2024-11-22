@@ -63,7 +63,7 @@ public class User {
     private Boolean marketingConsent; // 마케팅 이벤트 메일 수신 동의 여부 (선택)
 
     public enum Role {
-        ADMIN, USER, GUEST
+        ADMIN, GENERAL
     }
 
     public enum StudentStatus {

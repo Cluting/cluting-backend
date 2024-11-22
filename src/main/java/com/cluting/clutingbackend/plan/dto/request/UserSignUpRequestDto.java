@@ -22,7 +22,7 @@ public class UserSignUpRequestDto {
     public User toEntity(String encoded) {
         return User.builder()
                 .name(name)
-                .role(User.Role.USER)
+                .role(User.Role.GENERAL)
                 .email(email)
                 .password(encoded)
                 .phone(phone)
