@@ -25,6 +25,10 @@ public class TimeSlot {
     private List<Long> availableInterviewers; // 가능한 운영진 ID 리스트
 
     @ManyToOne
-    @JoinColumn(name="interview_id")
+    @JoinColumn(name="interviewId")
     private Interview interview;
+
+    @Builder.Default
+    @Column
+    private Boolean assigned = false; // 해당 시간대의 면접 배정 여부(기본값: false)
 }
