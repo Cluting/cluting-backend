@@ -1,5 +1,7 @@
-package com.cluting.clutingbackend.plan.domain;
+package com.cluting.clutingbackend.evaluate.domain;
 
+import com.cluting.clutingbackend.plan.domain.Application;
+import com.cluting.clutingbackend.plan.domain.ClubUser;
 import jakarta.persistence.*;
 
 @Entity
@@ -30,7 +32,5 @@ public class Evaluation {
     public enum Stage {
         DOCUMENT, INTERVIEW
     }
-
-    // Getters and Setters
 }
 

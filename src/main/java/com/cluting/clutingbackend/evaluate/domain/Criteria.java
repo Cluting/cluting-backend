@@ -1,5 +1,7 @@
-package com.cluting.clutingbackend.plan.domain;
+package com.cluting.clutingbackend.evaluate.domain;
 
+import com.cluting.clutingbackend.plan.domain.Interview;
+import com.cluting.clutingbackend.plan.domain.Part;
 import jakarta.persistence.*;
 
 @Entity

@@ -3,6 +3,9 @@ package com.cluting.clutingbackend.plan.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -62,6 +65,9 @@ public class User {
     @Column(nullable = true)
     private Boolean marketingConsent; // 마케팅 이벤트 메일 수신 동의 여부 (선택)
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ClubUser> clubUsers = new ArrayList<>();
+
     public enum Role {
         ADMIN, GENERAL
     }
@@ -72,5 +78,13 @@ public class User {
 
     public enum Semester {
         S1_1, S1_2, S2_1, S2_2, S3_1, S3_2, S4_1, S4_2
+    }
+
+    public void addClub(ClubUser clubUser) {
+        this.clubUsers.add(clubUser);
+    }
+
+    public void delClub(ClubUser clubUser) {
+        this.clubUsers.remove(clubUser);
     }
 }

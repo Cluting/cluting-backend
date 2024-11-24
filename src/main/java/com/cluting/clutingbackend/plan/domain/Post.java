@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -86,6 +87,9 @@ public class Post {
 
     @Column(nullable = true)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "partId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Part> parts;
 
     public enum CurrentStage {
         PREP, PLAN, DOC, DOC_PASS, EVAL, FINAL_PASS

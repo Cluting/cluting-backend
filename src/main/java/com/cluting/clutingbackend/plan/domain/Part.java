@@ -28,6 +28,9 @@ public class Part {
     @Column(nullable = true)
     private Integer numFinal;
 
+    @Column(nullable = true)
+    private Integer numRecruit;
+
     @OneToMany(mappedBy = "part", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TalentProfile> talentProfiles; // 일대다 관계
 }
