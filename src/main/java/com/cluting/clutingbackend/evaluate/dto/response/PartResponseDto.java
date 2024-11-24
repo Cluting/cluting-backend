@@ -1,6 +1,6 @@
 package com.cluting.clutingbackend.evaluate.dto.response;
 
-import com.cluting.clutingbackend.plan.domain.Part;
+import com.cluting.clutingbackend.part.Part;
 import lombok.Builder;
 import lombok.Getter;
 

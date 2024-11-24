@@ -7,7 +7,7 @@ import com.cluting.clutingbackend.evaluate.dto.response.PartResponseDto;
 import com.cluting.clutingbackend.evaluate.repository.EvaluationRepository;
 import com.cluting.clutingbackend.plan.domain.Post;
 import com.cluting.clutingbackend.plan.repository.ClubUserRepository;
-import com.cluting.clutingbackend.plan.repository.PartRepository;
+import com.cluting.clutingbackend.part.PartRepository;
 import com.cluting.clutingbackend.plan.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

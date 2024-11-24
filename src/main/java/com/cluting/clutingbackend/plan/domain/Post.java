@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.plan.domain;
 
+import com.cluting.clutingbackend.part.Part;
 import jakarta.persistence.*;
 import lombok.*;
 

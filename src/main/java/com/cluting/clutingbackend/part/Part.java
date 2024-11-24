@@ -1,6 +1,8 @@
-package com.cluting.clutingbackend.plan.domain;
+package com.cluting.clutingbackend.part;
 
 
+import com.cluting.clutingbackend.plan.domain.Post;
+import com.cluting.clutingbackend.plan.domain.TalentProfile;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

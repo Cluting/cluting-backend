@@ -1,6 +1,5 @@
-package com.cluting.clutingbackend.plan.repository;
+package com.cluting.clutingbackend.part;
 
-import com.cluting.clutingbackend.plan.domain.Part;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
