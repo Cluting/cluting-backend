@@ -1,8 +1,11 @@
 package com.cluting.clutingbackend.plan.dto.response;
 
+import com.cluting.clutingbackend.evaluate.dto.response.ClubUserResponseDto;
 import com.cluting.clutingbackend.plan.domain.User;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter
 @Builder
@@ -18,7 +21,8 @@ public class UserResponseDto {
     private User.Semester semester;
     private String major;
     private String doubleMajor;
-//    private String profile;
+    private String profile;
+    private List<ClubUserResponseDto> clubs;
 
     public static UserResponseDto toDto(User entity) {
         return UserResponseDto.builder()
@@ -33,6 +37,7 @@ public class UserResponseDto {
                 .semester(entity.getSemester())
                 .major(entity.getMajor())
                 .doubleMajor(entity.getDoubleMajor())
+                .clubs(entity.getClubUsers().stream().map(ClubUserResponseDto::toDto).toList())
                 .build();
     }
 }
