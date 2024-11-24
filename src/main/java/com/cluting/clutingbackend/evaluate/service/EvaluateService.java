@@ -1,9 +1,9 @@
 package com.cluting.clutingbackend.evaluate.service;
 
-import com.cluting.clutingbackend.evaluate.dto.ClubUserResponseDto;
-import com.cluting.clutingbackend.evaluate.dto.ClubUsersResponseDto;
-import com.cluting.clutingbackend.evaluate.dto.DocEvaluatePrepResponseDto;
-import com.cluting.clutingbackend.evaluate.dto.PartResponseDto;
+import com.cluting.clutingbackend.evaluate.dto.response.ClubUserResponseDto;
+import com.cluting.clutingbackend.evaluate.dto.response.ClubUsersResponseDto;
+import com.cluting.clutingbackend.evaluate.dto.response.DocEvaluatePrepResponseDto;
+import com.cluting.clutingbackend.evaluate.dto.response.PartResponseDto;
 import com.cluting.clutingbackend.evaluate.repository.EvaluationRepository;
 import com.cluting.clutingbackend.plan.domain.Post;
 import com.cluting.clutingbackend.plan.repository.ClubUserRepository;

@@ -1,4 +1,4 @@
-package com.cluting.clutingbackend.evaluate.dto;
+package com.cluting.clutingbackend.evaluate.dto.response;
 
 import com.cluting.clutingbackend.plan.domain.ClubUser;
 import lombok.Builder;
