@@ -57,7 +57,7 @@ public class ClubController {
             @ApiResponse(responseCode = "201", description = "동아리 추가 성공"),
             @ApiResponse(responseCode = "404", description = "동아리 추가 실패"),
             @ApiResponse(responseCode = "500", description = "Internal server error")})
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = "multipart/form-data")
     @ResponseStatus(value = HttpStatus.CREATED)
     public ClubResponseDto create(
             @AuthenticationPrincipal CustomUserDetails userDetails,

@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.part;
 
 
+import com.cluting.clutingbackend.plan.domain.Application;
 import com.cluting.clutingbackend.plan.domain.Post;
 import com.cluting.clutingbackend.plan.domain.TalentProfile;
 import jakarta.persistence.*;

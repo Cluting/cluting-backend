@@ -1,11 +1,13 @@
 package com.cluting.clutingbackend.evaluate.service;
 
-import com.cluting.clutingbackend.evaluate.dto.response.ClubUserResponseDto;
-import com.cluting.clutingbackend.evaluate.dto.response.ClubUsersResponseDto;
-import com.cluting.clutingbackend.evaluate.dto.response.DocEvaluatePrepResponseDto;
-import com.cluting.clutingbackend.evaluate.dto.response.PartResponseDto;
+import com.cluting.clutingbackend.evaluate.dto.response.*;
 import com.cluting.clutingbackend.evaluate.repository.EvaluationRepository;
+import com.cluting.clutingbackend.part.Part;
+import com.cluting.clutingbackend.part.PartController;
+import com.cluting.clutingbackend.plan.domain.Application;
 import com.cluting.clutingbackend.plan.domain.Post;
+import com.cluting.clutingbackend.plan.domain.User;
+import com.cluting.clutingbackend.plan.repository.ApplicationRepository;
 import com.cluting.clutingbackend.plan.repository.ClubUserRepository;
 import com.cluting.clutingbackend.part.PartRepository;
 import com.cluting.clutingbackend.plan.repository.PostRepository;
@@ -15,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,8 @@ public class EvaluateService {
     private final EvaluationRepository evaluationRepository;
     private final PartRepository partRepository;
     private final ClubUserRepository clubUserRepository;
+    private final ApplicationRepository applicationRepository;
+    private final PartController part;
 
     // 서류 평가하기 준비 (파트별 지원자 수, 파트명 조회, 설정한 서류 합격자 수 조회)
     @Transactional(readOnly = true)
@@ -51,5 +57,59 @@ public class EvaluateService {
         return ClubUsersResponseDto.toDto(clubUsers);
     }
 
-    // 서류 평가하기 저장
+    // TODO 서류 평가하기 저장
+
+    // part 목록 조회
+    @Transactional(readOnly = true)
+    public List<String> partList(Long applicationId) {
+        return partRepository.findByApplication_ApplicationId(applicationId).stream().map(Part::getName).toList();
+    }
+
+    // 서류 합격자/불합격자 조회
+    @Transactional(readOnly = true)
+    public DocAcceptedOrRejectedResponseDto acceptedOrRejected(User user, Long applicationId, Boolean recent, String part) {
+        List<UserPartResponseDto> accepted = applicationRepository.findByState(applicationId, Application.State.DOCPASS)
+                .stream()
+                .map(application -> {
+                    UserPartResponseDto dto = UserPartResponseDto.toDto(application);
+                    dto.setRanking(application.getScore());
+                    return dto;
+                })
+                .sorted((a, b) -> Integer.compare(b.getRanking(), a.getRanking()))
+                .toList();
+        List<UserPartResponseDto> rejected = applicationRepository.findByState(applicationId, Application.State.DOCFAIL)
+                .stream()
+                .map(application -> {
+                    UserPartResponseDto dto = UserPartResponseDto.toDto(application);
+                    dto.setRanking(application.getScore());
+                    return dto;
+                })
+                .sorted((a, b) -> Integer.compare(b.getRanking(), a.getRanking()))
+                .toList();
+
+        // 최신순 정렬
+        if (recent != null && recent) {
+            accepted = accepted.stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .toList();
+            rejected = rejected.stream()
+                    .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                    .toList();
+        }
+
+        // 특정 part만 필터링
+        if (part != null && !part.isEmpty()) {
+            accepted = accepted.stream()
+                    .filter(dto -> part.equals(dto.getPart()))
+                    .toList();
+            rejected = rejected.stream()
+                    .filter(dto -> part.equals(dto.getPart()))
+                    .toList();
+        }
+
+        Map<String, Integer> partNum = new HashMap<>();
+        for (UserPartResponseDto a : accepted) partNum.put(a.getPart(), partNum.getOrDefault(a.getPart(), 0) + 1);
+
+        return DocAcceptedOrRejectedResponseDto.toDto(partNum, accepted, rejected);
+    }
 }
