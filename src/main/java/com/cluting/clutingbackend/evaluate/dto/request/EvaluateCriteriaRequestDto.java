@@ -5,12 +5,14 @@ import com.cluting.clutingbackend.part.Part;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class EvaluateCriteriaRequestDto {
     private String groupName;
     private String criteria;
-    private String detailCriteria;
+    private List<String> detailCriteria;
     private Integer score;
 
     public Criteria toEntity(Part part) {
@@ -18,7 +20,7 @@ public class EvaluateCriteriaRequestDto {
                 .part(part)
                 .interview(null)
                 .name(criteria)
-                .content(detailCriteria)
+                .content(String.join(":::", detailCriteria))
                 .score(score)
                 .stage(Criteria.Stage.DOCUMENT)
                 .build();

@@ -4,13 +4,16 @@ import com.cluting.clutingbackend.evaluate.domain.Criteria;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Getter
 @Builder
 public class CriteriaCreateResponseDto {
     private Long id;
     private String partName;
     private String criteria;
-    private String detailCriteria;
+    private List<String> detailCriteria;
     private Integer score;
     private Criteria.Stage stage;
 
@@ -19,7 +22,7 @@ public class CriteriaCreateResponseDto {
                 .id(entity.getCriteriaId())
                 .partName(entity.getPart().getName())
                 .criteria(entity.getName())
-                .detailCriteria(entity.getContent())
+                .detailCriteria(Arrays.asList(entity.getContent().split(":::")))
                 .score(entity.getScore())
                 .stage(entity.getStage())
                 .build();
