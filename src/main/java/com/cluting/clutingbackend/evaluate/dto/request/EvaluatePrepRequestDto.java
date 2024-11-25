@@ -10,5 +10,5 @@ import java.util.List;
 public class EvaluatePrepRequestDto {
     private List<GroupStaffAllocateRequestDto> groups;
     private List<EvaluateCriteriaRequestDto> criteria;
-    private Integer maxScore;
+    private Integer maxScore; // TODO 평가 테이블에 저장해야 함
 }
