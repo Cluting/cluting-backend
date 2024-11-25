@@ -9,15 +9,15 @@ public class Evaluation {
     private Long evaluationId;
 
     @ManyToOne
-    @JoinColumn(name = "criteriaId", nullable = false)
+    @JoinColumn(name = "criteria_id", nullable = false)
     private Criteria criteria;
 
     @ManyToOne
-    @JoinColumn(name = "applicationId", nullable = false)
+    @JoinColumn(name = "application_id", nullable = false)
     private Application application;
 
     @ManyToOne
-    @JoinColumn(name = "clubUserId", nullable = false)
+    @JoinColumn(name = "clubUser_id", nullable = false)
     private ClubUser clubUser;
 
     @Enumerated(EnumType.STRING)

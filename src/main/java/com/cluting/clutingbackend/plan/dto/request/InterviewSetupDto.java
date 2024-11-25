@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class InterviewSetupDto {
+    private Long postId;
     private Integer interviewerCount;
     private Integer intervieweeCount;
-    private Integer duration;
+    private Integer interviewDuration;
 }

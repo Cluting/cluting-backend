@@ -19,16 +19,18 @@ public class TimeSlot {
     private Long id;
 
     @Column
-    private LocalDateTime timeSlot; // 시간대 (예: "10월 20일-09:00")
+    private LocalDateTime times; // 시간대 (예: "10월 20일-09:00")
 
-    @ElementCollection
-    private List<Long> availableInterviewers; // 가능한 운영진 ID 리스트
+    @Column
+    private boolean isAvailable;
 
     @ManyToOne
-    @JoinColumn(name="interviewId")
-    private Interview interview;
+    @JoinColumn(name="clubUser_id")
+    private ClubUser clubUser;
 
-    @Builder.Default
-    @Column
-    private Boolean assigned = false; // 해당 시간대의 면접 배정 여부(기본값: false)
+
+    @ManyToOne
+    @JoinColumn(name="post_id")
+    private Post post;
+
 }

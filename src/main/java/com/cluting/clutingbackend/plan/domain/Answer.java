@@ -6,17 +6,19 @@ import jakarta.persistence.*;
 public class Answer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long answerId;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "applicationId", nullable = false)
+    @JoinColumn(name = "application_id", nullable = false)
     private Application application;
 
     @Column(nullable = true)
     private String content;
 
-    @Column(nullable = true)
-    private Integer questionId;
+
+    @ManyToOne
+    @JoinColumn(name="question_id")
+    private Question question;
 
     // Getters and Setters
 }

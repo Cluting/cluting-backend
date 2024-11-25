@@ -17,14 +17,9 @@ public class Interview {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "applicationId", nullable = false)
+    @JoinColumn(name = "application_id", nullable = false)
     private Application application;
 
-    @Column(nullable = true)
-    private Date date;
-
-    @Column(length = 255, nullable = true)
-    private String location;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)

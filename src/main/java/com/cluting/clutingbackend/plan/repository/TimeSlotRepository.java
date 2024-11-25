@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TimeSlotRepository extends JpaRepository<TimeSlot,Long> {
-    List<TimeSlot> findByInterviewId(Long interviewId);
+    List<TimeSlot> findByClubUserId(Long clubUserId);
 
-    Optional<TimeSlot> findByInterviewIdAndTimeSlot(Long interviewId, LocalDateTime time);
+//    Optional<TimeSlot> findByInterviewIdAndTimeSlot(Long interviewId, LocalDateTime time);
 }

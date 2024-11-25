@@ -9,11 +9,11 @@ public class Criteria {
     private Long criteriaId;
 
     @ManyToOne
-    @JoinColumn(name = "partId", nullable = false)
+    @JoinColumn(name = "part_id", nullable = false)
     private Part part;
 
     @ManyToOne
-    @JoinColumn(name = "interviewId", nullable = false)
+    @JoinColumn(name = "interview_id", nullable = false)
     private Interview interview;
 
     @Column(length = 255, nullable = true)

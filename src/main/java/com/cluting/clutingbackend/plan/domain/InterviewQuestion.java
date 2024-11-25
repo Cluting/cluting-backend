@@ -8,7 +8,7 @@ public class InterviewQuestion {
     private String questionKey;
 
     @ManyToOne
-    @JoinColumn(name = "interviewId", nullable = false)
+    @JoinColumn(name = "interview_id", nullable = false)
     private Interview interview;
 
     @Column(length = 255, nullable = true)
