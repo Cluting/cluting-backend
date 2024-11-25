@@ -40,6 +40,7 @@ public class Evaluation2Controller {
             @PathVariable Long applicationId,
             @RequestParam Long clubId,
             @RequestParam Long postId,
+            @RequestParam String partName,
             @RequestHeader("Authorization") String token) {
 
 
@@ -50,7 +51,7 @@ public class Evaluation2Controller {
         User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
         Long clubUserId = user.getId();
 
-        EvaluationResponse response = evaluationService.getEvaluationDetails(applicationId, clubId, postId, clubUserId);
+        EvaluationResponse response = evaluationService.getEvaluationDetails(applicationId, clubId, postId, partName, clubUserId);
         return ResponseEntity.ok(response);
     }
 
@@ -70,6 +71,7 @@ public class Evaluation2Controller {
             @PathVariable Long applicationId,
             @RequestParam Long clubId,
             @RequestParam Long postId,
+            @RequestParam String partName,
             @RequestHeader("Authorization") String token,
             @RequestBody EvaluationRequest evaluationRequest) {
 
@@ -80,7 +82,7 @@ public class Evaluation2Controller {
         User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
         Long clubUserId = user.getId();
 
-        evaluationService.evaluateDocument(applicationId, clubId, postId, clubUserId, evaluationRequest);
+        evaluationService.evaluateDocument(applicationId, clubId, postId, partName, clubUserId, evaluationRequest);
 
         return ResponseEntity.ok("Evaluation submitted successfully");
     }

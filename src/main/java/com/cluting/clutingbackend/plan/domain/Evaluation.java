@@ -12,9 +12,9 @@ public class Evaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long evaluationId;
 
-    @ManyToOne
-    @JoinColumn(name = "criteriaId", nullable = false)
-    private Criteria criteria;
+//    @ManyToOne
+//    @JoinColumn(name = "criteriaId", nullable = false)
+//    private Criteria criteria;
 
     @ManyToOne
     @JoinColumn(name = "applicationId", nullable = false)
@@ -29,7 +29,7 @@ public class Evaluation {
     private Stage stage;
 
     @Column(nullable = true)
-    private Integer score;
+    private Integer score;  //운영진별 평기기준 점수들의 합
 
     @Column(length = 500, nullable = true)
     private String comment;
@@ -38,6 +38,5 @@ public class Evaluation {
         DOCUMENT, INTERVIEW
     }
 
-    // Getters and Setters
 }
 

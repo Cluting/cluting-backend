@@ -25,7 +25,10 @@ public class Application {
     private State state;
 
     @Column(nullable = true)
-    private Integer numDone;
+    private Integer score;  //모든 운영진 평가 점수의 평균
+
+    @Column(nullable = true)
+    private Integer numClubUser;  //평가한 운영진의 수
 
     @ManyToOne
     @JoinColumn(name = "postId", nullable = false)
@@ -46,6 +49,5 @@ public class Application {
 //        SUBMITTED, REVIEWED, APPROVED
 //    }
 
-    // Getters and Setters
 }
 

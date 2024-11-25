@@ -9,10 +9,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +25,7 @@ public class Evaluation2Service {
     private final PartRepository partRepository;
     private final ClubUser2Repository clubUserRepository;
 
-    public EvaluationResponse getEvaluationDetails(Long applicationId, Long clubId, Long postId, Long clubUserId) {
-
+    public EvaluationResponse getEvaluationDetails(Long applicationId, Long clubId, Long postId, String partName, Long clubUserId) {
         // 1. 지원자 정보 가져오기
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found with id: " + applicationId));
@@ -45,114 +42,175 @@ public class Evaluation2Service {
                 .profile(applicant.getProfile())
                 .build();
 
-        // 2. 지원서 내용 가져오기
-        List<Answer> answers = answerRepository.findByApplication_ApplicationId(applicationId);
-        List<QuestionContent> questionContents = answers.stream()
-                .map(answer -> new QuestionContent(answer.getQuestionId(), answer.getContent()))
+        // 2. Part ID 가져오기
+        Part part = partRepository.findByNameAndPostId(partName, postId)
+                .orElseThrow(() -> new IllegalArgumentException("Part not found with name: " + partName));
+
+        // 3. 내 평가 가져오기 (여러 Criteria를 처리)
+        List<Criteria> myCriteria = criteriaRepository.findByApplication_ApplicationIdAndClubUser_ClubUserIdAndPart_PartId(applicationId, clubUserId, part.getPartId());
+        List<CriteriaScore> myCriteriaScores = myCriteria.stream()
+                .map(criteria -> new CriteriaScore(criteria.getName(), criteria.getScore()))
+                .distinct() // 중복 제거
                 .toList();
 
-        // 3. 내 평가 가져오기
-        List<Evaluation> myEvaluations = evaluationRepository.findByClubUser_UserIdAndApplication_ApplicationId(clubUserId, applicationId);
-        List<ScoreDetail> scoreDetails = myEvaluations.stream()
-                .map(evaluation -> new ScoreDetail(evaluation.getCriteria().getCriteriaId(), evaluation.getScore()))
-                .toList();
+        Integer myTotalScore = myCriteriaScores.stream()
+                .mapToInt(CriteriaScore::getScore)
+                .sum();
 
-        String comment = myEvaluations.isEmpty() ? null : myEvaluations.get(0).getComment();
+        List<Evaluation> myEvaluations = evaluationRepository.findByApplication_ApplicationIdAndClubUser_ClubUserId(applicationId, clubUserId); // 수정
+        String myComment = myEvaluations.isEmpty() ? null : myEvaluations.get(0).getComment(); // 여러 평가가 있을 경우 첫 번째 평가의 댓글 가져오기
 
-        // 4. 인재상 가져오기
-        List<Part> parts = partRepository.findByPostId(postId); // 해당 모집공고에 속한 파트 조회
-        List<Map<String, Object>> talentProfiles = new ArrayList<>();
+        List<ScoreDetail> scoreDetails = myCriteriaScores.stream()
+                .map(criteriaScore -> new ScoreDetail(criteriaScore.getName(), criteriaScore.getScore()))
+                .collect(Collectors.toList());
 
-        for (Part part : parts) {
-            Map<String, Object> partProfile = new HashMap<>();
-            partProfile.put("partName", part.getName()); // 파트 이름 저장
+        MyEvaluation myEvaluation = MyEvaluation.builder()
+                .scoreDetails(scoreDetails)
+                .comment(myComment)
+                .build();
 
-            // 해당 Part에 속하는 TalentProfile 가져오기
-            List<String> descriptions = new ArrayList<>();
-            List<TalentProfile> profiles = talentProfileRepository.findByPartId(part.getPartId());
-            for (TalentProfile profile : profiles) {
-                descriptions.add(profile.getDescription()); // 인재상 설명 저장
-            }
-
-            partProfile.put("descriptions", descriptions); // 인재상 설명들을 descriptions 키로 저장
-            talentProfiles.add(partProfile); // 결과 리스트에 추가
-        }
-
-
-        // 5. 다른 운영진 평가 가져오기
-        List<Evaluation> allEvaluations = evaluationRepository.findByApplication_ApplicationId(applicationId);
+        // 4. 다른 운영진 평가 가져오기 (여러 운영진 평가 처리)
+        List<Evaluation> otherEvaluations = evaluationRepository.findByApplication_ApplicationId(applicationId);
         Map<Long, AdminEvaluation> adminEvaluations = new HashMap<>();
 
-        for (Evaluation evaluation : allEvaluations) {
+        for (Evaluation evaluation : otherEvaluations) {
+            if (evaluation.getClubUser().getClubUserId().equals(clubUserId)) continue; // 본인은 제외
+
             Long evaluatorId = evaluation.getClubUser().getClubUserId();
             User evaluator = evaluation.getClubUser().getUser();
 
+            // AdminEvaluation에 해당 평가자 정보 저장
             AdminEvaluation adminEvaluation = adminEvaluations.computeIfAbsent(evaluatorId, id -> AdminEvaluation.builder()
                     .name(evaluator.getName())
-                    .totalScore(evaluation.getScore())
+                    .totalScore(0)
                     .criteriaScores(new ArrayList<>())
                     .comment(evaluation.getComment())
                     .build());
 
-            Criteria criteria = evaluation.getCriteria();
-            adminEvaluation.getCriteriaScores().add(new CriteriaScore(criteria.getName(), evaluation.getScore()));
+            // 여러 Criteria가 있을 수 있으므로 getResultList() 사용
+            List<Criteria> criteriaList = criteriaRepository.findByApplication_ApplicationIdAndClubUser_ClubUserIdAndPart_PartId(applicationId, evaluatorId, part.getPartId());
+            List<CriteriaScore> criteriaScores = criteriaList.stream()
+                    .map(criteria -> new CriteriaScore(criteria.getName(), criteria.getScore()))
+                    .distinct()
+                    .toList();
+
+            // 평가 점수 합산
+            int totalScore = criteriaScores.stream().mapToInt(CriteriaScore::getScore).sum();
+            adminEvaluation.setTotalScore(adminEvaluation.getTotalScore() + totalScore);
+            adminEvaluation.getCriteriaScores().addAll(criteriaScores);
         }
+
+        // 5. 인재상 가져오기
+        List<Part> parts = partRepository.findByPostId(postId);
+        List<Map<String, Object>> talentProfiles = parts.stream()
+                .map(partObj -> {
+                    Map<String, Object> profile = new HashMap<>();
+                    profile.put("partName", partObj.getName());
+                    List<String> descriptions = talentProfileRepository.findByPartId(partObj.getPartId()).stream()
+                            .map(TalentProfile::getDescription)
+                            .toList();
+                    profile.put("descriptions", descriptions);
+                    return profile;
+                })
+                .toList();
 
         return EvaluationResponse.builder()
                 .applicantInfo(applicantInfo)
-                .questionContents(questionContents)
-                .myEvaluations(new MyEvaluation(scoreDetails, comment))
-                .talentProfiles(talentProfiles) // 인재상 정보 포함
+                .questionContents(getQuestionContents(applicationId)) // 지원서 문항과 답변
+                .myEvaluations(myEvaluation)
                 .adminEvaluations(new ArrayList<>(adminEvaluations.values()))
+                .talentProfiles(talentProfiles)
                 .build();
     }
 
+
+    // 지원서 문항과 답변 가져오기 (helper method)
+    private List<QuestionContent> getQuestionContents(Long applicationId) {
+        List<Answer> answers = answerRepository.findByApplication_ApplicationId(applicationId);
+        return answers.stream()
+                .map(answer -> new QuestionContent(answer.getQuestionId(), answer.getContent()))
+                .toList();
+    }
+
+
     @Transactional
-    public void evaluateDocument(Long applicationId, Long clubId, Long postId, Long clubUserId, EvaluationRequest evaluationRequest) {
+    public void evaluateDocument(Long applicationId, Long clubId, Long postId, String partName, Long clubUserId, EvaluationRequest evaluationRequest) {
 
-        // 1. 기준 이름별 점수 저장
-        for (CriteriaScoreDto scoreDto : evaluationRequest.getCriteriaScores()) {
-            // 기준 이름을 통해 Criteria 엔티티를 찾음
-            Criteria criteria = criteriaRepository.findByName(scoreDto.getName())
-                    .orElseThrow(() -> new IllegalArgumentException("Criteria not found for name: " + scoreDto.getName()));
-
-            // 점수 저장
-            criteria.setScore(scoreDto.getScore());
-            criteriaRepository.save(criteria);
-
-            // 평가 객체 생성 및 저장
-            Application application = applicationRepository.findById(applicationId)
-                    .orElseThrow(() -> new IllegalArgumentException("Application not found with id: " + applicationId));
-
-            ClubUser clubUser = clubUserRepository.findById(clubUserId)
-                    .orElseThrow(() -> new IllegalArgumentException("ClubUser not found with id: " + clubUserId));
-
-            Evaluation evaluation = new Evaluation();
-            evaluation.setCriteria(criteria);
-            evaluation.setApplication(application);
-            evaluation.setClubUser(clubUser);
-            evaluation.setStage(Evaluation.Stage.DOCUMENT);
-            evaluation.setScore(scoreDto.getScore());
-
-            evaluationRepository.save(evaluation);
-        }
-// 2. 코멘트 저장
-        String comment = evaluationRequest.getComment();
+        // 1. 지원서 및 관련 객체 조회
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found with id: " + applicationId));
 
-        // 기존 평가 정보를 찾을 때 첫 번째 평가를 찾고 없으면 예외를 던짐
-        List<Evaluation> evaluations = evaluationRepository.findByApplicationAndClubUserAndStage(application,
-                clubUserRepository.findById(clubUserId).get(), Evaluation.Stage.DOCUMENT);
+        ClubUser clubUser = clubUserRepository.findById(clubUserId)
+                .orElseThrow(() -> new IllegalArgumentException("ClubUser not found with id: " + clubUserId));
 
-        if (evaluations.isEmpty()) {
-            throw new IllegalArgumentException("Evaluation not found for application and clubUser");
+        // partName과 applicationId로 Part 조회
+        Part part = partRepository.findByNameAndPostId(partName, postId)
+                .orElseThrow(() -> new IllegalArgumentException("Part not found with name: " + partName + " and postId: " + postId));
+
+        // 2. 기준 이름별 점수 저장
+        Set<String> uniqueNames = new HashSet<>();
+        int totalScore = 0; // 총합 계산
+
+        for (CriteriaScoreDto scoreDto : evaluationRequest.getCriteriaScores()) {
+            String criteriaName = scoreDto.getName();
+
+            // 중복 제거
+            if (!uniqueNames.add(criteriaName)) {
+                continue;
+            }
+
+            // Criteria 조회 또는 생성
+            Criteria criteria = criteriaRepository.findByApplicationAndPartAndName(application, part, criteriaName)
+                    .orElseGet(() -> {
+                        Criteria newCriteria = new Criteria();
+                        newCriteria.setApplication(application);
+                        newCriteria.setPart(part);
+                        newCriteria.setName(criteriaName);
+                        return newCriteria;
+                    });
+
+            // 점수 및 클럽 운영진 저장
+            criteria.setScore(scoreDto.getScore());
+            criteria.setClubUser(clubUser);
+            criteriaRepository.save(criteria);
+
+            // 총합 계산
+            totalScore += scoreDto.getScore();
         }
 
-        // 첫 번째 평가 객체 가져오기 (필요한 경우 여러 평가가 있을 수 있으므로, 조건에 맞는 평가를 찾아야 함)
-        Evaluation evaluationForComment = evaluations.get(0);
+        // 3. Evaluation 저장
+        Evaluation evaluation = evaluationRepository.findByApplicationAndClubUserAndStage(application, clubUser, Evaluation.Stage.DOCUMENT)
+                .orElseGet(() -> {
+                    Evaluation newEvaluation = new Evaluation();
+                    newEvaluation.setApplication(application);
+                    newEvaluation.setClubUser(clubUser);
+                    newEvaluation.setStage(Evaluation.Stage.DOCUMENT);
+                    return newEvaluation;
+                });
 
-        evaluationForComment.setComment(comment);
-        evaluationRepository.save(evaluationForComment);
+        evaluation.setScore(totalScore); // 총점 저장
+        evaluation.setComment(evaluationRequest.getComment()); // 코멘트 저장
+        evaluationRepository.save(evaluation);
+
+        // 4. Application 점수 업데이트 로직
+        Integer currentNumClubUser = application.getNumClubUser();
+        Integer currentScore = application.getScore();
+
+        if (currentNumClubUser == null || currentScore == null) {
+            // 초기값 설정
+            application.setNumClubUser(1);
+            application.setScore(totalScore);
+        } else {
+            // 평균 계산 후 업데이트
+            int newNumClubUser = currentNumClubUser + 1;
+            int newScore = (currentScore * currentNumClubUser + totalScore) / newNumClubUser;
+            application.setNumClubUser(newNumClubUser);
+            application.setScore(newScore);
+        }
+
+        applicationRepository.save(application);
     }
+
+
+
 }

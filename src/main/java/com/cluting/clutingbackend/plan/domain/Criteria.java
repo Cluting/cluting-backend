@@ -13,6 +13,14 @@ public class Criteria {
     private Long criteriaId;
 
     @ManyToOne
+    @JoinColumn(name = "clubUserId", nullable = true)
+    private ClubUser clubUser;
+
+    @ManyToOne
+    @JoinColumn(name = "applicationId", nullable = true)
+    private Application application;
+
+    @ManyToOne
     @JoinColumn(name = "partId", nullable = false)
     private Part part;
 
@@ -27,7 +35,6 @@ public class Criteria {
     private String name;
 
     @Column(nullable = true)
-    private Integer score;
-    // Getters and Setters
+    private Integer score;  //운영진별 평가기준별 점수
 }
 
