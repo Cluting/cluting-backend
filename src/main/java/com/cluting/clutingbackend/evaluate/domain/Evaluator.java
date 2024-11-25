@@ -1,15 +1,18 @@
 package com.cluting.clutingbackend.evaluate.domain;
 
+import com.cluting.clutingbackend.part.Part;
 import com.cluting.clutingbackend.plan.domain.ClubUser;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
-@Entity
-@Setter
 @Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
 public class Evaluator {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +20,17 @@ public class Evaluator {
 
     private String partName; // 파트 이름
 
+    @OneToOne(fetch = FetchType.LAZY)
+    private Part part;
+
     @OneToMany
     private List<ClubUser> evaluators;
 
+    public void addStaff(ClubUser clubUser) {
+        evaluators.add(clubUser);
+    }
+
+    public void removeStaff(ClubUser clubUser) {
+        evaluators.remove(clubUser);
+    }
 }

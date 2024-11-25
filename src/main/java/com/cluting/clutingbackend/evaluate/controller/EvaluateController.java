@@ -1,8 +1,10 @@
 package com.cluting.clutingbackend.evaluate.controller;
 
+import com.cluting.clutingbackend.evaluate.dto.request.EvaluatePrepRequestDto;
 import com.cluting.clutingbackend.evaluate.dto.response.ClubUsersResponseDto;
 import com.cluting.clutingbackend.evaluate.dto.response.DocAcceptedOrRejectedResponseDto;
 import com.cluting.clutingbackend.evaluate.dto.response.DocEvaluatePrepResponseDto;
+import com.cluting.clutingbackend.evaluate.dto.response.DocPrepareResponseDto;
 import com.cluting.clutingbackend.evaluate.service.EvaluateService;
 import com.cluting.clutingbackend.util.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,10 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -40,6 +39,18 @@ public class EvaluateController {
     @GetMapping("/staffs/{postId}")
     public ClubUsersResponseDto clubStaffList(@PathVariable("postId") Long postId) {
         return evaluateService.clubStaffList(postId);
+    }
+
+    @Operation(description = "서류 평가 준비하기 저장")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "서류 평가 준비하기 저장 성공"),
+            @ApiResponse(responseCode = "404", description = "서류 평가 준비하기 저장 실패"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")})
+    @PostMapping("/prep/{postId}")
+    public DocPrepareResponseDto prepareDocEvaluate(
+            @PathVariable("postId") Long postId,
+            @RequestBody EvaluatePrepRequestDto evaluatePrepRequestDto) {
+        return evaluateService.prepareDocEvaluate(postId, evaluatePrepRequestDto);
     }
 
     @Operation(description = "서류 평가 결과 조회")

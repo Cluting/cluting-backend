@@ -1,7 +1,13 @@
 package com.cluting.clutingbackend.evaluate.service;
 
+import com.cluting.clutingbackend.evaluate.domain.Criteria;
+import com.cluting.clutingbackend.evaluate.dto.request.EvaluateCriteriaRequestDto;
+import com.cluting.clutingbackend.evaluate.dto.request.EvaluatePrepRequestDto;
+import com.cluting.clutingbackend.evaluate.dto.request.GroupStaffAllocateRequestDto;
 import com.cluting.clutingbackend.evaluate.dto.response.*;
+import com.cluting.clutingbackend.evaluate.repository.CriteriaRepository;
 import com.cluting.clutingbackend.evaluate.repository.EvaluationRepository;
+import com.cluting.clutingbackend.evaluate.repository.EvaluatorRepository;
 import com.cluting.clutingbackend.part.Part;
 import com.cluting.clutingbackend.part.PartController;
 import com.cluting.clutingbackend.plan.domain.Application;
@@ -17,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +36,8 @@ public class EvaluateService {
     private final PartRepository partRepository;
     private final ClubUserRepository clubUserRepository;
     private final ApplicationRepository applicationRepository;
-    private final PartController part;
+    private final CriteriaRepository criteriaRepository;
+    private final EvaluatorRepository evaluatorRepository;
 
     // 서류 평가하기 준비 (파트별 지원자 수, 파트명 조회, 설정한 서류 합격자 수 조회)
     @Transactional(readOnly = true)
@@ -57,7 +65,26 @@ public class EvaluateService {
         return ClubUsersResponseDto.toDto(clubUsers);
     }
 
-    // TODO 서류 평가하기 저장
+    // 서류 평가하기 저장
+    @Transactional
+    public DocPrepareResponseDto prepareDocEvaluate(Long postId, EvaluatePrepRequestDto evaluatePrepRequestDto) {
+        List<Part> parts = partRepository.findByPostId(postId).stream().toList();
+
+        Map<String, Part> partList = new HashMap<>();
+        for (Part part : parts) partList.put(part.getName(), part);
+
+        List<CriteriaCreateResponseDto> criteria = new ArrayList<>();
+        for (EvaluateCriteriaRequestDto dto : evaluatePrepRequestDto.getCriteria()) {
+            criteria.add(CriteriaCreateResponseDto.toDto(criteriaRepository.save(dto.toEntity(partList.get(dto.getGroupName())))));
+        }
+
+        List<EvaluateStaffAllocateResponseDto> staffs = new ArrayList<>();
+        for (GroupStaffAllocateRequestDto dto : evaluatePrepRequestDto.getGroups()) {
+            staffs.add(EvaluateStaffAllocateResponseDto.toDto(evaluatorRepository.save(dto.toEntity(partList.get(dto.getGroupName())))));
+        }
+
+        return DocPrepareResponseDto.toDto(staffs, criteria);
+    }
 
     // part 목록 조회
     @Transactional(readOnly = true)
