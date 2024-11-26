@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.plan.domain;
 
+import com.cluting.clutingbackend.part.Part;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -105,6 +106,9 @@ public class Post {
     @Column
     private boolean isRequiredPortfolio; // 면접 소요 시간
 
+
+    @OneToMany(mappedBy = "partId", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Part> parts;
 
     public enum CurrentStage {
         PREP, PLAN, DOC, DOC_PASS, EVAL, FINAL_PASS

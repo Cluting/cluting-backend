@@ -1,10 +1,11 @@
 package com.cluting.clutingbackend.plan.domain;
 
+
+import com.cluting.clutingbackend.part.Part;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.util.List;
 
 @Entity

@@ -14,12 +14,13 @@ public class ClubUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userId", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "club_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "clubId", nullable = false)
     private Club club;
 
     @Enumerated(EnumType.STRING)
@@ -35,7 +36,5 @@ public class ClubUser {
     public enum Role {
         MEMBER, STAFF
     }
-
-    // Getters and Setters
 }
 

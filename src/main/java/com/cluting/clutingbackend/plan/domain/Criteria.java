@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
+import com.cluting.clutingbackend.part.Part;
 
 @Entity
 public class Criteria {

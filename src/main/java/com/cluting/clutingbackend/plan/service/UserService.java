@@ -26,7 +26,13 @@ public class UserService {
 
     @Transactional
     public UserResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) {
-        //TODO 에러핸들링
+
+        if (!userSignUpRequestDto.getTermsOfService() || !userSignUpRequestDto.getPrivacyPolicy()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "필수 동의 사항입니다."
+            );
+        }
+
         userRepository.findByEmail(userSignUpRequestDto.getEmail())
                 .ifPresent(user -> {
                     throw new ResponseStatusException(

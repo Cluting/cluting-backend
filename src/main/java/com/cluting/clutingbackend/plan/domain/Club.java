@@ -2,7 +2,7 @@ package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -46,11 +46,22 @@ public class Club {
     @Column(nullable = true)
     private Boolean isRecruiting; //리크루팅시작여부
 
+    @OneToMany(mappedBy = "club", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ClubUser> clubUsers = new ArrayList<>();
+
     public enum Category {
         CULTURE, PHYSICAL, STARTUP, LANGUAGE, SOCIAL, TECHNOLOGY, SERVICE, ACADEMIC, ELSE
     }
 
     public enum Type {
         INTERNAL, EXTERNAL
+    }
+
+    public void addUser(ClubUser clubUser) {
+        this.clubUsers.add(clubUser);
+    }
+
+    public void delUser(ClubUser clubUser) {
+        this.clubUsers.remove(clubUser);
     }
 }
