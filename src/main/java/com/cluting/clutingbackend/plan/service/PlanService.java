@@ -1,12 +1,12 @@
 package com.cluting.clutingbackend.plan.service;
 
-import com.cluting.clutingbackend.plan.domain.Part;
+import com.cluting.clutingbackend.part.Part;
 import com.cluting.clutingbackend.plan.domain.Post;
 import com.cluting.clutingbackend.plan.domain.TalentProfile;
 import com.cluting.clutingbackend.plan.dto.request.PlanUpdateRequestDto;
 import com.cluting.clutingbackend.plan.dto.request.PostRequestDto;
 import com.cluting.clutingbackend.plan.repository.ClubRepository;
-import com.cluting.clutingbackend.plan.repository.PartRepository;
+import com.cluting.clutingbackend.part.PartRepository;
 import com.cluting.clutingbackend.plan.repository.PostRepository;
 import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;

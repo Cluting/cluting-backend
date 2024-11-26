@@ -1,6 +1,9 @@
-package com.cluting.clutingbackend.plan.domain;
+package com.cluting.clutingbackend.part;
 
 
+import com.cluting.clutingbackend.plan.domain.Application;
+import com.cluting.clutingbackend.plan.domain.Post;
+import com.cluting.clutingbackend.plan.domain.TalentProfile;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +30,9 @@ public class Part {
 
     @Column(nullable = true)
     private Integer numFinal;
+
+    @Column(nullable = true)
+    private Integer numRecruit;
 
     @OneToMany(mappedBy = "part", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TalentProfile> talentProfiles; // 일대다 관계
