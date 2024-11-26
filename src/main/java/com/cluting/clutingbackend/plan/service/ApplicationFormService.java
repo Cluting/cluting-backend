@@ -1,11 +1,11 @@
 package com.cluting.clutingbackend.plan.service;
 
-import com.cluting.clutingbackend.plan.domain.Part;
+import com.cluting.clutingbackend.part.Part;
+import com.cluting.clutingbackend.part.PartRepository;
 import com.cluting.clutingbackend.plan.domain.Post;
 import com.cluting.clutingbackend.plan.domain.Question;
 import com.cluting.clutingbackend.plan.dto.request.ApplicationFormRequestDto;
 import com.cluting.clutingbackend.plan.dto.response.ApplicationFormResponseDto;
-import com.cluting.clutingbackend.plan.repository.PartRepository;
 import com.cluting.clutingbackend.plan.repository.PostRepository;
 import com.cluting.clutingbackend.plan.repository.QuestionRepository;
 import jakarta.transaction.Transactional;

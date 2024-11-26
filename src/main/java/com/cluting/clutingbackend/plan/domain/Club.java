@@ -19,9 +19,6 @@ public class Club {
     @OneToMany(mappedBy = "club")
     private List<Post> posts;
 
-    @OneToMany(mappedBy = "club")
-    private List<ClubUser> clubUsers;
-
     @Column(length = 100, nullable = true)
     private String name; // 동아리 이름
 
