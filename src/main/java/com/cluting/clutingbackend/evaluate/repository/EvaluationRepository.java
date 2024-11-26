@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface EvaluationRepository extends JpaRepository<Evaluation, Long> {
-    List<Evaluation> findByApplication_ApplicationId(Long applicationId);
+    List<Evaluation> findByApplicationId(Long applicationId);
 }

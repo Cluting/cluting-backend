@@ -43,6 +43,7 @@ public class Club {
     @Column(nullable = true)
     private Boolean isRecruiting; //리크루팅시작여부
 
+    @Builder.Default
     @OneToMany(mappedBy = "club", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ClubUser> clubUsers = new ArrayList<>();
 

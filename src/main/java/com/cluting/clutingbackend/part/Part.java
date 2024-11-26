@@ -14,7 +14,7 @@ import java.util.List;
 public class Part {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long partId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)

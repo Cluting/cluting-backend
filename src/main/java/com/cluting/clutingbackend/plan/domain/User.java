@@ -65,6 +65,7 @@ public class User {
     @Column(nullable = true)
     private Boolean marketingConsent; // 마케팅 이벤트 메일 수신 동의 여부 (선택)
 
+    @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ClubUser> clubUsers = new ArrayList<>();
 

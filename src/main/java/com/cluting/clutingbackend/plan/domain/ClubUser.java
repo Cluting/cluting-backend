@@ -16,11 +16,11 @@ public class ClubUser {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "clubId", nullable = false)
+    @JoinColumn(name = "club_id", nullable = false)
     private Club club;
 
     @Enumerated(EnumType.STRING)

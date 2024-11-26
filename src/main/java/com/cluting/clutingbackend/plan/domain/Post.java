@@ -107,7 +107,7 @@ public class Post {
     private boolean isRequiredPortfolio; // 면접 소요 시간
 
 
-    @OneToMany(mappedBy = "partId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Part> parts;
 
     public enum CurrentStage {

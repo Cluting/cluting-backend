@@ -71,7 +71,7 @@ public class ApplicationFormService {
                                 .category(question.getCategory().name())
                                 .choices(question.getOptions())
                                 .multipleChoice(question.getMultipleChoice())
-                                .partId(question.getPart() != null ? question.getPart().getPartId() : null)
+                                .partId(question.getPart() != null ? question.getPart().getId() : null)
                                 .build())
                         .toList())
                 .build();
