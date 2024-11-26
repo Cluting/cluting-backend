@@ -12,5 +12,5 @@ public interface PartRepository extends JpaRepository<Part, Long> {
 
     List<Part> findByPostId(Long postId);
 
-    List<Part> findByApplication_ApplicationId(Long applicationId);
+    List<Part> findByPost_Id(Long applicationId);
 }
