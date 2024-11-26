@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -57,7 +58,7 @@ public class ClubController {
             @ApiResponse(responseCode = "201", description = "동아리 추가 성공"),
             @ApiResponse(responseCode = "404", description = "동아리 추가 실패"),
             @ApiResponse(responseCode = "500", description = "Internal server error")})
-    @PostMapping(value = "/create", consumes = "multipart/form-data")
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(value = HttpStatus.CREATED)
     public ClubResponseDto create(
             @AuthenticationPrincipal CustomUserDetails userDetails,

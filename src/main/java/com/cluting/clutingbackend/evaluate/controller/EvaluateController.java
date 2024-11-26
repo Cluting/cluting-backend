@@ -75,7 +75,7 @@ public class EvaluateController {
     @GetMapping("/part/{applicationId}")
     public List<String> partList(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("applicationId") Long applicationId) {
-        return evaluateService.partList(applicationId);
+            @PathVariable("applicationId") Long postId) {
+        return evaluateService.partList(postId);
     }
 }

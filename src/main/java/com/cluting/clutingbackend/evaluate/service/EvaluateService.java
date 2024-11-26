@@ -89,7 +89,7 @@ public class EvaluateService {
     // part 목록 조회
     @Transactional(readOnly = true)
     public List<String> partList(Long applicationId) {
-        return partRepository.findByApplication_ApplicationId(applicationId).stream().map(Part::getName).toList();
+        return partRepository.findByPost_Id(applicationId).stream().map(Part::getName).toList();
     }
 
     // 서류 합격자/불합격자 조회
