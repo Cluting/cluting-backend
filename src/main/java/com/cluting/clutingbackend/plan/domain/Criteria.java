@@ -1,11 +1,17 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
+import com.cluting.clutingbackend.part.Part;
 
 @Entity
-public class InterviewQuestion {
+public class Criteria {
     @Id
-    private String questionKey;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long criteriaId;
+
+    @ManyToOne
+    @JoinColumn(name = "part_id", nullable = false)
+    private Part part;
 
     @ManyToOne
     @JoinColumn(name = "interview_id", nullable = false)

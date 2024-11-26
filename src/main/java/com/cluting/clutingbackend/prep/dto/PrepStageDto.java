@@ -33,7 +33,7 @@ public class PrepStageDto {
         this.stageName = prepStage.getStageName();
         this.stageOrder = prepStage.getStageOrder();
         this.clubUserIds = prepStage.getPrepStageClubUsers().stream()
-                .map(clubUser -> clubUser.getClubUser().getClubUserId())
+                .map(clubUser -> clubUser.getClubUser().getId())
                 .collect(Collectors.toList());
     }
 }

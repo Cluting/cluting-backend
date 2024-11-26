@@ -4,13 +4,16 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
 public class ClubUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long clubUserId;
+    private Long id;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", nullable = false)
@@ -22,10 +25,13 @@ public class ClubUser {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    private Role role;
+    private Role role; // 부원 혹은 운영진
 
     @Column(nullable = true)
     private Integer permissionLevel;
+
+    @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<TimeSlot> timeSlots; // ClubUser가 가진 TimeSlot 리스트
 
     public enum Role {
         MEMBER, STAFF

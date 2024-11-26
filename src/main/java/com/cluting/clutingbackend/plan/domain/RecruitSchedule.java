@@ -15,8 +15,11 @@ public class RecruitSchedule {
     private Long scheduleId;
 
     @ManyToOne
-    @JoinColumn(name = "postId", nullable = false)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
+
+    @Column
+    private String interviewLocation;
 
     @Column(nullable = true)
     private Date stage1End;

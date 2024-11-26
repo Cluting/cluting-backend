@@ -12,10 +12,10 @@ import java.util.Set;
 public class Application {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long applicationId;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Enumerated(EnumType.STRING)
@@ -26,7 +26,7 @@ public class Application {
     private Integer score;
 
     @ManyToOne
-    @JoinColumn(name = "postId", nullable = false)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @Column(length = 100, nullable = true)

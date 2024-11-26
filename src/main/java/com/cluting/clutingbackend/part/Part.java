@@ -17,17 +17,20 @@ public class Part {
     private Long partId;
 
     @ManyToOne
-    @JoinColumn(name = "postId", nullable = false)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @Column(length = 100, nullable = true)
-    private String name;
+    private String name; // 파트명
 
     @Column(nullable = true)
-    private Integer numDoc;
+    private Integer numDoc; // 서류합격인원
 
     @Column(nullable = true)
-    private Integer numFinal;
+    private Integer numFinal; // 최종합격인원
+
+    @Column
+    private String warning; // 파트별 주의사항
 
     @Column(nullable = true)
     private Integer numRecruit;
