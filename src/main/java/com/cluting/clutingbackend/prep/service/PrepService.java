@@ -1,6 +1,8 @@
 package com.cluting.clutingbackend.prep.service;
 
 import com.cluting.clutingbackend.plan.domain.ClubUser;
+import com.cluting.clutingbackend.part.Part;
+import com.cluting.clutingbackend.part.PartRepository;
 import com.cluting.clutingbackend.plan.domain.Post;
 import com.cluting.clutingbackend.plan.domain.RecruitSchedule;
 import com.cluting.clutingbackend.plan.repository.PostRepository;
@@ -28,22 +30,23 @@ import java.util.stream.Collectors;
 public class PrepService {
     private final PostRepository postRepository;
     private final PrepStageRepository prepStageRepository;
-    private final GroupRepository groupRepository;
+    private final PartRepository partRepository;
     private final RecruitScheduleHomeRepository recruitScheduleHomeRepository;
     private final ClubUserRecruitingHomeRepository clubUserRecruitingHomeRepository;
     private final PrepStageClubUserRepository prepStageClubUserRepository;
     private final UserRepository userRepository;
+
     @Autowired
     public PrepService(
             PostRepository postRepository,
             PrepStageRepository prepStageRepository,
-            GroupRepository groupRepository,
+            PartRepository partRepository,
             RecruitScheduleHomeRepository recruitScheduleHomeRepository,
             ClubUserRecruitingHomeRepository clubUserRecruitingHomeRepository,
             PrepStageClubUserRepository prepStageClubUserRepository,
             UserRepository userRepository) {
         this.prepStageRepository = prepStageRepository;
-        this.groupRepository = groupRepository;
+        this.partRepository = partRepository;
         this.recruitScheduleHomeRepository = recruitScheduleHomeRepository;
         this.clubUserRecruitingHomeRepository = clubUserRecruitingHomeRepository;
         this.postRepository = postRepository;
@@ -69,10 +72,10 @@ public class PrepService {
                 .collect(Collectors.toList());
     }
 
-    public List<String> getGroupNames(Long postId) {
-        return groupRepository.findByPostId(postId)
+    public List<String> getPartNames(Long postId) { // 메서드 이름 변경
+        return partRepository.findByPostId(postId) // PartRepository 사용
                 .stream()
-                .map(RecruitGroup::getGroupName)
+                .map(Part::getName) // Part 엔티티의 name 필드로 변경
                 .collect(Collectors.toList());
     }
 
@@ -128,12 +131,12 @@ public class PrepService {
             }
         }
 
-        // Step 4: RecruitGroup 저장
-        for (RecruitGroupDto recruitGroupDto : request.getRecruitGroups()) {
-            RecruitGroup recruitGroup = new RecruitGroup();
-            recruitGroup.setPost(post);
-            recruitGroup.setGroupName(recruitGroupDto.getGroupName());
-            groupRepository.save(recruitGroup);
+        // Step 4: Part 저장
+        for (PartDto partDto : request.getParts()) {
+            Part part = new Part();
+            part.setPost(post);
+            part.setName(partDto.getName());
+            partRepository.save(part);
         }
     }
 

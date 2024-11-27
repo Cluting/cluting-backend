@@ -1,14 +1,14 @@
 package com.cluting.clutingbackend.evaluate.domain;
 
+import com.cluting.clutingbackend.plan.domain.Application;
+import com.cluting.clutingbackend.plan.domain.ClubUser;
 import com.cluting.clutingbackend.plan.domain.Interview;
 import com.cluting.clutingbackend.part.Part;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,11 +19,19 @@ public class Criteria {
     private Long criteriaId;
 
     @ManyToOne
+    @JoinColumn(name = "clubUserId", nullable = true)
+    private ClubUser clubUser;
+
+    @ManyToOne
+    @JoinColumn(name = "applicationId", nullable = true)
+    private Application application;
+
+    @ManyToOne
     @JoinColumn(name = "partId", nullable = false)
     private Part part;
 
     @ManyToOne
-    @JoinColumn(name = "interviewId", nullable = false)
+    @JoinColumn(name = "interviewId", nullable = true)
     private Interview interview;
 
     @Column(length = 255, nullable = true)

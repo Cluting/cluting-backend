@@ -21,6 +21,7 @@ public class Evaluator {
     private String partName; // 파트 이름
 
     @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "evaluator_id")
     private Part part;
 
     @OneToMany

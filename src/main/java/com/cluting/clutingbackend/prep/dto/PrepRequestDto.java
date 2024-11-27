@@ -11,5 +11,5 @@ import java.util.List;
 public class PrepRequestDto {
     private RecruitScheduleDto recruitSchedules;
     private List<PrepStageDto> prepStages;
-    private List<RecruitGroupDto> recruitGroups;
+    private List<PartDto> parts;
 }

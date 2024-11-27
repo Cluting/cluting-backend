@@ -7,20 +7,23 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Entity
 public class Evaluation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long evaluationId;
 
-    @ManyToOne
-    @JoinColumn(name = "criteria_id", nullable = false)
-    private Criteria criteria;
+    // 필요없어서 삭제
+//    @ManyToOne
+//    @JoinColumn(name = "criteria_id", nullable = false)
+//    private Criteria criteria;
 
     @ManyToOne
     @JoinColumn(name = "application_id", nullable = false)
@@ -35,10 +38,14 @@ public class Evaluation {
     private Stage stage;
 
     @Column(nullable = true)
-    private Integer score;
+    private Integer score;  //운영진별 평기기준 점수들의 합
+
+    @Column(length = 500, nullable = true)
+    private String comment;
 
     public enum Stage {
         DOCUMENT, INTERVIEW
     }
+
 }
 
