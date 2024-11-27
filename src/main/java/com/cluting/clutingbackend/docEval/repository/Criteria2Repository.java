@@ -1,8 +1,8 @@
 package com.cluting.clutingbackend.docEval.repository;
 
+import com.cluting.clutingbackend.evaluate.domain.Criteria;
 import com.cluting.clutingbackend.plan.domain.Application;
-import com.cluting.clutingbackend.plan.domain.Criteria;
-import com.cluting.clutingbackend.plan.domain.Part;
+import com.cluting.clutingbackend.part.Part;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +15,7 @@ public interface Criteria2Repository extends JpaRepository<Criteria, Long> {
 
 
     // 특정 applicationId, clubUserId, partId에 해당하는 Criteria 조회
-    List<Criteria> findByApplication_ApplicationIdAndClubUser_ClubUserIdAndPart_PartId(
+    List<Criteria> findByApplication_IdAndClubUser_IdAndPart_Id(
             Long applicationId, Long clubUserId, Long partId);
 
 }

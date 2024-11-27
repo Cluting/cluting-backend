@@ -1,10 +1,12 @@
 package com.cluting.clutingbackend.plan.domain;
 
+import com.cluting.clutingbackend.part.Part;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -12,15 +14,17 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-//@Table(name = "tb_post")
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "clubId", nullable = false)
+    @JoinColumn(name = "club_id", nullable = false)
     private Club club;
+
+    @OneToMany(mappedBy = "post")
+    private List<TimeSlot> timeSlots;
 
     @Column(length = 500, nullable = true)
     private String imageUrl; // 공고 이미지 경로
@@ -70,22 +74,41 @@ public class Post {
     private Integer generation; // 동아리 기수
 
     @Column(nullable = true)
-    private String description;
+    private String description; // 내용
 
     @Column(length = 255, nullable = true)
-    private String profile;
+    private String profile; //프로필
 
     @Column(nullable = true)
-    private Boolean isDone;
+    private Boolean isDone; // 마감여부
 
     @Column(length = 255, nullable = true)
-    private String caution;
+    private String caution; // 공고 질문 관련 주의 사항
 
     @Column(nullable = true)
-    private LocalDateTime deadLine;
+    private LocalDateTime deadLine; // 마감기한
 
     @Column(nullable = true)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // 생성일
+
+    @Column
+    private String applicationTitle; //지원서 제목
+
+    @Column
+    private Integer interviewerCount; // 면접관 수
+
+    @Column
+    private Integer intervieweeCount; // 면접자 수
+
+    @Column
+    private Integer interviewDuration; // 면접 소요 시간
+
+    @Column
+    private boolean isRequiredPortfolio; // 면접 소요 시간
+
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Part> parts;
 
     public enum CurrentStage {
         PREP, PLAN, DOC, DOC_PASS, EVAL, FINAL_PASS

@@ -1,10 +1,10 @@
 package com.cluting.clutingbackend.prep.service;
 
 import com.cluting.clutingbackend.plan.domain.ClubUser;
-import com.cluting.clutingbackend.plan.domain.Part;
+import com.cluting.clutingbackend.part.Part;
+import com.cluting.clutingbackend.part.PartRepository;
 import com.cluting.clutingbackend.plan.domain.Post;
 import com.cluting.clutingbackend.plan.domain.RecruitSchedule;
-import com.cluting.clutingbackend.plan.repository.PartRepository;
 import com.cluting.clutingbackend.plan.repository.PostRepository;
 import com.cluting.clutingbackend.prep.domain.PrepStageClubUser;
 import com.cluting.clutingbackend.prep.domain.RecruitGroup;

@@ -1,11 +1,17 @@
-package com.cluting.clutingbackend.plan.domain;
+package com.cluting.clutingbackend.evaluate.domain;
 
+import com.cluting.clutingbackend.plan.domain.Application;
+import com.cluting.clutingbackend.plan.domain.ClubUser;
+import com.cluting.clutingbackend.plan.domain.Interview;
+import com.cluting.clutingbackend.part.Part;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Criteria {
     @Id
@@ -29,12 +35,20 @@ public class Criteria {
     private Interview interview;
 
     @Column(length = 255, nullable = true)
-    private String content;
-
-    @Column(length = 50, nullable = true)
     private String name;
 
+    @Column(length = 255, nullable = true)
+    private String content;
+
     @Column(nullable = true)
-    private Integer score;  //운영진별 평가기준별 점수
+    private Integer score;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private Stage stage;
+
+    public enum Stage {
+        DOCUMENT, INTERVIEW
+    }
 }
 

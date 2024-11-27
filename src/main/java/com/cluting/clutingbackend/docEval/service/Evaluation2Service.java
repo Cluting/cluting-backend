@@ -2,8 +2,11 @@ package com.cluting.clutingbackend.docEval.service;
 
 import com.cluting.clutingbackend.docEval.dto.*;
 import com.cluting.clutingbackend.docEval.repository.*;
+import com.cluting.clutingbackend.evaluate.domain.Criteria;
+import com.cluting.clutingbackend.evaluate.domain.Evaluation;
+import com.cluting.clutingbackend.part.Part;
 import com.cluting.clutingbackend.plan.domain.*;
-import com.cluting.clutingbackend.plan.repository.PartRepository;
+import com.cluting.clutingbackend.part.PartRepository;
 import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -43,11 +46,11 @@ public class Evaluation2Service {
                 .build();
 
         // 2. Part ID 가져오기
-        Part part = partRepository.findByNameAndPostId(partName, postId)
+        Part part = partRepository.findUniqueByNameAndPostId(partName, postId)
                 .orElseThrow(() -> new IllegalArgumentException("Part not found with name: " + partName));
 
         // 3. 내 평가 가져오기 (여러 Criteria를 처리)
-        List<Criteria> myCriteria = criteriaRepository.findByApplication_ApplicationIdAndClubUser_ClubUserIdAndPart_PartId(applicationId, clubUserId, part.getPartId());
+        List<Criteria> myCriteria = criteriaRepository.findByApplication_IdAndClubUser_IdAndPart_Id(applicationId, clubUserId, part.getId());
         List<CriteriaScore> myCriteriaScores = myCriteria.stream()
                 .map(criteria -> new CriteriaScore(criteria.getName(), criteria.getScore()))
                 .distinct() // 중복 제거
@@ -57,7 +60,7 @@ public class Evaluation2Service {
                 .mapToInt(CriteriaScore::getScore)
                 .sum();
 
-        List<Evaluation> myEvaluations = evaluationRepository.findByApplication_ApplicationIdAndClubUser_ClubUserId(applicationId, clubUserId); // 수정
+        List<Evaluation> myEvaluations = evaluationRepository.findByApplication_IdAndClubUser_Id(applicationId, clubUserId);
         String myComment = myEvaluations.isEmpty() ? null : myEvaluations.get(0).getComment(); // 여러 평가가 있을 경우 첫 번째 평가의 댓글 가져오기
 
         List<ScoreDetail> scoreDetails = myCriteriaScores.stream()
@@ -70,13 +73,13 @@ public class Evaluation2Service {
                 .build();
 
         // 4. 다른 운영진 평가 가져오기 (여러 운영진 평가 처리)
-        List<Evaluation> otherEvaluations = evaluationRepository.findByApplication_ApplicationId(applicationId);
+        List<Evaluation> otherEvaluations = evaluationRepository.findByApplication_Id(applicationId);
         Map<Long, AdminEvaluation> adminEvaluations = new HashMap<>();
 
         for (Evaluation evaluation : otherEvaluations) {
-            if (evaluation.getClubUser().getClubUserId().equals(clubUserId)) continue; // 본인은 제외
+            if (evaluation.getClubUser().getId().equals(clubUserId)) continue; // 본인은 제외
 
-            Long evaluatorId = evaluation.getClubUser().getClubUserId();
+            Long evaluatorId = evaluation.getClubUser().getId();
             User evaluator = evaluation.getClubUser().getUser();
 
             // AdminEvaluation에 해당 평가자 정보 저장
@@ -88,7 +91,7 @@ public class Evaluation2Service {
                     .build());
 
             // 여러 Criteria가 있을 수 있으므로 getResultList() 사용
-            List<Criteria> criteriaList = criteriaRepository.findByApplication_ApplicationIdAndClubUser_ClubUserIdAndPart_PartId(applicationId, evaluatorId, part.getPartId());
+            List<Criteria> criteriaList = criteriaRepository.findByApplication_IdAndClubUser_IdAndPart_Id(applicationId, evaluatorId, part.getId());
             List<CriteriaScore> criteriaScores = criteriaList.stream()
                     .map(criteria -> new CriteriaScore(criteria.getName(), criteria.getScore()))
                     .distinct()
@@ -106,7 +109,7 @@ public class Evaluation2Service {
                 .map(partObj -> {
                     Map<String, Object> profile = new HashMap<>();
                     profile.put("partName", partObj.getName());
-                    List<String> descriptions = talentProfileRepository.findByPartId(partObj.getPartId()).stream()
+                    List<String> descriptions = talentProfileRepository.findByPartId(partObj.getId()).stream()
                             .map(TalentProfile::getDescription)
                             .toList();
                     profile.put("descriptions", descriptions);
@@ -126,9 +129,9 @@ public class Evaluation2Service {
 
     // 지원서 문항과 답변 가져오기 (helper method)
     private List<QuestionContent> getQuestionContents(Long applicationId) {
-        List<Answer> answers = answerRepository.findByApplication_ApplicationId(applicationId);
+        List<Answer> answers = answerRepository.findByApplication_Id(applicationId);
         return answers.stream()
-                .map(answer -> new QuestionContent(answer.getQuestionId(), answer.getContent()))
+                .map(answer -> new QuestionContent(answer.getQuestion().getContent(), answer.getContent()))
                 .toList();
     }
 
@@ -144,7 +147,7 @@ public class Evaluation2Service {
                 .orElseThrow(() -> new IllegalArgumentException("ClubUser not found with id: " + clubUserId));
 
         // partName과 applicationId로 Part 조회
-        Part part = partRepository.findByNameAndPostId(partName, postId)
+        Part part = partRepository.findUniqueByNameAndPostId(partName, postId)
                 .orElseThrow(() -> new IllegalArgumentException("Part not found with name: " + partName + " and postId: " + postId));
 
         // 2. 기준 이름별 점수 저장

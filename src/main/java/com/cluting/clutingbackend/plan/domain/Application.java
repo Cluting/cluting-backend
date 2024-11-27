@@ -6,6 +6,8 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import org.springframework.data.annotation.CreatedDate;
+
 import java.util.Set;
 
 @Getter
@@ -14,10 +16,10 @@ import java.util.Set;
 public class Application {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long applicationId;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Enumerated(EnumType.STRING)
@@ -31,23 +33,18 @@ public class Application {
     private Integer numClubUser;  //평가한 운영진의 수
 
     @ManyToOne
-    @JoinColumn(name = "postId", nullable = false)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
     @Column(length = 100, nullable = true)
     private String part;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column
+    @CreatedDate
     private LocalDateTime createdAt;
 
     public enum State {
-        BEFORE, INPROCESS, AFTER, COMPLETED,
-        OBJECTION, RESOLVE, PASS, FAIL
+        BEFORE, INPROCESS, DOCPASS, DOCFAIL, AFTER, COMPLETED, OBJECTION, RESOLVED, PASS, FAIL
     }
-//    public enum State {
-//        SUBMITTED, REVIEWED, APPROVED
-//    }
 
 }
-

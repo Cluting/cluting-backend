@@ -40,7 +40,7 @@ public class Application2Service {
             String part = application.getPart();
 
             // 평가한 운영진 수
-            Long evaluatedCount = evaluationRepository.countDistinctClubUsersByApplication(application.getApplicationId());
+            Long evaluatedCount = evaluationRepository.countDistinctClubUsersByApplication(application.getId());
 
             // 평가 권한이 있는 운영진 수
             Long totalEvaluatorCount = part != null

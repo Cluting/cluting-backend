@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface TalentProfile2Repository extends JpaRepository<TalentProfile, Long> {
-    @Query("SELECT tp FROM TalentProfile tp WHERE tp.part.partId = :partId")
+    @Query("SELECT tp FROM TalentProfile tp WHERE tp.part.id = :partId")
     List<TalentProfile> findByPartId(Long partId);
 }

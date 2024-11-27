@@ -1,15 +1,16 @@
 package com.cluting.clutingbackend.docEval.service;
 
-import com.cluting.clutingbackend.docEval.domain.Evaluator;
 import com.cluting.clutingbackend.docEval.dto.ApplicationDto;
 import com.cluting.clutingbackend.docEval.repository.Application2Repository;
 import com.cluting.clutingbackend.docEval.repository.Evaluation2Repository;
 import com.cluting.clutingbackend.docEval.repository.Evaluator2Repository;
+import com.cluting.clutingbackend.evaluate.domain.Evaluation;
+import com.cluting.clutingbackend.evaluate.domain.Evaluator;
+import com.cluting.clutingbackend.part.PartRepository;
 import com.cluting.clutingbackend.plan.domain.Application;
-import com.cluting.clutingbackend.plan.domain.Evaluation;
-import com.cluting.clutingbackend.plan.domain.Part;
+import com.cluting.clutingbackend.part.Part;
+import com.cluting.clutingbackend.plan.domain.ClubUser;
 import com.cluting.clutingbackend.plan.domain.User;
-import com.cluting.clutingbackend.plan.repository.PartRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -72,7 +73,7 @@ public class DocumentCompletionService {
         applicationDto.setGroup(application.getPart());
 
         // 운영진들의 평가 상황
-        int evaluatorCount = getEvaluatorCount(application.getApplicationId());
+        int evaluatorCount = getEvaluatorCount(application.getId());
         int totalEvaluators = getTotalEvaluatorsForPart(postId, application.getPart());
 
         applicationDto.setEvaluatorStatus(String.format("%d/%d", evaluatorCount, totalEvaluators));
@@ -82,9 +83,9 @@ public class DocumentCompletionService {
 
     // 해당 Application에 대한 평가한 운영진 수를 구하는 로직
     private int getEvaluatorCount(Long applicationId) {
-        List<Evaluation> evaluations = evaluationRepository.findByApplication_ApplicationId(applicationId);
+        List<Evaluation> evaluations = evaluationRepository.findByApplication_Id(applicationId);
         Set<Long> evaluatorIds = evaluations.stream()
-                .map(evaluation -> evaluation.getClubUser().getClubUserId())
+                .map(evaluation -> evaluation.getClubUser().getId())
                 .collect(Collectors.toSet());
         return evaluatorIds.size();
     }
@@ -95,10 +96,13 @@ public class DocumentCompletionService {
         Set<Long> evaluatorIds = new HashSet<>();
         for (Part p : parts) {
             if (p.getName().equals(part)) {
-                List<Evaluator> evaluators = evaluatorRepository.findByPart_PartId(p.getPartId());
-                evaluatorIds.addAll(evaluators.stream()
-                        .map(evaluator -> evaluator.getClubUser().getClubUserId())
-                        .collect(Collectors.toSet()));
+                List<Evaluator> evaluators = evaluatorRepository.findByPart_Id(p.getId());
+                evaluatorIds.addAll(
+                        evaluators.stream()
+                                .flatMap(evaluator -> evaluator.getEvaluators().stream()) // 각 Evaluator의 evaluators 리스트를 평탄화
+                                .map(ClubUser::getId) // ClubUser의 ID를 추출
+                                .collect(Collectors.toSet()) // 중복 제거 후 Set으로 변환
+                );
             }
         }
         return evaluatorIds.size();

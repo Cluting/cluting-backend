@@ -67,9 +67,6 @@ public class RecruitingHomeController {
         if (club.isEmpty() || post.isEmpty()) {
             return ResponseEntity.badRequest().body("Club or Post not found.");
         }
-        System.out.println("Club ID: " + clubId);
-        System.out.println("Post ID: " + postId);
-        System.out.println("Authorization Token: " + token);
 
         // 응답 데이터 포맷팅
         RecruitingHomeResponse response = new RecruitingHomeResponse(

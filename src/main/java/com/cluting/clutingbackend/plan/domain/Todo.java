@@ -13,7 +13,7 @@ public class Todo {
     private Long todoId;
 
     @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(length = 255, nullable = true)

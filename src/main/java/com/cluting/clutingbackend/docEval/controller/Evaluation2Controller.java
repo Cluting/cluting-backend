@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "서류평가", description = "서류 평가 관련 API")
 @RestController
-@RequestMapping("/api/v1/doc")
+@RequestMapping("/api/v1/doc/evaluate")
 @RequiredArgsConstructor
 public class Evaluation2Controller {
 
@@ -35,7 +35,7 @@ public class Evaluation2Controller {
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
             }
     )
-    @GetMapping("/evaluate/{applicationId}")
+    @GetMapping("/{applicationId}")
     public ResponseEntity<EvaluationResponse> getEvaluationDetails(
             @PathVariable Long applicationId,
             @RequestParam Long clubId,
@@ -66,7 +66,7 @@ public class Evaluation2Controller {
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
             }
     )
-    @PostMapping("/evaluate/{applicationId}")
+    @PostMapping("/{applicationId}")
     public ResponseEntity<String> evaluateDocument(
             @PathVariable Long applicationId,
             @RequestParam Long clubId,

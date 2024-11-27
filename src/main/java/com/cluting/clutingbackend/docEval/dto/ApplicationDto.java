@@ -13,7 +13,7 @@ public class ApplicationDto {
     private String evaluatorStatus;
 
     public ApplicationDto(Application application) {
-        this.applicationId = application.getApplicationId();
+        this.applicationId = application.getId();
     }
 
     // Getters and Setters
