@@ -34,6 +34,15 @@ public class Interview {
     @Column(nullable = false)
     private Integer duration;
     // 30분 혹은 60분
+
+
+    @Column(nullable = true)
+    private Integer score;  //모든 운영진 평가 점수의 평균
+
+    @Column(nullable = true)
+    private Integer numClubUser;  //평가한 운영진의 수
+
+
     public enum State {
         BEFORE, INPROCESS, AFTER, COMPLETED
     }

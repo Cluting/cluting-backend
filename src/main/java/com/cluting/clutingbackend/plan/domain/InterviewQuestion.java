@@ -14,6 +14,8 @@ public class InterviewQuestion {
     @Column(length = 255, nullable = true)
     private String content;
 
-    // Getters and Setters
+    @OneToOne
+    @JoinColumn(name = "interview_answer_id", nullable = true)
+    private InterviewAnswer interviewAnswer;
 }
 

@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.evaluate.domain;
 
 import com.cluting.clutingbackend.plan.domain.Application;
 import com.cluting.clutingbackend.plan.domain.ClubUser;
+import com.cluting.clutingbackend.plan.domain.Interview;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,10 +21,9 @@ public class Evaluation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long evaluationId;
 
-    // 필요없어서 삭제
-//    @ManyToOne
-//    @JoinColumn(name = "criteria_id", nullable = false)
-//    private Criteria criteria;
+    @ManyToOne
+    @JoinColumn(name = "interview_id", nullable = false)
+    private Interview interview;
 
     @ManyToOne
     @JoinColumn(name = "application_id", nullable = false)
