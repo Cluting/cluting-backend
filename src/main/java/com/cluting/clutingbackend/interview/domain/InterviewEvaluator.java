@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.interview.domain;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
+import com.cluting.clutingbackend.plan.domain.Part;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,6 +32,9 @@ public class InterviewEvaluator {
     @Enumerated(EnumType.STRING)
     private EvaluateStatus stage;
 
+    @Column
     private Integer score;
+
+    @Column
     private String comment;
 }

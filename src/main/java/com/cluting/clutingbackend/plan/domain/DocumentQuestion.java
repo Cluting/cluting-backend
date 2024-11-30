@@ -20,7 +20,7 @@ public class DocumentQuestion {
     @JoinColumn(name = "part_id", nullable = false)
     private Part part;
 
-    @Column
+    @Enumerated(EnumType.STRING)
     private QuestionType questionType;
 
     @Column

@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.interview.domain;
 
 
 import com.cluting.clutingbackend.global.enums.QuestionType;
+import com.cluting.clutingbackend.global.enums.QuestionType2;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,5 +32,5 @@ public class InterviewQuestion {
     private String content;
 
     @Enumerated(EnumType.STRING)
-    private QuestionType type;
+    private QuestionType2 type;
 }
