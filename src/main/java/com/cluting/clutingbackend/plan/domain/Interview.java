@@ -20,16 +20,12 @@ public class Interview {
     @JoinColumn(name = "application_id", nullable = false)
     private Application application;
 
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private State state;
 
     @Column(nullable = false)
     private Integer interviewerCount; // 면접관 인원수
-
-    @Column(nullable = false)
-    private Integer intervieweeCount; // 면접자 인원수
 
     @Column(nullable = false)
     private Integer duration;

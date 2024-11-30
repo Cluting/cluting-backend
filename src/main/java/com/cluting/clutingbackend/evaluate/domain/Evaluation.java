@@ -22,7 +22,7 @@ public class Evaluation {
     private Long evaluationId;
 
     @ManyToOne
-    @JoinColumn(name = "interview_id", nullable = false)
+    @JoinColumn(name = "interview_id", nullable = true)
     private Interview interview;
 
     @ManyToOne
