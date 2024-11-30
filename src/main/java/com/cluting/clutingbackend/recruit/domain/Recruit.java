@@ -52,7 +52,7 @@ public class Recruit {
     private String applicationTitle; //지원서 제목
 
     @Column
-    private boolean isRequiredPortfolio; // 포트폴리오 필요 여부
+    private Boolean isRequiredPortfolio; // 포트폴리오 필요 여부
 
     @Column
     private Integer interviewerCount; // 면접관 수

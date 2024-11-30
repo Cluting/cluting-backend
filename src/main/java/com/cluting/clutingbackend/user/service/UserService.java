@@ -1,10 +1,10 @@
 package com.cluting.clutingbackend.user.service;
 
 import com.cluting.clutingbackend.user.domain.User;
-import com.cluting.clutingbackend.user.dto.UserResponseDto;
-import com.cluting.clutingbackend.user.dto.UserSignInRequestDto;
-import com.cluting.clutingbackend.user.dto.UserSignInResponseDto;
-import com.cluting.clutingbackend.user.dto.UserSignUpRequestDto;
+import com.cluting.clutingbackend.user.dto.response.UserResponseDto;
+import com.cluting.clutingbackend.user.dto.request.UserSignInRequestDto;
+import com.cluting.clutingbackend.user.dto.response.UserSignInResponseDto;
+import com.cluting.clutingbackend.user.dto.request.UserSignUpRequestDto;
 import com.cluting.clutingbackend.global.security.JwtProvider;
 import com.cluting.clutingbackend.global.util.RedisUtil;
 import com.cluting.clutingbackend.global.util.StaticValue;
