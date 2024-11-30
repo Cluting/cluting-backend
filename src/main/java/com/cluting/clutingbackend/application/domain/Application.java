@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.application.domain;
 
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
@@ -21,8 +22,8 @@ public class Application {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "clubUser_id", nullable = false)
+    private ClubUser clubUser;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
