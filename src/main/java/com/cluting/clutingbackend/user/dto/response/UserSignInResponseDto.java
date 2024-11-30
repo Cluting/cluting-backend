@@ -1,4 +1,4 @@
-package com.cluting.clutingbackend.user.dto;
+package com.cluting.clutingbackend.user.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

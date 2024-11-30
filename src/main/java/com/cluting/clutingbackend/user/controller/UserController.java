@@ -1,10 +1,10 @@
 package com.cluting.clutingbackend.user.controller;
 
 import com.cluting.clutingbackend.user.service.UserService;
-import com.cluting.clutingbackend.user.dto.UserResponseDto;
-import com.cluting.clutingbackend.user.dto.UserSignInRequestDto;
-import com.cluting.clutingbackend.user.dto.UserSignInResponseDto;
-import com.cluting.clutingbackend.user.dto.UserSignUpRequestDto;
+import com.cluting.clutingbackend.user.dto.response.UserResponseDto;
+import com.cluting.clutingbackend.user.dto.request.UserSignInRequestDto;
+import com.cluting.clutingbackend.user.dto.response.UserSignInResponseDto;
+import com.cluting.clutingbackend.user.dto.request.UserSignUpRequestDto;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

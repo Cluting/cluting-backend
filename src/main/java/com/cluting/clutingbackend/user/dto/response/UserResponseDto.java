@@ -1,4 +1,4 @@
-package com.cluting.clutingbackend.user.dto;
+package com.cluting.clutingbackend.user.dto.response;
 
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.global.enums.Role;
