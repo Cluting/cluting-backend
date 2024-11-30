@@ -1,7 +1,7 @@
 package com.cluting.clutingbackend.global.config;
 
-import com.cluting.clutingbackend.global.util.JwtAuthenticationFilter;
-import com.cluting.clutingbackend.global.util.JwtProvider;
+import com.cluting.clutingbackend.global.security.JwtAuthenticationFilter;
+import com.cluting.clutingbackend.global.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
