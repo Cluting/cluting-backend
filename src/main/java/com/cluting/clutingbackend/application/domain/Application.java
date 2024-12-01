@@ -22,12 +22,13 @@ public class Application {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "clubUser_id", nullable = false)
-    private ClubUser clubUser;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    private EvaluateStatus state;
+    @Builder.Default
+    private EvaluateStatus state = EvaluateStatus.BEFORE;
 
     @Column(nullable = true)
     private Integer score;  //모든 운영진 평가 점수의 평균

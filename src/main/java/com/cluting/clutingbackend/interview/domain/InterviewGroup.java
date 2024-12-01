@@ -20,6 +20,9 @@ public class InterviewGroup {
     @JoinColumn(name = "interview_evaluator_id", nullable = false)
     private InterviewEvaluator interviewEvaluator;
 
-    private Boolean isAssigned;
+    @Column(nullable = true)
+    private Boolean isAssigned; //최종 할당
+
+    @Column(nullable = true)
     private LocalDateTime time;
 }
