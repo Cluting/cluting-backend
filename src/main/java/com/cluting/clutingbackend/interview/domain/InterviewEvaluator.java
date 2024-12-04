@@ -19,7 +19,7 @@ public class InterviewEvaluator {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "club_user_id", nullable = false)
+    @JoinColumn(name = "club_user_id", nullable = true)
     private ClubUser clubUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,11 +33,10 @@ public class InterviewEvaluator {
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     @Builder.Default
-    private Stage stage = Stage.BEFORE;  //각 운영진이 평가 전/중/후인지
+    private Stage stage = Stage.BEFORE;
 
     @Column(nullable = true)
     private Integer score;
-
 
     @Column(nullable = true)
     private String comment;

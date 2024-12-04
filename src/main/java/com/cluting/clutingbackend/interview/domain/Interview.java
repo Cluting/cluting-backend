@@ -21,16 +21,9 @@ public class Interview {
     @JoinColumn(name = "application_id", nullable = false)
     private Application application;
 
-    @Column(nullable = true)
-    private Integer interviewerCount;  //면접관 인원수
-
-    @Column(nullable = true)
-    private Integer duration;  //면접 기간
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    @Builder.Default
-    private EvaluateStatus state = EvaluateStatus.BEFORE;  // 면접 상태
+    private EvaluateStatus state; // 면접 상태
 
     @Column(nullable = true)
     private Integer score; //모든 운영진 평가 점수의 평균

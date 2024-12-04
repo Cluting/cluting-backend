@@ -27,8 +27,7 @@ public class Application {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    @Builder.Default
-    private EvaluateStatus state = EvaluateStatus.BEFORE;
+    private EvaluateStatus state;
 
     @Column(nullable = true)
     private Integer score;  //모든 운영진 평가 점수의 평균

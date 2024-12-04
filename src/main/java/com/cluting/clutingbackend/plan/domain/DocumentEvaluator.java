@@ -2,9 +2,16 @@ package com.cluting.clutingbackend.plan.domain;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.global.enums.Stage;
 import jakarta.persistence.*;
+import lombok.*;
 
+@Builder
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DocumentEvaluator {
 
     @Id
@@ -12,7 +19,7 @@ public class DocumentEvaluator {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "clubUser_id", nullable = false)
+    @JoinColumn(name = "clubUser_id", nullable = true)
     private ClubUser clubUser;
 
     @ManyToOne
@@ -23,8 +30,10 @@ public class DocumentEvaluator {
     @JoinColumn(name = "part_id", nullable = false)
     private Part part;
 
-    @Column
-    private String stage; // 단계 -> 추후 enum으로 (전,중,후)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    @Builder.Default
+    private Stage stage = Stage.BEFORE;
 
     @Column
     private Integer score; // 평가 점수
