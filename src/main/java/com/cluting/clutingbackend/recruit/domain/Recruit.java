@@ -46,6 +46,9 @@ public class Recruit {
     private CurrentStage currentStage;  // 현재 진행중인 리크루팅 단계
 
     @Column(nullable = true)
+    private Integer generation; //기수
+
+    @Column(nullable = true)
     private Boolean isInterview; // true : 면접까지 진행 | false : 서류까지 진행
 
     @Column
