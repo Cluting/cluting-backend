@@ -93,6 +93,7 @@ public class RecruitService {
         List<Todo> todos = todoRepository.findTodosByUserId(clubUser.getUser().getId());  //해당 운영진의 투두 리스트
         return todos.stream()
                 .map(todo -> TodoDto.builder()
+                        .todoId(todo.getId())
                         .content(todo.getContent())
                         .status(todo.getStatus())
                         .build())
