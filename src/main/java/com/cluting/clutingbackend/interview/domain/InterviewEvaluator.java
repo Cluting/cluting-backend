@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.interview.domain;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
+import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.plan.domain.Part;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,10 +19,10 @@ public class InterviewEvaluator {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "club_user_id", nullable = false)
+    @JoinColumn(name = "club_user_id", nullable = true)
     private ClubUser clubUser;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "interview_id", nullable = false)
     private Interview interview;
 
@@ -30,11 +31,13 @@ public class InterviewEvaluator {
     private Part part;
 
     @Enumerated(EnumType.STRING)
-    private EvaluateStatus stage;
+    @Column(nullable = true)
+    @Builder.Default
+    private Stage stage = Stage.BEFORE;
 
-    @Column
+    @Column(nullable = true)
     private Integer score;
 
-    @Column
+    @Column(nullable = true)
     private String comment;
 }

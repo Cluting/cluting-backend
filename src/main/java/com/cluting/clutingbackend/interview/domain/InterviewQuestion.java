@@ -1,7 +1,5 @@
 package com.cluting.clutingbackend.interview.domain;
 
-
-import com.cluting.clutingbackend.global.enums.QuestionType;
 import com.cluting.clutingbackend.global.enums.QuestionType2;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,20 +15,23 @@ public class InterviewQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "interview_evaluator_id", nullable = false)
     private InterviewEvaluator interviewEvaluator;
 
-    @ManyToOne
-    @JoinColumn(name = "interviewI_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "interview_id", nullable = false)
     private Interview interview;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "interview_answer_id", nullable = true)
     private InterviewAnswer interviewAnswer;
 
+    @Lob
+    @Column(nullable = true)
     private String content;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
     private QuestionType2 type;
 }

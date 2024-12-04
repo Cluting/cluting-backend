@@ -22,8 +22,8 @@ public class Application {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "clubUser_id", nullable = false)
-    private ClubUser clubUser;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
