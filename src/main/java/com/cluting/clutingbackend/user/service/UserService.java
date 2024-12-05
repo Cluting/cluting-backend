@@ -40,6 +40,7 @@ public class UserService {
                     );
                 });
 
+        userSignUpRequestDto.setPhone(userSignUpRequestDto.getPhone().replaceAll("-", ""));
         User user = userRepository.save(
                 userSignUpRequestDto.toEntity(passwordEncoder.encode(userSignUpRequestDto.getPassword()))
         );

@@ -7,4 +7,7 @@ public class StaticValue {
 
     // page
     public static final Integer PAGE_DEFAULT_SIZE = 12;
+
+    // image
+    public static final String profileImage = "https://cluting.s3.ap-northeast-2.amazonaws.com/default.png";
 }
