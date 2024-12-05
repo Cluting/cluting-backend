@@ -12,5 +12,7 @@ public interface RecruitScheduleRepository extends JpaRepository<RecruitSchedule
     // [리크루팅 홈] 리크루팅 일정 가져오기
     @Query("SELECT rs FROM RecruitSchedule rs WHERE rs.recruit.id = :recruitId")
     RecruitSchedule findScheduleByRecruitId(Long recruitId);
+    // [계획하기] 불러오기
     Optional<RecruitSchedule> findByRecruitId(Long recruitId);
+
 }

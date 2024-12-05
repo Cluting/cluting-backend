@@ -7,8 +7,10 @@ import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.prep.domain.PrepStage;
 import com.cluting.clutingbackend.prep.domain.PrepStageClubUser;
+import com.cluting.clutingbackend.prep.dto.PrepDetailsResponseDto;
 import com.cluting.clutingbackend.prep.dto.PrepRequestDto;
 import com.cluting.clutingbackend.prep.dto.PrepStageDto;
+import com.cluting.clutingbackend.prep.dto.PrepStageResponseDto;
 import com.cluting.clutingbackend.prep.repository.PrepStageClubUserRepository;
 import com.cluting.clutingbackend.prep.repository.PrepStageRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,4 +109,50 @@ public class PrepService {
         recruit.setCurrentStage(CurrentStage.PREP);
         recruitRepository.save(recruit);
     }
+
+    // [계획하기] 불러오기
+    public PrepDetailsResponseDto getPrepDetails(Long recruitId) {
+        // 리크루팅 일정 가져오기
+        RecruitSchedule schedule = recruitScheduleRepository.findByRecruitId(recruitId)
+                .orElse(null);
+
+        RecruitScheduleDto scheduleDto = schedule != null ? RecruitScheduleDto.builder()
+                .stage1Start(schedule.getStage1Start())
+                .stage1End(schedule.getStage1End())
+                .stage2Start(schedule.getStage2Start())
+                .stage2End(schedule.getStage2End())
+                .stage3Start(schedule.getStage3Start())
+                .stage3End(schedule.getStage3End())
+                .stage4Start(schedule.getStage4Start())
+                .stage4End(schedule.getStage4End())
+                .stage5Start(schedule.getStage5Start())
+                .stage5End(schedule.getStage5End())
+                .stage6Start(schedule.getStage6Start())
+                .stage6End(schedule.getStage6End())
+                .stage7Start(schedule.getStage7Start())
+                .stage7End(schedule.getStage7End())
+                .stage8Start(schedule.getStage8Start())
+                .stage8End(schedule.getStage8End())
+                .build() : null;
+
+        // 모집준비단계별 운영진 가져오기
+        List<PrepStageResponseDto> prepStages = prepStageRepository.findByRecruitId(recruitId).stream()
+                .map(prepStage -> {
+                    List<String> adminNames = prepStageClubUserRepository.findByPrepStageId(prepStage.getId()).stream()
+                            .map(prepStageClubUser -> prepStageClubUser.getClubUser().getUser().getName())
+                            .collect(Collectors.toList());
+                    return new PrepStageResponseDto(prepStage.getStageName(), adminNames);
+                }).collect(Collectors.toList());
+
+        // 지원자 그룹 가져오기
+        List<String> groups = groupRepository.findByRecruitId(recruitId).stream()
+                .map(Group::getName)
+                .collect(Collectors.toList());
+
+        // 운영진 리스트 가져오기
+        List<String> adminList = clubUserRepository.findStaffNamesByRecruitId(recruitId);
+
+        return new PrepDetailsResponseDto(scheduleDto, prepStages, groups, adminList);
+    }
+
 }
