@@ -33,7 +33,8 @@ public class Recruit {
     private String image; // 공고 이미지 경로
 
     @Column(nullable = true)
-    private Boolean isDone; // 마감여부
+    @Builder.Default
+    private Boolean isDone = false; // 마감여부
 
     @Column(length = 255, nullable = true)
     private String caution; // 공고 질문 관련 주의 사항
@@ -65,4 +66,7 @@ public class Recruit {
 
     @Column
     private Integer interviewDuration; // 면접 소요 시간
+
+    @Column(nullable = true)
+    private String interviewLocation; // 면접 장소
 }

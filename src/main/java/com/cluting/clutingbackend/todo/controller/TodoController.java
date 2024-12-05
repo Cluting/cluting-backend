@@ -8,7 +8,6 @@ import com.cluting.clutingbackend.todo.dto.TodoResponse;
 import com.cluting.clutingbackend.todo.service.TodoService;
 import com.cluting.clutingbackend.user.domain.User;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
