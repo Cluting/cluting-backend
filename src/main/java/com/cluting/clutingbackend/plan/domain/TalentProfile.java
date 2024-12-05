@@ -11,8 +11,8 @@ public class TalentProfile {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "part_id", nullable = false)
-    private Part part;
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
     @Column
     private String profile; // 인재상 내용

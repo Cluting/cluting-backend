@@ -13,7 +13,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Part {
+@Table(name = "recruit_group")
+public class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

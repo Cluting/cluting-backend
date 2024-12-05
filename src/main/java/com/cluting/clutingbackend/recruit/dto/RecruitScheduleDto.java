@@ -1,12 +1,15 @@
 package com.cluting.clutingbackend.recruit.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDate;
 
+@Getter
+@Setter
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 // [리크루팅 홈] 리크루팅 일정 GET
 public class RecruitScheduleDto {
     private LocalDate stage1Start; //리크루팅 준비 기간(서류까지만 리크루팅 하는 경우)

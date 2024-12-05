@@ -7,8 +7,9 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
+@Setter
 @Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_recruitschedule")
 public class RecruitSchedule {
