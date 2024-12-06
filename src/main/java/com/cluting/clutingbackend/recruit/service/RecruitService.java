@@ -4,14 +4,17 @@ import com.cluting.clutingbackend.global.enums.Category;
 import com.cluting.clutingbackend.global.enums.ClubType;
 import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.global.util.StaticValue;
+import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitsResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.recruit.repository.RecruitScheduleRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -44,5 +47,17 @@ public class RecruitService {
                 .toList();
 
         return new RecruitsResponseDto(recruitDtos.size(), recruitDtos);
+    }
+
+    @Transactional(readOnly = true)
+    public RecruitResponseDto findById(Long recruitId) {
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST, "존재하지 않는 리크루팅 입니다."
+                        )
+                );
+
+        return RecruitResponseDto.toDto(recruit);
     }
 }

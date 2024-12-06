@@ -3,6 +3,7 @@ package com.cluting.clutingbackend.recruit.controller;
 import com.cluting.clutingbackend.global.enums.Category;
 import com.cluting.clutingbackend.global.enums.ClubType;
 import com.cluting.clutingbackend.global.enums.SortType;
+import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitsResponseDto;
 import com.cluting.clutingbackend.recruit.service.RecruitService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,10 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,5 +31,17 @@ public class RecruitController {
             @RequestParam(value = "clubType", required = false) ClubType clubType, // 연합동아리, 교내동아리
             @RequestParam(value = "fieldType", required = false) Category category) { // 동아리 분류
         return recruitService.findAll(pageNum, sortType, clubType, category);
+    }
+
+    @Operation(description = "ID로 리크루팅 단일 조회 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "리크루팅 조회 성공"),
+            @ApiResponse(responseCode = "404", description = "리크루팅 조회 실패"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")})
+    @GetMapping("/{recruitId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public RecruitResponseDto findPosts(
+            @PathVariable("recruitId") Long recruitId) {
+        return recruitService.findById(recruitId);
     }
 }
