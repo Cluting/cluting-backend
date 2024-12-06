@@ -20,11 +20,10 @@ public class PlanController {
 
     private PlanService planService;
 
-    @PostMapping("/stage1/{postId}")
+    @PostMapping("/stage1/{recruitId}")
     @RequiredPermission(PermissionLevel.ONE)
-    @Operation(summary = "모집하기(1)",description = "")
-    public ResponseEntity<String> stage1(@PathVariable(name="postId")Long id){
-
+    @Operation(summary = "모집하기(1)",description = "합격 인원 설정하기")
+    public ResponseEntity<String> stage1(@PathVariable(name="recruitId")Long id){
 
         return ResponseEntity.ok("Parts Updated Successfully!");
     }

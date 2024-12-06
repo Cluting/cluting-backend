@@ -2,10 +2,12 @@ package com.cluting.clutingbackend.recruit.domain;
 
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
+import com.cluting.clutingbackend.plan.domain.Group;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -21,6 +23,9 @@ public class Recruit {
     @ManyToOne
     @JoinColumn(name = "club_id", nullable = false)
     private Club club;
+
+    @OneToMany(mappedBy = "recruit")
+    private List<Group> groupList;
 
     @Column(length = 100, nullable = false)
     private String title; // 공고 제목
@@ -62,4 +67,10 @@ public class Recruit {
 
     @Column
     private Integer interviewDuration; // 면접 소요 시간
+
+    @Column
+    private Integer numDoc; // 서류 합격 인원 (나중에 파트별 합격인원의 합과 비교해야 함)
+
+    @Column
+    private Integer numFinal; //최종 합격 인원 ( 나중에 파트별 합격인원의 합과 비교해야 함)
 }

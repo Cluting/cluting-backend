@@ -13,7 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Part {
+public class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
