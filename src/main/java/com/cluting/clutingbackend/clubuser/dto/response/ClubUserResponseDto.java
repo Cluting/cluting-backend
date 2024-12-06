@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.clubuser.dto.response;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.ClubRole;
+import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,7 +13,7 @@ public class ClubUserResponseDto {
     private Long userId;
     private Long clubId;
     private ClubRole role;
-    private Integer permissionLevel;
+    private PermissionLevel permissionLevel;
     private Integer generation;
 
     public static ClubUserResponseDto toDto(ClubUser entity) {

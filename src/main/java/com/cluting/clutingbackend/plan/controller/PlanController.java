@@ -1,5 +1,7 @@
 package com.cluting.clutingbackend.plan.controller;
 
+import com.cluting.clutingbackend.global.annotation.RequiredPermission;
+import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import com.cluting.clutingbackend.plan.service.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,8 +21,45 @@ public class PlanController {
     private PlanService planService;
 
     @PostMapping("/stage1/{postId}")
-    @Operation(summary = "모집하기(1)")
+    @RequiredPermission(PermissionLevel.ONE)
+    @Operation(summary = "모집하기(1)",description = "")
     public ResponseEntity<String> stage1(@PathVariable(name="postId")Long id){
+
+
+        return ResponseEntity.ok("Parts Updated Successfully!");
+    }
+
+    @PostMapping("/stage2/{postId}")
+    @RequiredPermission(PermissionLevel.TWO)
+    @Operation(summary = "모집하기(2)")
+    public ResponseEntity<String> stage2(@PathVariable(name="postId")Long id){
+
+
+        return ResponseEntity.ok("Parts Updated Successfully!");
+    }
+
+    @PostMapping("/stage3/{postId}")
+    @RequiredPermission(PermissionLevel.THREE)
+    @Operation(summary = "모집하기(3)")
+    public ResponseEntity<String> stage3(@PathVariable(name="postId")Long id){
+
+
+        return ResponseEntity.ok("Parts Updated Successfully!");
+    }
+
+    @PostMapping("/stage4/{postId}")
+    @RequiredPermission(PermissionLevel.FOUR)
+    @Operation(summary = "모집하기(4)")
+    public ResponseEntity<String> stage4(@PathVariable(name="postId")Long id){
+
+
+        return ResponseEntity.ok("Parts Updated Successfully!");
+    }
+
+    @PostMapping("/stage5/{postId}")
+    @RequiredPermission(PermissionLevel.FIVE)
+    @Operation(summary = "모집하기(5)")
+    public ResponseEntity<String> stage5(@PathVariable(name="postId")Long id){
 
 
         return ResponseEntity.ok("Parts Updated Successfully!");

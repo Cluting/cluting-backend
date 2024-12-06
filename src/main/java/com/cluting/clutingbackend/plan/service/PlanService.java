@@ -9,7 +9,7 @@ import java.util.List;
 
 @Service
 public class PlanService {
-    //공갈빵, 피스타치오크럼핀, 샐러드+소세지, 그릭요거트, 땅콩버터
+
     @Autowired
     private PartRepository partRepository;
 

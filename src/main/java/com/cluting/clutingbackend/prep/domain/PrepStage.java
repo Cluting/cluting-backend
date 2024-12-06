@@ -22,6 +22,7 @@ public class PrepStage {
     @JoinColumn(name = "recruit_id", nullable = false)
     private Recruit recruit;
 
+    @Builder.Default
     @OneToMany(mappedBy = "prepStage", cascade = CascadeType.ALL)
     private List<PrepStageClubUser> prepStageClubUser = new ArrayList<>();
 
