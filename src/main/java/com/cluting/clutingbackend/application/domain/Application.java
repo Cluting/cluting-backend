@@ -1,6 +1,5 @@
 package com.cluting.clutingbackend.application.domain;
 
-import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
@@ -40,7 +39,7 @@ public class Application {
     private Recruit recruit;
 
     @Column(length = 100, nullable = true)
-    private String part; // 직렬화, 역직렬화 필요
+    private String recruit_group; // 직렬화, 역직렬화 필요
 
     @Column
     @CreatedDate

@@ -27,7 +27,7 @@ public class DocumentEvaluator {
     private Application application;
 
     @ManyToOne
-    @JoinColumn(name = "group_id", nullable = false)
+    @JoinColumn(name = "group_id", nullable = true)
     private Group group;
 
     @Enumerated(EnumType.STRING)

@@ -105,8 +105,8 @@ public class PrepService {
             groupRepository.save(group);
         }
 
-        // 4. 현재 진행 중인 리크루팅 단계 PREP으로 변경
-        recruit.setCurrentStage(CurrentStage.PREP);
+        // 4. 현재 진행 중인 리크루팅 단계 PLAN으로 변경
+        recruit.setCurrentStage(CurrentStage.PLAN);
         recruitRepository.save(recruit);
     }
 

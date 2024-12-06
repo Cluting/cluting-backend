@@ -32,16 +32,19 @@ public class RecruitService {
         List<TodoDto> userTodos = getUserTodos(clubId, clubUserId);
 
         return RecruitHomeDto.builder()
-                .recruitInfo(recruitInfo)
-                .recruitSchedule(recruitSchedule)
-                .adminList(adminList)
-                .userTodos(userTodos)
+                .recruitInfo(recruitInfo != null ? recruitInfo : new RecruitClubInfoDto())
+                .recruitSchedule(recruitSchedule != null ? recruitSchedule : new RecruitScheduleDto())
+                .adminList(adminList != null ? adminList : List.of())
+                .userTodos(userTodos != null ? userTodos : List.of())
                 .build();
     }
 
     // [리크루팅 홈] 동아리 정보 가져오기
     public RecruitClubInfoDto getRecruitInfo(Long recruitId) {
         Recruit recruit = recruitRepository.findRecruitById(recruitId);
+        if (recruit == null || recruit.getClub() == null) {
+            return new RecruitClubInfoDto();
+        }
         Club club = recruit.getClub();
 
         return RecruitClubInfoDto.builder()
@@ -56,6 +59,10 @@ public class RecruitService {
     // [리크루팅 홈] 리크루팅 일정 가져오기
     public RecruitScheduleDto getRecruitSchedule(Long recruitId) {
         RecruitSchedule schedule = recruitScheduleRepository.findScheduleByRecruitId(recruitId);
+        if (schedule == null) {
+            return new RecruitScheduleDto();
+        }
+
         return RecruitScheduleDto.builder()
                 .stage1Start(schedule.getStage1Start()) //리크루팅 준비 기간
                 .stage1End(schedule.getStage1End())
@@ -79,6 +86,10 @@ public class RecruitService {
     // [리크루팅 홈] 운영진 리스트 가져오기
     public List<ClubUserInfoDto> getAdminList(Long clubId) {
         List<ClubUser> staffList = clubUserRepository.findStaffByClubIdAndGeneration(clubId);
+        if (staffList == null || staffList.isEmpty()) {
+            return List.of();
+        }
+
         return staffList.stream()
                 .map(cu -> ClubUserInfoDto.builder()
                         .name(cu.getUser().getName())
@@ -90,7 +101,14 @@ public class RecruitService {
     // [리크루팅 홈] 운영진 투두 리스트 가져오기
     public List<TodoDto> getUserTodos(Long clubId, Long clubUserId) {
         ClubUser clubUser = clubUserRepository.findByClubIdAndUserId(clubId, clubUserId);  //해당 운영진
+        if (clubUser == null) {
+            return List.of();
+        }
         List<Todo> todos = todoRepository.findTodosByUserId(clubUser.getUser().getId());  //해당 운영진의 투두 리스트
+        if (todos == null || todos.isEmpty()) {
+            return List.of();
+        }
+
         return todos.stream()
                 .map(todo -> TodoDto.builder()
                         .todoId(todo.getId())

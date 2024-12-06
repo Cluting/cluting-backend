@@ -1,11 +1,15 @@
 package com.cluting.clutingbackend.recruit.dto;
 
 import com.cluting.clutingbackend.global.enums.CurrentStage;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 // [리크루팅 홈] 동아리 정보 GET
 public class RecruitClubInfoDto {
     private String clubName;  //동아리 이름

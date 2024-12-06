@@ -32,5 +32,5 @@ public class Interview {
     private Integer numClubUser; //평가한 운영진의 수
 
     @Column(length = 100, nullable = true)
-    private String part; // 직렬화, 역직렬화 필요
+    private String recruit_group; // 직렬화, 역직렬화 필요
 }
