@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/api/v1/recruit")
 @RequiredArgsConstructor
 public class RecruitController {
     private final RecruitService recruitService;
@@ -44,4 +45,10 @@ public class RecruitController {
             @PathVariable("recruitId") Long recruitId) {
         return recruitService.findById(recruitId);
     }
+
+    //TODO 모집공고의 각 파트의 지원자 수, 전체 지원자 수
+
+    //TODO 이전 과정에서 설정한 서류 합격자 수 목록
+
+    //TODO 서류 평가 준비하기 설정 (공통 그룹 처리 필요)
 }
