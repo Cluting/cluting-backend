@@ -5,12 +5,14 @@ import com.cluting.clutingbackend.global.enums.Role;
 import com.cluting.clutingbackend.global.enums.Semester;
 import com.cluting.clutingbackend.global.enums.StudentStatus;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class UserSignUpRequestDto {
     private String name;
     private String email;
     private String password;
+    @Setter
     private String phone;
     private String location;
     private String school;
