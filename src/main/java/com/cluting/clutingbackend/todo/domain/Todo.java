@@ -6,6 +6,7 @@ import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -23,5 +24,7 @@ public class Todo {
     private String content;
 
     @Column(nullable = true)
-    private Boolean status;
+    @Builder.Default
+    private Boolean status = false;  //true: 완료, false: 미완료
+
 }

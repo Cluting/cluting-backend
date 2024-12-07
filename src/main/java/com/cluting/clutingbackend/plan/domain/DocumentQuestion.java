@@ -17,8 +17,8 @@ public class DocumentQuestion {
     private DocumentAnswer documentAnswer;
 
     @ManyToOne
-    @JoinColumn(name = "part_id", nullable = false)
-    private Part part;
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
     @Enumerated(EnumType.STRING)
     private QuestionType questionType;

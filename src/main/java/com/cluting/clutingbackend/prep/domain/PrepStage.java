@@ -22,7 +22,7 @@ public class PrepStage {
     @JoinColumn(name = "recruit_id", nullable = false)
     private Recruit recruit;
 
-    @OneToMany(mappedBy = "prepStage", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "prepStage", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<PrepStageClubUser> prepStageClubUser = new ArrayList<>();
 
     @Column(nullable = false)
