@@ -3,17 +3,15 @@ package com.cluting.clutingbackend.plan.domain;
 
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Getter
 @Setter
-@Table(name = "recruit_group")
+@Table(name = "tb_group")
 public class Group {
 
     @Id
@@ -39,4 +37,21 @@ public class Group {
     @Column(nullable = true)
     private String warning;
 
+    public static Group of(
+            Recruit recruit,
+            String name,
+            Integer numDoc,
+            Integer numFinal,
+            Integer numRecruit,
+            String warning
+    ) {
+        return Group.builder()
+                .recruit(recruit)
+                .name(name)
+                .numDoc(numDoc)
+                .numFinal(numFinal)
+                .numRecruit(numRecruit)
+                .warning(warning)
+                .build();
+    }
 }
