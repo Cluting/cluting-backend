@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.plan.repository;
 
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +21,9 @@ public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvalu
             "JOIN de.application a WHERE a.recruit.id = :recruitId " +
             "AND a.id = :applicationId")
     int countUniqueClubUserIdsByRecruitIdAndApplicationId(Long recruitId, Long applicationId);
+
+    // [서류 평가하기] 담당 지원서 찾기
+    List<DocumentEvaluator> findByClubUser(ClubUser clubUser);
 
 }
 

@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DocumentEvaluationRequest {
-    private String groupName;
+    private String groupName;  // 그룹명 필터
+    private String sortOrder;  // 최신순 또는 지원순
 }

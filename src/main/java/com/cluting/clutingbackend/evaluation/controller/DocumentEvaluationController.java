@@ -3,13 +3,17 @@ package com.cluting.clutingbackend.evaluation.controller;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
+import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "[3. 서류 평가하기]", description = "서류 평가 관련 API")
 @RequiredArgsConstructor
@@ -19,59 +23,46 @@ public class DocumentEvaluationController {
 
     private final DocumentEvaluationService documentEvaluationService;
 
-    @Operation(
-            summary = "[서류 평가하기] 평가 전 상태인 지원서 리스트 불러오기(필터, 정렬 설정 안 한 초기 상태)",
-            description = "서류 평가가 완료되지 않은 평가 전 상태인 지원서 리스트를 반환합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "서류 평가 전 지원서 리스트 반환 성공"),
-                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
-                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-            }
-    )
-    @GetMapping
-    public List<DocumentEvaluationResponse> getPendingEvaluations(@PathVariable Long recruitId) {
-        return documentEvaluationService.getPendingEvaluations(recruitId);
+    // [서류 평가하기] 평가 전 상태 불러오기
+    @Operation(summary = "[서류 평가하기] 평가 전 상태인 지원서 리스트 불러오기", description = "서류 평가 상태가 '평가 전'인 지원서들을 불러옵니다. 요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +
+            "\n\n" +
+            "[그룹 필터링]" +
+            "\n- 그룹 필터링을 하지 않으려면 null을 보내주세요." +
+            "\n- 그룹 필터링을 원하면 그룹명을 지정해주세요." +
+            "\n\n" +
+            "[정렬 순서]" +
+            "\n- 'newest' : 최신순 정렬 (생성일 기준 내림차순)" +
+            "\n- 'oldest' : 오래된 순 정렬 (생성일 기준 오름차순)" +
+            "\n- 정렬을 하지 않으려면 null을 보내주세요.")
+    @PostMapping("/before")
+    public List<DocumentEvaluationResponse> getPendingEvaluations(
+            @PathVariable Long recruitId,
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @RequestBody DocumentEvaluationRequest request) {
+        return documentEvaluationService.getPendingEvaluations(recruitId, request, currentUser);
     }
 
-    @Operation(
-            summary = "[서류 평가하기] 그룹별 지원서 리스트 불러오기",
-            description = "그룹별로 평가된 지원서를 반환합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "그룹별 지원서 리스트 반환 성공"),
-                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
-                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-            }
-    )
-    @GetMapping("/group")
-    public List<DocumentEvaluationResponse> getDocumentsByGroup(@PathVariable Long recruitId, @RequestBody DocumentEvaluationRequest request) {
-        return documentEvaluationService.getDocumentsByGroup(recruitId, request.getGroupName());
-    }
+    // [서류 평가하기] 평가 중 상태 불러오기
+    @Operation(summary = "[서류 평가하기] 평가 중 상태인 지원서 리스트 불러오기", description = "서류 평가 상태가 '평가 중' 또는 '편집 가능'인 지원서들을 불러옵니다. 요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +
+            "\n\n" +
+            "[그룹 필터링]" +
+            "\n- 그룹 필터링을 하지 않으려면 null을 보내주세요." +
+            "\n- 그룹 필터링을 원하면 그룹명을 지정해주세요." +
+            "\n\n" +
+            "[정렬 순서]" +
+            "\n- 'newest' : 최신순 정렬 (생성일 기준 내림차순)" +
+            "\n- 'oldest' : 오래된 순 정렬 (생성일 기준 오름차순)" +
+            "\n- 정렬을 하지 않으려면 null을 보내주세요.")
+    @PostMapping("/ing")
+    public Map<String, List<DocumentEvaluationResponse>> getEvaluationsInProgressOrEditable(
+            @PathVariable Long recruitId,
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @RequestBody DocumentEvaluationRequest request) {
 
-    @Operation(
-            summary = "[서류 평가하기] 최신순 지원서 리스트 불러오기",
-            description = "최신 지원서를 반환합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "최신 지원서 리스트 반환 성공"),
-                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
-                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-            }
-    )
-    @GetMapping("/newest")
-    public List<DocumentEvaluationResponse> getDocumentsByNewest(@PathVariable Long recruitId) {
-        return documentEvaluationService.getDocumentsByNewest(recruitId);
-    }
+        // "ING"와 "EDITABLE" 상태의 리스트를 반환하는 Map
+        Map<String, List<DocumentEvaluationResponse>> evaluations = documentEvaluationService.getEvaluationsInProgressOrEditable(recruitId, request, currentUser);
 
-    @Operation(
-            summary = "[서류 평가하기] 지원서순 리스트 불러오기",
-            description = "오래된 지원서를 반환합니다.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "오래된 지원서 리스트 반환 성공"),
-                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
-                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
-            }
-    )
-    @GetMapping("/oldest")
-    public List<DocumentEvaluationResponse> getDocumentsByOldest(@PathVariable Long recruitId) {
-        return documentEvaluationService.getDocumentsByOldest(recruitId);
+        // 반환값을 구분하여 "ING"와 "EDITABLE" 상태의 리스트를 구분
+        return evaluations;
     }
 }
