@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -33,7 +34,8 @@ public class Recruit {
     private String image; // 공고 이미지 경로
 
     @Column(nullable = true)
-    private Boolean isDone; // 마감여부
+    @Builder.Default
+    private Boolean isDone = false; // 마감여부
 
     @Column(length = 255, nullable = true)
     private String caution; // 공고 질문 관련 주의 사항
@@ -44,6 +46,9 @@ public class Recruit {
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private CurrentStage currentStage;  // 현재 진행중인 리크루팅 단계
+
+    @Column(nullable = true)
+    private Integer generation; //기수
 
     @Column(nullable = true)
     private Boolean isInterview; // true : 면접까지 진행 | false : 서류까지 진행
@@ -62,4 +67,7 @@ public class Recruit {
 
     @Column
     private Integer interviewDuration; // 면접 소요 시간
+
+    @Column(nullable = true)
+    private String interviewLocation; // 면접 장소
 }

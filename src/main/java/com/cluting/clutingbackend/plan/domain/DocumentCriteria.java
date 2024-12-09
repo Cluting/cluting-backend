@@ -16,8 +16,8 @@ public class DocumentCriteria {
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "part_id", nullable = false)
-    private Part part;
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
     // Getter, Setter, Constructor
 }

@@ -13,7 +13,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Part {
+@Table(name = "recruit_group")
+public class Group {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,19 +24,19 @@ public class Part {
     @JoinColumn(name = "recruit_id", nullable = false)
     private Recruit recruit;
 
-    @Column
+    @Column(nullable = true)
     private String name;
 
-    @Column
-    private int numDoc;
+    @Column(nullable = true)
+    private Integer numDoc;
 
-    @Column
-    private int numFinal;
+    @Column(nullable = true)
+    private Integer numFinal;
 
-    @Column
-    private int numRecruit;
+    @Column(nullable = true)
+    private Integer numRecruit;
 
-    @Column
+    @Column(nullable = true)
     private String warning;
 
 }
