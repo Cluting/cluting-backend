@@ -3,7 +3,7 @@ package com.cluting.clutingbackend.interview.domain;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
-import com.cluting.clutingbackend.plan.domain.Part;
+import com.cluting.clutingbackend.plan.domain.Group;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,8 +27,8 @@ public class InterviewEvaluator {
     private Interview interview;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "part_id", nullable = true)
-    private Part part;
+    @JoinColumn(name = "group_id", nullable = true)
+    private Group group;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)

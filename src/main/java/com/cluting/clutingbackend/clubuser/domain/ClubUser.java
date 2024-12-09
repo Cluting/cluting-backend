@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.clubuser.domain;
 
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
+import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
 import com.cluting.clutingbackend.todo.domain.Todo;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.global.enums.ClubRole;
@@ -43,6 +44,6 @@ public class ClubUser {
     @OneToMany(mappedBy = "clubUser")
     private List<Todo> todoList;
 
-//    @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<TimeSlot> timeSlots; // ClubUser가 가진 TimeSlot 리스트
+    @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InterviewTimeSlot> timeSlots; // ClubUser가 가진 TimeSlot 리스트
 }

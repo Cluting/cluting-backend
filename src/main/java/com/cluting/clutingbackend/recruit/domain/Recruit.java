@@ -6,11 +6,13 @@ import com.cluting.clutingbackend.plan.domain.Group;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -73,4 +75,19 @@ public class Recruit {
 
     @Column
     private Integer numFinal; //최종 합격 인원 ( 나중에 파트별 합격인원의 합과 비교해야 함)
+
+    @Column
+    private LocalDate activityStart; // 활동 시작일
+
+    @Column
+    private LocalDate activityEnd; // 활동 종료일
+
+    @Column
+    private String activityDay; // 활동 요일
+
+    @Column
+    private String activityTime; // 활동 시간대
+
+    @Column
+    private Integer clubFee; // 동아리 회비
 }

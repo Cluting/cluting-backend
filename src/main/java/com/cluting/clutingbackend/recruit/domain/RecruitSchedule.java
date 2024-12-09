@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -33,10 +34,10 @@ public class RecruitSchedule {
     private LocalDate stage2End;
 
     @Column(name = "stage_3_start", nullable = false)
-    private LocalDate stage3Start;
+    private LocalDate stage3Start; // 모집기간 시작일
 
     @Column(name = "stage_3_end", nullable = false)
-    private LocalDate stage3End;
+    private LocalDate stage3End; // 모집기간 종료일
 
     @Column(name = "stage_4_start", nullable = false)
     private LocalDate stage4Start;

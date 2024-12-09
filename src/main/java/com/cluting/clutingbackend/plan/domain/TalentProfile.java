@@ -1,9 +1,15 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TalentProfile {
 
     @Id
@@ -11,8 +17,8 @@ public class TalentProfile {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "part_id", nullable = false)
-    private Part part;
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
 
     @Column
     private String profile; // 인재상 내용
