@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.todo.domain;
 
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.user.domain.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,8 +18,8 @@ public class Todo {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "club_user_id", nullable = false)
+    private ClubUser clubUser;
 
     @Column(length = 255, nullable = true)
     private String content;

@@ -1,9 +1,15 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TalentProfile {
 
     @Id

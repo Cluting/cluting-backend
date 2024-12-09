@@ -36,7 +36,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "로그인 성공"),
             @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자 입니다."),
             @ApiResponse(responseCode = "500", description = "Internal server error")})
-    @GetMapping("/sign-in")
+    @PostMapping("/sign-in")
     @ResponseStatus(value = HttpStatus.OK)
     public UserSignInResponseDto signIn(@RequestBody UserSignInRequestDto userSignInRequestDto) {
         return userService.signIn(userSignInRequestDto);

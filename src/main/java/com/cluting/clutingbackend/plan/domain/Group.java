@@ -5,13 +5,16 @@ import com.cluting.clutingbackend.recruit.domain.Recruit;
 import jakarta.persistence.*;
 import lombok.*;
 
+
+import java.util.List;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Getter
 @Setter
-@Table(name = "tb_group")
+@Builder
+@Table(name="tb_group")
 public class Group {
 
     @Id
@@ -21,6 +24,9 @@ public class Group {
     @ManyToOne
     @JoinColumn(name = "recruit_id", nullable = false)
     private Recruit recruit;
+
+    @OneToMany(mappedBy = "group")
+    private List<TalentProfile> talentProfileList;
 
     @Column(nullable = true)
     private String name;
