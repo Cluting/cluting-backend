@@ -17,7 +17,7 @@ public class Option {
     private DocumentQuestion documentQuestion;
 
     @Column
-    private String content; //
+    private String content; // 선지 내용
 
     @Column
     private boolean isCorrect; // 정답인지/아닌지?

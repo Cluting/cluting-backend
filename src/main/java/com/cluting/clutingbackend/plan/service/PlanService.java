@@ -11,6 +11,7 @@ import com.cluting.clutingbackend.plan.domain.TalentProfile;
 import com.cluting.clutingbackend.plan.dto.request.*;
 import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
+import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.plan.repository.InterviewTimeSlotRepository;
 import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
@@ -165,9 +166,24 @@ public class PlanService {
         });
     }
 
+    @Transactional
+    public Plan5ResponseDto createApplicationForm(Long recruitId, Plan5RequestDto requestDto) {
+        // Recruit 엔티티 조회
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
 
+        // Recruit 업데이트
+        recruit.setApplicationTitle(requestDto.getTitle());
+        recruit.setIsRequiredPortfolio(requestDto.getIsPortfolioRequired());
 
+        recruitRepository.save(recruit);
 
-
+        // DTO 변환 및 반환
+        return Plan5ResponseDto.builder()
+                .title(requestDto.getTitle())
+                .partQuestions(requestDto.getPartQuestions())
+                .isPortfolioRequired(requestDto.getIsPortfolioRequired())
+                .build();
+    }
 
 }

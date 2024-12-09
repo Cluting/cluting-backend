@@ -6,6 +6,7 @@ import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.dto.request.*;
 import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
+import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
 import com.cluting.clutingbackend.plan.service.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -61,7 +62,7 @@ public class PlanController {
     @PostMapping("/stage4/{recruitId}/interview-setup")
     @RequiredPermission(PermissionLevel.FOUR)
     @Operation(summary = "모집하기(4)",description = "운영진 면접 일정 조정하기-면접세팅")
-    public ResponseEntity<Void> setupInterview(@PathVariable Long recruitId, @RequestBody InterviewSetupDto requestDto) {
+    public ResponseEntity<Void> setupInterview(@PathVariable(name="recruitId") Long recruitId, @RequestBody InterviewSetupDto requestDto) {
         planService.saveInterviewSetup(recruitId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -76,13 +77,14 @@ public class PlanController {
     }
 
 
-    @PostMapping("/stage5/{postId}")
+    @PostMapping("/stage5/{recruitId}")
     @RequiredPermission(PermissionLevel.FIVE)
-    @Operation(summary = "모집하기(5)")
-    public ResponseEntity<String> stage5(@PathVariable(name="postId")Long id){
-
-
-        return ResponseEntity.ok("Parts Updated Successfully!");
+    @Operation(summary = "모집하기(5)",description = "지원서 폼 제작하기")
+    public ResponseEntity<Plan5ResponseDto> createApplicationForm(
+            @PathVariable Long recruitId,
+            @RequestBody Plan5RequestDto requestDto) {
+        Plan5ResponseDto responseDto = planService.createApplicationForm(recruitId, requestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
 }
