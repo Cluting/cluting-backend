@@ -17,7 +17,7 @@ public class Todo {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "clubUser_id", nullable = false)
+    @JoinColumn(name = "club_user_id", nullable = false)
     private ClubUser clubUser;
 
     @Column(length = 255, nullable = true)

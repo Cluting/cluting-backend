@@ -52,7 +52,7 @@ public class PlanService {
         if (requestDto.getGroupInfos() != null && !requestDto.getGroupInfos().isEmpty()) {
             requestDto.getGroupInfos().forEach(partDto -> {
                 // 해당 파트가 존재하는지 확인
-                Group group = groupRepository.findByRecruitIdAndPartName(recruitId, partDto.getGroupName())
+                Group group = groupRepository.findByRecruitIdAndName(recruitId, partDto.getGroupName())
                         .orElse(Group.builder()
                                 .recruit(recruit)
                                 .name(partDto.getGroupName())
@@ -89,7 +89,7 @@ public class PlanService {
         //  인재상 저장
         if (requestDto.getPartProfiles() != null) {
             requestDto.getPartProfiles().forEach(partProfile -> {
-                Group group = groupRepository.findByRecruitIdAndPartName(recruitId, partProfile.getPartName())
+                Group group = groupRepository.findByRecruitIdAndName(recruitId, partProfile.getPartName())
                         .orElseThrow(() -> new IllegalArgumentException("Group not found for part: " + partProfile.getPartName()));
 
                 partProfile.getProfiles().forEach(profile -> {

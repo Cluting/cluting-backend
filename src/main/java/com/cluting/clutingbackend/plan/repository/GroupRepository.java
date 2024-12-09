@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface GroupRepository extends JpaRepository<Group,Long> {
 
-    Optional<Group> findByRecruitIdAndPartName(Long recruitId, String partName);
+    Optional<Group> findByRecruitIdAndName(Long recruitId, String partName);
 
 
 }

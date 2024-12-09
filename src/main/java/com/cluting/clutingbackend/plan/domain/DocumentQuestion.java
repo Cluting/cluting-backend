@@ -13,7 +13,7 @@ public class DocumentQuestion {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "documentAnswer_id", nullable = false)
+    @JoinColumn(name = "document_answer_id", nullable = false)
     private DocumentAnswer documentAnswer;
 
     @ManyToOne

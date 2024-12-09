@@ -13,6 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@Table(name="tb_group")
 public class Group {
 
     @Id
@@ -27,19 +28,19 @@ public class Group {
     private List<TalentProfile> talentProfileList;
 
     @Column
-    private String name;
+    private String name; // 그룹명
 
     @Column
-    private int numDoc;
+    private Integer numDoc; // 서류합격인원
 
     @Column
-    private int numFinal;
+    private Integer numFinal; // 최종합격인원
 
     @Column
-    private int numRecruit;
+    private Integer numRecruit; // 지원자 수
 
     @Column
-    private String warning;
+    private String warning; //주의사항
 
 }
 

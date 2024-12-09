@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "options")
+@Table(name = "tb_option")
 public class Option {
 
     @Id
@@ -13,7 +13,7 @@ public class Option {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "documentQuestion_id", nullable = false)
+    @JoinColumn(name = "document_question_id", nullable = false)
     private DocumentQuestion documentQuestion;
 
     @Column
