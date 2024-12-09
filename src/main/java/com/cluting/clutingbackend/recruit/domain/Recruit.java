@@ -4,6 +4,7 @@ import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -39,6 +40,10 @@ public class Recruit {
 
     @Column(length = 255, nullable = true)
     private String caution; // 공고 질문 관련 주의 사항
+
+    @Column(nullable = true)
+    @CreatedDate
+    private LocalDateTime createdAt; // 생성 시간
 
     @Column(nullable = true)
     private LocalDateTime deadLine; // 마감기한

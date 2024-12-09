@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
+
     // [리크루팅 홈] 운영진 가져오기
     @Query("""
     SELECT cu\s

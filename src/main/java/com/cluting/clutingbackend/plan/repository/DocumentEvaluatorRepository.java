@@ -22,3 +22,4 @@ public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvalu
     int countUniqueClubUserIdsByRecruitIdAndApplicationId(Long recruitId, Long applicationId);
 
 }
+

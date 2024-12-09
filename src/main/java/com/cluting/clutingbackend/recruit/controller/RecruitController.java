@@ -1,48 +1,114 @@
 package com.cluting.clutingbackend.recruit.controller;
 
+
+import com.cluting.clutingbackend.global.enums.Category;
+import com.cluting.clutingbackend.global.enums.ClubType;
+import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
-import com.cluting.clutingbackend.global.security.CustomUserDetailsService;
-import com.cluting.clutingbackend.global.security.JwtProvider;
-import com.cluting.clutingbackend.recruit.dto.RecruitHomeDto;
+import com.cluting.clutingbackend.recruit.dto.request.RecruitDocSetRequestDto;
+import com.cluting.clutingbackend.recruit.dto.response.RecruitDocPrepSavedResponseDto;
+import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
+import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
+import com.cluting.clutingbackend.recruit.dto.response.RecruitsResponseDto;
 import com.cluting.clutingbackend.recruit.service.RecruitService;
-import com.cluting.clutingbackend.user.domain.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "[리크루팅 홈]", description = "리크루팅 홈 관련 API")
 @RestController
+@RequestMapping("/api/v1/recruit")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/recruiting")
 public class RecruitController {
     private final RecruitService recruitService;
-    private final JwtProvider jwtProvider;
-    private final CustomUserDetailsService customUserDetailsService;
 
-    // [리크루팅 홈] 불러오기
+
     @Operation(
-            summary = "[리크루팅 홈] 불러오기",
-            description = "동아리 ID와 모집 공고 ID를 기반으로 리크루팅 홈 데이터를 반환합니다. 반환 데이터에는 동아리 정보, 모집 공고 정보, 리크루팅 일정, 운영진 목록, TODO 목록이 포함됩니다.",
+            summary = "홈화면 동아리 리스트 조회",
+            description = "홈화면 동아리 리스트를 조회합니다.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "리크루팅 홈 데이터 조회 성공"),
-                    @ApiResponse(responseCode = "400", description = "클럽 또는 모집 공고를 찾을 수 없음"),
-                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+                    @ApiResponse(responseCode = "200", description = "홈화면 동아리 리스트 조회되었습니다."),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
             }
     )
-    @GetMapping
-    public RecruitHomeDto getRecruitHome(
-            @RequestParam Long recruitId,
-            @RequestParam Long clubId,
-            @RequestHeader("Authorization") String token) {
-        // 토큰에서 이메일 추출
-        String email = jwtProvider.getUserEmail(token);
+    @GetMapping("/list")
+    @ResponseStatus(value = HttpStatus.OK)
+    public RecruitsResponseDto findPosts(
+            @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
+            @RequestParam(value = "sortType", required = false) SortType sortType, // 마감임박순, 최신순, 오래된 순
+            @RequestParam(value = "clubType", required = false) ClubType clubType, // 연합동아리, 교내동아리
+            @RequestParam(value = "fieldType", required = false) Category category) { // 동아리 분류
+        return recruitService.findAll(pageNum, sortType, clubType, category);
+    }
 
-        // 이메일을 통해 User 객체 조회
-        User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
-        Long clubUserId = user.getId();
+    @Operation(
+            summary = "ID로 리크루팅 단일 조회",
+            description = "ID로 리크루팅 단일 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "ID로 리크루팅 단일 조회되었습니다."),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
+            }
+    )
+    @GetMapping("/{recruitId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public RecruitResponseDto findPosts(
+            @PathVariable("recruitId") Long recruitId) {
+        return recruitService.findById(recruitId);
+    }
 
-        return recruitService.getRecruitHome(recruitId, clubId, clubUserId);
+    @Operation(
+            summary = "모집 공고에 지원한 지원자 수 조회",
+            description = "모집 공고에 지원한 지원자 수 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "모집 공고에 지원한 지원자 수 조회되었습니다."),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
+            }
+    )
+    @GetMapping("/apply/{recruitId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public RecruitNumResponseDto findAppliedNum(
+            @PathVariable("recruitId") Long recruitId) {
+        return recruitService.findAppliedNum(recruitId);
+    }
+
+    @Operation(
+            summary = "이전 과정에서 설정한 서류 합격자 수 목록 조회",
+            description = "이전 과정에서 설정한 서류 합격자 수 목록 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "이전 과정에서 설정한 서류 합격자 수 목록 조회되었습니다."),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
+            }
+    )
+    @GetMapping("/doc/pre/{recruitId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public RecruitNumResponseDto findDocPassNum(
+            @PathVariable("recruitId") Long recruitId) {
+        return recruitService.findDocPassNum(recruitId);
+    }
+
+    @Operation(
+            summary = "서류 평가 준비하기 설정 저장",
+            description = "서류 평가 준비하기 설정을 저장합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "서류 평가 준비하기 설정이 저장되었습니다."),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
+            }
+    )
+    @PostMapping("/doc/pre/{recruitId}")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public RecruitDocPrepSavedResponseDto saveDocRecruit(
+            @PathVariable("recruitId") Long recruitId,
+            @RequestBody RecruitDocSetRequestDto recruitDocSetRequestDto) {
+        return recruitService.saveDocRecruit(recruitId, recruitDocSetRequestDto);
+
     }
 }
