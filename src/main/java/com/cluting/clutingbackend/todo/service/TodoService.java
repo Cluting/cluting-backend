@@ -1,5 +1,7 @@
 package com.cluting.clutingbackend.todo.service;
 
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.todo.domain.Todo;
 import com.cluting.clutingbackend.todo.dto.TodoRequest;
 import com.cluting.clutingbackend.todo.dto.TodoResponse;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 public class TodoService {
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
+    private final ClubUserRepository clubUserRepository;
 
     // [리크루팅 홈] 투두 작성하기
     public TodoResponse createTodo(Long clubUserId, TodoRequest request) {

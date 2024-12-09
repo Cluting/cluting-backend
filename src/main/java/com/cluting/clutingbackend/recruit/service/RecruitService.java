@@ -91,7 +91,7 @@ public class RecruitService {
     @Transactional(readOnly = true)
     public RecruitNumResponseDto findAppliedNum(Long recruitId) {
         Map<String, Integer> groupMap = new HashMap<>();
-        List<Group> groups = groupRepository.findByRecruit_Id(recruitId);
+        List<Group> groups = groupRepository.findByRecruitId(recruitId);
         int totalNum = 0;
         for (Group group : groups) {
             totalNum += group.getNumRecruit();
@@ -107,7 +107,7 @@ public class RecruitService {
     @Transactional(readOnly = true)
     public RecruitNumResponseDto findDocPassNum(Long recruitId) {
         Map<String, Integer> groupMap = new HashMap<>();
-        List<Group> groups = groupRepository.findByRecruit_Id(recruitId);
+        List<Group> groups = groupRepository.findByRecruitId(recruitId);
         int totalNum = 0;
         for (Group group : groups) {
             totalNum += group.getNumRecruit();
@@ -128,12 +128,12 @@ public class RecruitService {
                                 HttpStatus.BAD_REQUEST, "존재하지 않는 리크루팅 입니다."
                         )
                 );
-        List<Group> groups                       = groupRepository.findByRecruit_Id(recruitId);
-        List<Application> applications           = applicationRepository.findByRecruit_Id(recruitId);
+        List<Group> groups                       = groupRepository.findByRecruitId(recruitId);
+        List<Application> applications           = applicationRepository.findByRecruitId(recruitId);
         Map<String, Group> groupMap                = new HashMap<>();
         Map<String, Application> applicationMap  = new HashMap<>();
         for (Group group : groups) groupMap.put(group.getName(), group);
-        for (Application application : applications) applicationMap.put(application.getPart(), application);
+        for (Application application : applications) applicationMap.put(application.getRecruit_group(), application);
 
         // 공통일 경우에는 그룹 추가 (그룹이 추가된 경우)
         // 모집공고에 대한 그룹이 한 개이며, (그룹 이름이 null 이거나 공통이고), requestDto 에 입력된 그룹의 개수가 1개 초과일 경우(= 그룹 추가가 이뤄진 경우)
@@ -161,7 +161,7 @@ public class RecruitService {
             }
 
             // 새로운 데이터셋
-            groups = groupRepository.findByRecruit_Id(recruitId);
+            groups = groupRepository.findByRecruitId(recruitId);
             groupMap.clear();
             for (Group group : groups) groupMap.put(group.getName(), group);
         }

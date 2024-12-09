@@ -41,8 +41,7 @@ public class ClubUser {
     @Column(nullable = true)
     private Integer generation;
 
-    @OneToMany(mappedBy = "clubUser")
-    private List<Todo> todoList;
+
 
     @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InterviewTimeSlot> timeSlots; // ClubUser가 가진 TimeSlot 리스트

@@ -15,6 +15,6 @@ public class ClubUserService {
 
     @Transactional(readOnly = true)
     public List<ClubUserResponseDto> findAll(Long clubId) {
-        return clubUserRepository.findByClub_Id(clubId).stream().map(ClubUserResponseDto::toDto).toList();
+        return clubUserRepository.findByClubId(clubId).stream().map(ClubUserResponseDto::toDto).toList();
     }
 }

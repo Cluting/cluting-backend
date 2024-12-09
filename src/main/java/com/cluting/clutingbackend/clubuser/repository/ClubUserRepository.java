@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
@@ -36,5 +37,9 @@ public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
       AND cu.role = 'STAFF'
     """)
     List<String> findStaffNamesByRecruitId(@Param("recruitId") Long recruitId);
+
+    Optional<ClubUser> findByUserId(Long userId);
+
+    Optional<ClubUser> findByClubId(Long clubId);
 
 }

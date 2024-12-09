@@ -18,8 +18,8 @@ public class Todo {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "club_user_id", nullable = false)
-    private ClubUser clubUser;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(length = 255, nullable = true)
     private String content;

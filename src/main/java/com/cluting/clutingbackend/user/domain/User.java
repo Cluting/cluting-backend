@@ -4,6 +4,7 @@ import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.Role;
 import com.cluting.clutingbackend.global.enums.Semester;
 import com.cluting.clutingbackend.global.enums.StudentStatus;
+import com.cluting.clutingbackend.todo.domain.Todo;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -72,4 +73,7 @@ public class User {
     @Builder.Default
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ClubUser> clubUsers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Todo> todoList;
 }

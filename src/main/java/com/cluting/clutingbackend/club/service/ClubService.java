@@ -57,7 +57,7 @@ public class ClubService {
     // 로그인한 사용자가 가입한 동아리 목록 조회
     @Transactional(readOnly = true)
     public List<ClubResponseDto> findByUser(User user) {
-        List<Club> clubs = clubUserRepository.findByUser_Id(user.getId()).stream().map(ClubUser::getClub).toList();
+        List<Club> clubs = clubUserRepository.findByUserId(user.getId()).stream().map(ClubUser::getClub).toList();
         return clubs.stream().map(ClubResponseDto::toDto).toList();
     }
 
