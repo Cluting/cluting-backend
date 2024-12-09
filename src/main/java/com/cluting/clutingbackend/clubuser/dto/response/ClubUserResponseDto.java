@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ClubUserResponseDto {
-    private Long clubUserId;
+    private Long id;
     private Long userId;
     private Long clubId;
     private ClubRole role;
@@ -18,7 +18,7 @@ public class ClubUserResponseDto {
 
     public static ClubUserResponseDto toDto(ClubUser entity) {
         return ClubUserResponseDto.builder()
-                .clubUserId(entity.getId())
+                .id(entity.getId())
                 .userId(entity.getUser().getId())
                 .clubId(entity.getClub().getId())
                 .role(entity.getRole())

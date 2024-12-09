@@ -1,6 +1,5 @@
 package com.cluting.clutingbackend.global.enums;
 
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -16,3 +15,5 @@ public enum Stage {
 
     private final String description;
 }
+
+

@@ -12,6 +12,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "tb_document_evaluator")
 public class DocumentEvaluator {
 
     @Id
@@ -27,7 +28,7 @@ public class DocumentEvaluator {
     private Application application;
 
     @ManyToOne
-    @JoinColumn(name = "group_id", nullable = false)
+    @JoinColumn(name = "group_id", nullable = true)
     private Group group;
 
     @Enumerated(EnumType.STRING)
@@ -40,6 +41,24 @@ public class DocumentEvaluator {
 
     @Column
     private String comment; // 평가 코멘트
+
+    public static DocumentEvaluator of(
+            ClubUser clubUser,
+            Application application,
+            Group group,
+            Stage stage,
+            Integer score,
+            String comment
+    ) {
+        return DocumentEvaluator.builder()
+                .clubUser(clubUser)
+                .application(application)
+                .group(group)
+                .stage(stage)
+                .score(score)
+                .comment(comment)
+                .build();
+    }
 
 }
 

@@ -5,6 +5,7 @@ import com.cluting.clutingbackend.recruit.domain.Recruit;
 import jakarta.persistence.*;
 import lombok.*;
 
+
 import java.util.List;
 
 @Entity
@@ -27,20 +28,37 @@ public class Group {
     @OneToMany(mappedBy = "group")
     private List<TalentProfile> talentProfileList;
 
-    @Column
-    private String name; // 그룹명
+    @Column(nullable = true)
+    private String name;
 
-    @Column
-    private Integer numDoc; // 서류합격인원
+    @Column(nullable = true)
+    private Integer numDoc;
 
-    @Column
-    private Integer numFinal; // 최종합격인원
+    @Column(nullable = true)
+    private Integer numFinal;
 
-    @Column
-    private Integer numRecruit; // 지원자 수
+    @Column(nullable = true)
+    private Integer numRecruit;
 
-    @Column
-    private String warning; //주의사항
+    @Column(nullable = true)
+    private String warning;
 
+    public static Group of(
+            Recruit recruit,
+            String name,
+            Integer numDoc,
+            Integer numFinal,
+            Integer numRecruit,
+            String warning
+    ) {
+        return Group.builder()
+                .recruit(recruit)
+                .name(name)
+                .numDoc(numDoc)
+                .numFinal(numFinal)
+                .numRecruit(numRecruit)
+                .warning(warning)
+                .build();
+    }
 }
 
