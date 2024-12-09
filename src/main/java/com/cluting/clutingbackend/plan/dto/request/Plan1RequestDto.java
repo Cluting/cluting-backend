@@ -20,14 +20,13 @@ public class Plan1RequestDto {
     private Integer totalFinalPassCount;
 
     // 파트 정보
-    private List<PartInfo> parts;
+    private List<GroupInfo> groupInfos;
 
     @Data
-    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class PartInfo {
-        private String partName;              // 파트 이름
+    public static class GroupInfo {
+        private String groupName;              // 파트 이름
         private Integer documentPassCount;   // 서류 합격 인원
         private Integer finalPassCount;      // 최종 합격 인원
     }

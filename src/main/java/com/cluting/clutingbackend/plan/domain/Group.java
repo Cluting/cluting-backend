@@ -3,16 +3,14 @@ package com.cluting.clutingbackend.plan.domain;
 
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Group {
 
     @Id

@@ -2,15 +2,14 @@ package com.cluting.clutingbackend.plan.controller;
 
 import com.cluting.clutingbackend.global.annotation.RequiredPermission;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
+import com.cluting.clutingbackend.plan.dto.request.Plan1RequestDto;
+import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
 import com.cluting.clutingbackend.plan.service.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "모집하기(1)~(5)",description = "모집하기 관련 컨트롤러")
 @RestController
@@ -23,9 +22,9 @@ public class PlanController {
     @PostMapping("/stage1/{recruitId}")
     @RequiredPermission(PermissionLevel.ONE)
     @Operation(summary = "모집하기(1)",description = "합격 인원 설정하기")
-    public ResponseEntity<String> stage1(@PathVariable(name="recruitId")Long id){
-
-        return ResponseEntity.ok("Parts Updated Successfully!");
+    public ResponseEntity<Plan1ResponseDto> stage1(@PathVariable(name="recruitId")Long id, @RequestBody Plan1RequestDto dto){
+            Plan1ResponseDto plan1ResponseDto = planService.createRecruitment(id,dto);
+        return ResponseEntity.ok(plan1ResponseDto);
     }
 
     @PostMapping("/stage2/{postId}")
