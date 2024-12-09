@@ -8,5 +8,8 @@ import java.util.List;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
-    List<Application> findByRecruit_Id(Long recruitId);
+
+    // [서류 평가하기] 해당 모집공고에 지원한 지원서 불러오기
+    List<Application> findByRecruitId(Long recruitId);
+
 }

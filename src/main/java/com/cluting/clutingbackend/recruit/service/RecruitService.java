@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.recruit.service;
 
+
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
@@ -35,6 +36,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -210,5 +214,6 @@ public class RecruitService {
                                 HttpStatus.BAD_REQUEST, "존재하지 않는 운영진 입니다."
                         )
                 );
+
     }
 }

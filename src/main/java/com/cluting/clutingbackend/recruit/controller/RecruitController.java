@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.recruit.controller;
 
+
 import com.cluting.clutingbackend.global.enums.Category;
 import com.cluting.clutingbackend.global.enums.ClubType;
 import com.cluting.clutingbackend.global.enums.SortType;
@@ -17,11 +18,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "[리크루팅 홈]", description = "리크루팅 홈 관련 API")
 @RestController
 @RequestMapping("/api/v1/recruit")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/recruiting")
 public class RecruitController {
     private final RecruitService recruitService;
+
 
     @Operation(
             summary = "홈화면 동아리 리스트 조회",
@@ -105,5 +109,6 @@ public class RecruitController {
             @PathVariable("recruitId") Long recruitId,
             @RequestBody RecruitDocSetRequestDto recruitDocSetRequestDto) {
         return recruitService.saveDocRecruit(recruitId, recruitDocSetRequestDto);
+
     }
 }

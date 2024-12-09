@@ -1,5 +1,12 @@
 package com.cluting.clutingbackend.user.service;
 
+import com.cluting.clutingbackend.admininvite.domain.AdminInvite;
+import com.cluting.clutingbackend.admininvite.repository.AdminInviteRepository;
+import com.cluting.clutingbackend.admininvite.repository.TempUserRepository;
+import com.cluting.clutingbackend.club.domain.Club;
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.global.enums.ClubRole;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.user.dto.response.UserResponseDto;
 import com.cluting.clutingbackend.user.dto.request.UserSignInRequestDto;
@@ -16,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -23,6 +32,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RedisUtil redisUtil;
+    // 비회원 운영진 초대를 위해 아래 repo 추가
+    private final TempUserRepository tempUserRepository;
+    private final ClubUserRepository clubUserRepository;
+    private final AdminInviteRepository adminInviteRepository;
 
     @Transactional
     public UserResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) {
@@ -44,6 +57,36 @@ public class UserService {
         User user = userRepository.save(
                 userSignUpRequestDto.toEntity(passwordEncoder.encode(userSignUpRequestDto.getPassword()))
         );
+
+        // [운영진 초대] 비회원 운영진 초대 시, 회원가입 후 운영진으로 등록되게 하기 위함.
+        tempUserRepository.findByEmail(user.getEmail()).ifPresent(tempUser -> {
+            AdminInvite adminInvite = tempUser.getInvite();
+            Club club = adminInvite.getClub();
+
+            if (!adminInvite.getIsUsed() && adminInvite.getExpirationDate().isAfter(LocalDateTime.now())) {
+                ClubUser clubUser = ClubUser.builder()
+                        .user(user)
+                        .club(club)
+                        .role(ClubRole.STAFF)
+                        .generation(club.getRecruits().stream()
+                                .filter(recruit -> !recruit.getIsDone())
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException("Active recruitment not found"))
+                                .getGeneration()
+                        )
+                        .build();
+                clubUserRepository.save(clubUser);
+
+                // 초대 처리 완료
+                adminInvite.setIsUsed(true);
+                adminInviteRepository.save(adminInvite);
+            }
+
+            // TempUser 삭제
+            tempUserRepository.delete(tempUser);
+        });
+
+
         return UserResponseDto.toDto(user);
     }
 
