@@ -17,6 +17,7 @@ public class ApplicationStatusResponseDto {
     private String clubName; // 동아리 이름
     private String clubProfile; // 동아리 로고
     private ApplicateStatus status; // 지원상태
+    private String aa;
 
     // 지원 캘린더
     private LocalDateTime recruitmentStartDate; // 모집 시작일
