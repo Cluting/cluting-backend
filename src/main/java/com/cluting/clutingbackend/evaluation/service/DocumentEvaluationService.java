@@ -13,10 +13,7 @@ import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -51,14 +48,11 @@ public class DocumentEvaluationService {
                 .map(application -> mapToResponse(application, recruitId))  // recruitId 전달
                 .sorted((response1, response2) -> {
                     if ("newest".equals(request.getSortOrder())) {
-                        return Comparator.comparing(DocumentEvaluationResponse::getCreatedAt)
-                                .reversed()
-                                .compare(response1, response2);
+                        return response2.getCreatedAt().compareTo(response1.getCreatedAt());
                     } else if ("oldest".equals(request.getSortOrder())) {
-                        return Comparator.comparing(DocumentEvaluationResponse::getCreatedAt)
-                                .compare(response1, response2);
+                        return response1.getCreatedAt().compareTo(response2.getCreatedAt());
                     }
-                    return 0;
+                    return 0;  // 정렬 안 정했을 때
                 })
                 .collect(Collectors.toList());
     }
@@ -87,6 +81,40 @@ public class DocumentEvaluationService {
 
         return response;
     }
+
+    // 평가 후 상태 리스트 반환
+    public List<DocumentEvaluationResponse> getEvaluationsAfter(
+            Long recruitId,
+            DocumentEvaluationRequest request,
+            CustomUserDetails currentUser) {
+
+        ensureRecruitExists(recruitId); // 모집 공고가 존재하는지 확인
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+
+        // READABLE 상태 필터링
+        List<DocumentEvaluationResponse> readableList = filterAndSort(applications, request, "READABLE", currentUser, recruitId);
+
+        // EDITABLE 상태 필터링
+        List<DocumentEvaluationResponse> editableList = filterAndSort(applications, request, "EDITABLE", currentUser, recruitId);
+
+        // 결과 합치기
+        List<DocumentEvaluationResponse> combinedList = new ArrayList<>();
+        combinedList.addAll(readableList);
+        combinedList.addAll(editableList);
+
+        // 날짜별 정렬 (newest 또는 oldest 기준)
+        combinedList.sort((response1, response2) -> {
+            if ("newest".equals(request.getSortOrder())) {
+                return response2.getCreatedAt().compareTo(response1.getCreatedAt());
+            } else if ("oldest".equals(request.getSortOrder())) {
+                return response1.getCreatedAt().compareTo(response2.getCreatedAt());
+            }
+            return 0; // 기본: 정렬하지 않음
+        });
+
+        return combinedList;
+    }
+
 
     // Response 변환
     private DocumentEvaluationResponse mapToResponse(Application application, Long recruitId) {
