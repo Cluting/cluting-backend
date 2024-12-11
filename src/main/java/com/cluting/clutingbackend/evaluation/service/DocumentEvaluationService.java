@@ -4,6 +4,7 @@ import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationWithStatusResponse;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
@@ -133,6 +134,67 @@ public class DocumentEvaluationService {
             }
         }
     }
+
+    // 평가 완료 불러오기
+    public Map<String, List<DocumentEvaluationWithStatusResponse>> getCompletedEvaluations(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
+        ensureRecruitExists(recruitId);
+
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+
+        // PASS 상태
+        List<DocumentEvaluationWithStatusResponse> passedResponses = applications.stream()
+                .filter(app -> EvaluateStatus.PASS.equals(app.getState()))
+                .map(app -> mapToResponseWithStatus(app, recruitId))
+                .collect(Collectors.toList());
+
+        // FAIL 상태
+        List<DocumentEvaluationWithStatusResponse> failedResponses = applications.stream()
+                .filter(app -> EvaluateStatus.FAIL.equals(app.getState()))
+                .map(app -> mapToResponseWithStatus(app, recruitId))
+                .collect(Collectors.toList());
+
+        // 정렬 및 필터링 처리
+        List<DocumentEvaluationWithStatusResponse> filteredPassedResponses = filterAndSortByRequest(passedResponses, request);
+        List<DocumentEvaluationWithStatusResponse> filteredFailedResponses = filterAndSortByRequest(failedResponses, request);
+
+        // 결과 맵핑
+        Map<String, List<DocumentEvaluationWithStatusResponse>> result = new HashMap<>();
+        result.put("PASS", filteredPassedResponses);
+        result.put("FAIL", filteredFailedResponses);
+
+        return result;
+    }
+
+    // 상태와 합격 여부를 포함한 response 생성
+    private DocumentEvaluationWithStatusResponse mapToResponseWithStatus(Application app, Long recruitId) {
+        DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationId(app.getId());
+        Group group = evaluator != null ? evaluator.getGroup() : null;
+
+        return new DocumentEvaluationWithStatusResponse(
+                app.getState().name(),                               // 상태를 문자열로 반환
+                app.getUser().getName(),                             // 사용자 이름
+                app.getUser().getPhone(),                            // 사용자 전화번호
+                group != null ? group.getName() : null,              // 그룹명 (Group이 있으면 그 이름, 없으면 null)
+                EvaluateStatus.PASS.equals(app.getState()),         // 합격 여부 (true/false)
+                app.getCreatedAt()                                   // 지원서 제출일
+        );
+    }
+
+
+    private List<DocumentEvaluationWithStatusResponse> filterAndSortByRequest(List<DocumentEvaluationWithStatusResponse> responses, DocumentEvaluationRequest request) {
+        return responses.stream()
+                .filter(response -> request.getGroupName() == null || request.getGroupName().equals(response.getGroupName()))
+                .sorted((r1, r2) -> {
+                    if ("newest".equals(request.getSortOrder())) {
+                        return r2.getCreatedAt().compareTo(r1.getCreatedAt());
+                    } else if ("oldest".equals(request.getSortOrder())) {
+                        return r1.getCreatedAt().compareTo(r2.getCreatedAt());
+                    }
+                    return 0;
+                })
+                .collect(Collectors.toList());
+    }
+
 
     // 공통 그룹 처리
     private void handleCommonGroup(Long recruitId, Group group) {
