@@ -30,6 +30,10 @@ public class Recruit {
     @OneToMany(mappedBy = "recruit")
     private List<Group> groupList;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recruit_id", nullable = false)
+    private RecruitSchedule recruitSchedule;
+
     @Column(length = 100, nullable = false)
     private String title; // 공고 제목
 

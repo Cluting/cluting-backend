@@ -1,11 +1,11 @@
-package com.cluting.clutingbackend.global.enums;
+package com.cluting.clutingbackend.application.dto.response;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ApplicateStatus {
+public enum RecruitStatus {
     A("지원완료"),
     B("서류평가중"),
     C("서류평가완료"),
@@ -14,4 +14,3 @@ public enum ApplicateStatus {
 
     private final String description;
 }
-
