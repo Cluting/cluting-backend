@@ -2,9 +2,11 @@ package com.cluting.clutingbackend.evaluation.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationCompleteRequest;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationWithStatusResponse;
+import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
@@ -12,8 +14,10 @@ import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
+import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
+import com.cluting.clutingbackend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +32,7 @@ public class DocumentEvaluationService {
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
+    private final UserRepository userRepository;
 
     // 모집 공고 확인
     private void ensureRecruitExists(Long recruitId) {
@@ -180,7 +185,7 @@ public class DocumentEvaluationService {
         );
     }
 
-
+    // 평가 완료 관련 필터링 및 정렬
     private List<DocumentEvaluationWithStatusResponse> filterAndSortByRequest(List<DocumentEvaluationWithStatusResponse> responses, DocumentEvaluationRequest request) {
         return responses.stream()
                 .filter(response -> request.getGroupName() == null || request.getGroupName().equals(response.getGroupName()))
@@ -271,4 +276,54 @@ public class DocumentEvaluationService {
                 application.getCreatedAt()                                        // createdAt 값 추가
         );
     }
+
+    // 평가 완료 불러오기
+    public void completeDocumentEvaluation(Long recruitId) {
+        // 리크루팅이 존재하는지 확인
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new IllegalArgumentException("리크루팅이 존재하지 않습니다."));
+
+        // recruitId와 관련된 모든 Application을 가져옴
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+
+        // 모든 지원서 상태를 PASS 또는 FAIL로 업데이트
+        applications.forEach(application -> {
+            if (application.getState() == null) {
+                // 상태가 null일 경우 예시로 PASS 상태로 설정 (상태 로직에 따라 수정 가능)
+                application.setState(EvaluateStatus.PASS);
+            }
+            applicationRepository.save(application); // 상태 저장
+        });
+
+        // 리크루팅의 currentStage를 DOC_PASS로 업데이트
+        recruit.setCurrentStage(CurrentStage.DOC_PASS);
+        recruitRepository.save(recruit); // 변경된 리크루팅 저장
+    }
+
+    // 평가 완료
+    public void completeDocument2Evaluation(Long recruitId, List<DocumentEvaluationCompleteRequest> evaluations) {
+        // 리크루팅이 존재하는지 확인
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new IllegalArgumentException("리크루팅이 존재하지 않습니다."));
+
+        // 각 평가를 처리
+        for (DocumentEvaluationCompleteRequest evaluation : evaluations) {
+            // 사용자의 이름과 전화번호로 해당 Application을 찾음
+            User user = userRepository.findByNameAndPhone(evaluation.getName(), evaluation.getPhone())
+                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+            // 해당 사용자의 지원서를 찾음
+            Application application = applicationRepository.findByUserAndRecruit(user, recruit)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 지원서를 찾을 수 없습니다."));
+
+            // 상태 업데이트
+            application.setState(EvaluateStatus.valueOf(evaluation.getState().toUpperCase()));
+            applicationRepository.save(application); // 상태 저장
+        }
+
+        // 리크루팅의 currentStage를 DOC_PASS로 업데이트
+        recruit.setCurrentStage(CurrentStage.DOC_PASS);
+        recruitRepository.save(recruit); // 변경된 리크루팅 저장
+    }
+
 }

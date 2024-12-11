@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
+import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationCompleteRequest;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationWithStatusResponse;
@@ -26,7 +27,7 @@ public class DocumentEvaluationController {
     private final DocumentEvaluationService documentEvaluationService;
 
     // [서류 평가하기] 평가 전 상태 불러오기
-    @Operation(summary = "[서류 평가하기] 평가 전 상태인 지원서 리스트 불러오기", description = "서류 평가 상태가 '평가 전'인 지원서들을 불러옵니다. 요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +
+    @Operation(summary = "[서류 평가하기] 1. <평가 전> 지원서 리스트 불러오기", description = "서류 평가 상태가 '평가 전'인 지원서들을 불러옵니다. 요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +
             "\n\n" +
             "[그룹 필터링]" +
             "\n- 그룹 필터링을 하지 않으려면 null을 보내주세요." +
@@ -45,7 +46,7 @@ public class DocumentEvaluationController {
     }
 
     // [서류 평가하기] 평가 중 상태 불러오기
-    @Operation(summary = "[서류 평가하기] 평가 중 상태인 지원서 리스트 불러오기", description = "서류 평가 상태가 '평가 중' 또는 '편집 가능'인 지원서들을 불러옵니다. 요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +
+    @Operation(summary = "[서류 평가하기] 2. <평가 중> 지원서 리스트 불러오기", description = "서류 평가 상태가 '평가 중' 또는 '편집 가능'인 지원서들을 불러옵니다. 요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +
             "\n\n" +
             "[그룹 필터링]" +
             "\n- 그룹 필터링을 하지 않으려면 null을 보내주세요." +
@@ -69,7 +70,7 @@ public class DocumentEvaluationController {
     }
 
     // [서류 평가하기] 평가 후 상태 불러오기
-    @Operation(summary = "[서류 평가하기] 평가 후 상태인 지원서 리스트 불러오기",
+    @Operation(summary = "[서류 평가하기] 3. <평가 후> 지원서 리스트 불러오기",
             description = "서류 평가 상태가 '평가 후'인 지원서들을 불러옵니다. " +
                     "요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +
                     "\n\n[그룹 필터링]" +
@@ -89,7 +90,7 @@ public class DocumentEvaluationController {
     }
 
     // [서류 평가하기] 평가 후 완료하기
-    @Operation(summary = "[서류 평가하기] 평가 후 완료하기 전송",
+    @Operation(summary = "[서류 평가하기] 3-1. <평가 후> 완료하기 전송",
             description = "서류 평가 상태가 'READABLE' 또는 'EDITABLE'인 지원서들의 상태를 'AFTER'로 변경합니다.")
     @PostMapping("/after_to_complete")
     public ResponseEntity<Void> updateStagesToAfter(
@@ -101,7 +102,7 @@ public class DocumentEvaluationController {
     }
 
     // [서류 평가하기] 평가 완료 불러오기
-    @Operation(summary = "[서류 평가하기] 평가 완료된 지원서 리스트 불러오기",
+    @Operation(summary = "[서류 평가하기] 4. <평가 완료> 지원서 리스트 불러오기",
             description = "서류 평가 상태가 '평가 완료'인 지원서들을 불러옵니다. " +
                     "요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +
                     "\n\n[그룹 필터링]" +
@@ -119,4 +120,15 @@ public class DocumentEvaluationController {
 
         return documentEvaluationService.getCompletedEvaluations(recruitId, request, currentUser);
     }
+
+    @Operation(summary = "[서류 평가하기] 4-1. <평가 완료> 전송",
+            description = "서류 평가가 완료되면 모든 지원서의 상태를 PASS 또는 FAIL로 업데이트하고, 해당 리크루팅 단계도 DOC_PASS로 변경합니다.")
+    @PostMapping("/complete-doc")
+    public ResponseEntity<String> completeDocumentEvaluation(
+            @PathVariable Long recruitId,
+            @RequestBody List<DocumentEvaluationCompleteRequest> evaluations) {
+        documentEvaluationService.completeDocument2Evaluation(recruitId, evaluations);
+        return ResponseEntity.ok("서류 평가 완료되었습니다.");
+    }
+
 }
