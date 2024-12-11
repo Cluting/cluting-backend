@@ -43,6 +43,10 @@ public class Group {
     @Column(nullable = true)
     private String warning;
 
+    @Column(nullable = true)
+    @Builder.Default
+    private boolean isCommon = false; //공통인지 아닌지
+
     public static Group of(
             Recruit recruit,
             String name,

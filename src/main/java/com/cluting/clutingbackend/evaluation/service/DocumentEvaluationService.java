@@ -4,11 +4,13 @@ import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
+import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class DocumentEvaluationService {
     private final ApplicationRepository applicationRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final RecruitRepository recruitRepository;
+    private final GroupRepository groupRepository;
 
     // 모집 공고 확인
     private void ensureRecruitExists(Long recruitId) {
@@ -118,19 +121,72 @@ public class DocumentEvaluationService {
 
     // 평가 후에서 평가 완료로 이동
     public void updateStagesToAfter(Long recruitId, CustomUserDetails currentUser) {
-        ensureRecruitExists(recruitId); // 모집 공고가 존재하는지 확인
-        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+        List<Group> groups = groupRepository.findByRecruitId(recruitId);
 
-        // READABLE 또는 EDITABLE 상태인 평가자 가져오기
-        List<DocumentEvaluator> evaluatorsToUpdate = applications.stream()
-                .map(application -> documentEvaluatorRepository.findByApplicationId(application.getId()))
-                .filter(evaluator -> evaluator != null &&
-                        (evaluator.getStage() == Stage.READABLE || evaluator.getStage() == Stage.EDITABLE))
-                .collect(Collectors.toList());
+        for (Group group : groups) {
+            if (group.isCommon()) {
+                // 공통 그룹 처리
+                handleCommonGroup(recruitId, group);
+            } else {
+                // 비공통 그룹 처리
+                handleSpecificGroups(group.getId());
+            }
+        }
+    }
 
-        // Stage를 AFTER로 변경
-        evaluatorsToUpdate.forEach(evaluator -> evaluator.setStage(Stage.AFTER));
-        documentEvaluatorRepository.saveAll(evaluatorsToUpdate);
+    // 공통 그룹 처리
+    private void handleCommonGroup(Long recruitId, Group group) {
+        // 관련된 DocumentEvaluator 가져오기
+        List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByRecruitId(recruitId)
+                .stream()
+                .filter(evaluator -> evaluator.getStage() == Stage.READABLE || evaluator.getStage() == Stage.EDITABLE)
+                .toList();
+
+        // Evaluator로부터 Application 조회 및 점수 순 정렬
+        List<Application> applications = evaluators.stream()
+                .map(DocumentEvaluator::getApplication)
+                .sorted(Comparator.comparingInt(Application::getScore).reversed())
+                .toList();
+
+        int numDoc = group.getNumDoc(); // PASS로 설정할 개수
+        for (int i = 0; i < applications.size(); i++) {
+            if (i < numDoc) {
+                applications.get(i).setState(EvaluateStatus.PASS); // 상위 numDoc 개수는 PASS
+            } else {
+                applications.get(i).setState(EvaluateStatus.FAIL); // 나머지는 FAIL
+            }
+        }
+
+        applicationRepository.saveAll(applications);
+    }
+
+    // 비공통 그룹 처리
+    private void handleSpecificGroups(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+
+        // 관련된 DocumentEvaluator 가져오기
+        List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByGroupId(groupId)
+                .stream()
+                .filter(evaluator -> evaluator.getStage() == Stage.READABLE || evaluator.getStage() == Stage.EDITABLE)
+                .toList();
+
+        // Evaluator로부터 Application 조회 및 점수 순 정렬
+        List<Application> applications = evaluators.stream()
+                .map(DocumentEvaluator::getApplication)
+                .sorted(Comparator.comparingInt(Application::getScore).reversed())
+                .toList();
+
+        int numDoc = group.getNumDoc(); // PASS로 설정할 개수
+        for (int i = 0; i < applications.size(); i++) {
+            if (i < numDoc) {
+                applications.get(i).setState(EvaluateStatus.PASS); // 상위 numDoc 개수는 PASS
+            } else {
+                applications.get(i).setState(EvaluateStatus.FAIL); // 나머지는 FAIL
+            }
+        }
+
+        applicationRepository.saveAll(applications);
     }
 
     // Response 변환

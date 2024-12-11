@@ -25,5 +25,13 @@ public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvalu
     // [서류 평가하기] 담당 지원서 찾기
     List<DocumentEvaluator> findByClubUser(ClubUser clubUser);
 
+    // [서류 평가하기] Recruit ID를 기반으로 DocumentEvaluator 조회
+    @Query("SELECT de FROM DocumentEvaluator de " +
+            "JOIN de.application app " +
+            "WHERE app.recruit.id = :recruitId")
+    List<DocumentEvaluator> findByRecruitId(@Param("recruitId") Long recruitId);
+
+    // [서류 평가하기] Group ID로 DocumentEvaluator 조회
+    List<DocumentEvaluator> findByGroupId(Long groupId);
 }
 
