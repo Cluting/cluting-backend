@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,7 +85,17 @@ public class DocumentEvaluationController {
             @RequestBody DocumentEvaluationRequest request) {
 
         return documentEvaluationService.getEvaluationsAfter(recruitId, request, currentUser);
-
     }
 
+    // [서류 평가하기] 평가 후 완료하기
+    @Operation(summary = "[서류 평가하기] 평가 후 완료하기 전송",
+            description = "서류 평가 상태가 'READABLE' 또는 'EDITABLE'인 지원서들의 상태를 'AFTER'로 변경합니다.")
+    @PostMapping("/after_to_complete")
+    public ResponseEntity<Void> updateStagesToAfter(
+            @PathVariable Long recruitId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+
+        documentEvaluationService.updateStagesToAfter(recruitId, currentUser);
+        return ResponseEntity.ok().build();
+    }
 }

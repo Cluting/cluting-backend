@@ -4,6 +4,7 @@ import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
 import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
@@ -115,6 +116,22 @@ public class DocumentEvaluationService {
         return combinedList;
     }
 
+    // 평가 후에서 평가 완료로 이동
+    public void updateStagesToAfter(Long recruitId, CustomUserDetails currentUser) {
+        ensureRecruitExists(recruitId); // 모집 공고가 존재하는지 확인
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+
+        // READABLE 또는 EDITABLE 상태인 평가자 가져오기
+        List<DocumentEvaluator> evaluatorsToUpdate = applications.stream()
+                .map(application -> documentEvaluatorRepository.findByApplicationId(application.getId()))
+                .filter(evaluator -> evaluator != null &&
+                        (evaluator.getStage() == Stage.READABLE || evaluator.getStage() == Stage.EDITABLE))
+                .collect(Collectors.toList());
+
+        // Stage를 AFTER로 변경
+        evaluatorsToUpdate.forEach(evaluator -> evaluator.setStage(Stage.AFTER));
+        documentEvaluatorRepository.saveAll(evaluatorsToUpdate);
+    }
 
     // Response 변환
     private DocumentEvaluationResponse mapToResponse(Application application, Long recruitId) {
