@@ -176,6 +176,7 @@ public class DocumentEvaluationService {
         Group group = evaluator != null ? evaluator.getGroup() : null;
 
         return new DocumentEvaluationWithStatusResponse(
+                app.getId(),
                 app.getState().name(),                               // 상태를 문자열로 반환
                 app.getUser().getName(),                             // 사용자 이름
                 app.getUser().getPhone(),                            // 사용자 전화번호
@@ -324,6 +325,19 @@ public class DocumentEvaluationService {
         // 리크루팅의 currentStage를 DOC_PASS로 업데이트
         recruit.setCurrentStage(CurrentStage.DOC_PASS);
         recruitRepository.save(recruit); // 변경된 리크루팅 저장
+    }
+
+    // 이의제기 중으로 상태 변경
+    public void updateApplicationStateToObjection(Long recruitId, Long applicationId, CustomUserDetails currentUser) {
+        // recruitId와 applicationId를 사용해 해당 지원서 찾기
+        Application application = applicationRepository.findByRecruitIdAndId(recruitId, applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("지원서를 찾을 수 없습니다."));
+
+        // 상태를 OBJECTION으로 변경
+        application.setState(EvaluateStatus.OBJECTION);
+
+        // 변경 사항 저장
+        applicationRepository.save(application);
     }
 
 }

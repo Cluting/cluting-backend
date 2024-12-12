@@ -131,4 +131,18 @@ public class DocumentEvaluationController {
         return ResponseEntity.ok("서류 평가 완료되었습니다.");
     }
 
+    @Operation(summary = "[서류 평가하기] 4-2. <평가 완료 -이의제기> 지원서 상태를 이의제기 중으로 변경",
+            description = "지정된 지원서 ID의 상태를 OBJECTION으로 변경합니다.")
+    @PatchMapping("/state/objection")
+    public ResponseEntity<String> updateApplicationStateToObjection(
+            @PathVariable Long recruitId,
+            @RequestParam Long applicationId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+
+        documentEvaluationService.updateApplicationStateToObjection(recruitId, applicationId, currentUser);
+        return ResponseEntity.ok("지원서 상태가 OBJECTION으로 변경되었습니다.");
+    }
+
+
+
 }

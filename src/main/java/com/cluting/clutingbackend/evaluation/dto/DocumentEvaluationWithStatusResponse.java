@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 public class DocumentEvaluationWithStatusResponse {
+    private Long id; //지원서 id
     private String status;          // 합격 여부
     private String applicantName;  // 지원자 이름
     private String applicantPhone; // 지원자 전화번호
