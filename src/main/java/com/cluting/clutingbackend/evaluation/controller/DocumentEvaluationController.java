@@ -6,6 +6,7 @@ import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -154,14 +155,29 @@ public class DocumentEvaluationController {
     @Operation(summary = "[서류 평가하기] 4-3. <서류 평가 상태 업데이트>",
             description = "지원서 상태를 합격(PASS) 또는 불합격(FAIL)으로 업데이트하고, 해당 지원자 정보(이름, 그룹명, 전화번호, 합격여부)를 반환합니다."+
                             "\n\n합격이면 PASS, 불합격이면 FAIL로 전달해주세요.")
-    @PatchMapping("/evaluate")
+    @PatchMapping("/{applicationId}/evaluate")
     public ResponseEntity<DocumentEvaluation2Response> evaluateApplication(
             @PathVariable Long recruitId,
-            @RequestParam Long applicationId,
+            @PathVariable Long applicationId,
             @RequestParam String result) {
 
         // 결과를 PASS 또는 FAIL로 변경 후, 지원자 정보를 포함한 응답 반환
         DocumentEvaluation2Response response = documentEvaluationService.evaluateApplication(recruitId, applicationId, result);
         return ResponseEntity.ok(response);
     }
+
+    // ---
+
+    // 서류 평가
+    @Operation(summary = "[서류 평가]", description = "지원서에 대한 기준별 점수와 코멘트를 저장합니다.")
+    @PostMapping("/{applicationId}/doc-evalute")
+    public ResponseEntity<DocumentEvaluation3Response> evaluateDocument(
+            @PathVariable Long recruitId,
+            @PathVariable Long applicationId,
+            @Valid @RequestBody DocumentEvaluation3Request request) {
+
+        DocumentEvaluation3Response response = documentEvaluationService.evaluateDocument(recruitId, applicationId, request);
+        return ResponseEntity.ok(response);
+    }
+
 }

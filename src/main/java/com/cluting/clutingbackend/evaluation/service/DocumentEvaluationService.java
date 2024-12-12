@@ -7,14 +7,19 @@ import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
+import com.cluting.clutingbackend.plan.domain.DocumentCriteria;
+import com.cluting.clutingbackend.plan.domain.DocumentEvalScore;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
+import com.cluting.clutingbackend.plan.repository.DocumentCriteriaRepository;
+import com.cluting.clutingbackend.plan.repository.DocumentEvalScoreRepository;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +34,8 @@ public class DocumentEvaluationService {
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
-    private final UserRepository userRepository;
+    private final DocumentEvalScoreRepository documentEvalScoreRepository;
+    private final DocumentCriteriaRepository documentCriteriaRepository;
 
     // 모집 공고 확인
     private void ensureRecruitExists(Long recruitId) {
@@ -376,5 +382,52 @@ public class DocumentEvaluationService {
         );
 
         return response;
+    }
+
+    // ---
+
+    // 서류 평가
+    @Transactional
+    public DocumentEvaluation3Response evaluateDocument(Long recruitId, Long applicationId, DocumentEvaluation3Request request) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid application ID"));
+
+        DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationId(applicationId);
+        if (evaluator == null) {
+            evaluator = DocumentEvaluator.builder()
+                    .application(application)
+                    .stage(Stage.EDITABLE)
+                    .score(0)
+                    .comment(null)
+                    .build();
+            documentEvaluatorRepository.save(evaluator);
+        }
+
+        int totalScore = 0;
+        for (DocumentEvaluation3Request.CriteriaEvaluation criteriaEvaluation : request.getCriteriaEvaluations()) {
+            DocumentCriteria criteria = documentCriteriaRepository.findById(criteriaEvaluation.getCriteriaId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid criteria ID"));
+
+            DocumentEvalScore evalScore = new DocumentEvalScore();
+            evalScore.setDocumentEvaluator(evaluator);
+            evalScore.setDocumentCriteria(criteria);
+            evalScore.setScore(criteriaEvaluation.getScore());
+            totalScore += criteriaEvaluation.getScore();
+
+            documentEvalScoreRepository.save(evalScore);
+        }
+
+        evaluator.setScore(totalScore);
+        evaluator.setComment(request.getComment());
+        documentEvaluatorRepository.save(evaluator);
+
+        application.setNumClubUser((application.getNumClubUser() == null ? 0 : application.getNumClubUser()) + 1);
+        int newAverageScore = (application.getScore() == null ? totalScore :
+                (application.getScore() * (application.getNumClubUser() - 1) + totalScore) / application.getNumClubUser());
+        application.setScore(newAverageScore);
+
+        applicationRepository.save(application);
+
+        return new DocumentEvaluation3Response(applicationId, totalScore, request.getComment(), "UPDATED");
     }
 }

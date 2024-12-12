@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvaluator, Long> {
     // [서류 평가하기] 평가 전 리스트 불러오기
@@ -33,5 +34,7 @@ public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvalu
 
     // [서류 평가하기] Group ID로 DocumentEvaluator 조회
     List<DocumentEvaluator> findByGroupId(Long groupId);
+
+
 }
 
