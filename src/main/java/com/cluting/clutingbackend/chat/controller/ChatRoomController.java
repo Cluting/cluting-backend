@@ -41,7 +41,8 @@ public class ChatRoomController {
     public String getRooms(){
         return "chat/rooms";
     }
-    @GetMapping(value = "/room")
+
+    @GetMapping("/room")
     public String getRoom(Long chatRoomId, String nickname, Model model){
 
         model.addAttribute("chatRoomId", chatRoomId);

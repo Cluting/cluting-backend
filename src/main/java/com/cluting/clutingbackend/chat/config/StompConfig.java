@@ -15,7 +15,7 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry){
         // stomp 접속 주소 url -> ws://AWS EC2 ip주소/ws
         registry.addEndpoint("/stomp/chat")
-                .setAllowedOrigins("http://localhost:8081")
+                .setAllowedOrigins("http://*:8081")
                 .withSockJS();
     }
 
