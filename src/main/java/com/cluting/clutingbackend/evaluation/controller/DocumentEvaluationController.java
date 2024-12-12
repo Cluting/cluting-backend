@@ -1,9 +1,6 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationCompleteRequest;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationWithStatusResponse;
+import com.cluting.clutingbackend.evaluation.dto.*;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -143,6 +140,19 @@ public class DocumentEvaluationController {
         return ResponseEntity.ok("지원서 상태가 OBJECTION으로 변경되었습니다.");
     }
 
+    // [서류 평가하기] 지원서 상태를 PASS/FAIL로 변경하고 지원자 정보 반환
+    @Operation(summary = "[서류 평가하기] 4-3. <서류 평가 상태 업데이트>",
+            description = "지원서 상태를 합격(PASS) 또는 불합격(FAIL)으로 업데이트하고, 해당 지원자 정보(이름, 그룹명, 전화번호, 합격여부)를 반환합니다."+
+                            "\n\n합격이면 PASS, 불합격이면 FAIL로 전달해주세요.")
+    @PatchMapping("/evaluate")
+    public ResponseEntity<DocumentEvaluation2Response> evaluateApplication(
+            @PathVariable Long recruitId,
+            @RequestParam Long applicationId,
+            @RequestParam String result) {
 
+        // 결과를 PASS 또는 FAIL로 변경 후, 지원자 정보를 포함한 응답 반환
+        DocumentEvaluation2Response response = documentEvaluationService.evaluateApplication(recruitId, applicationId, result);
+        return ResponseEntity.ok(response);
+    }
 
 }

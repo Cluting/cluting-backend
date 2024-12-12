@@ -2,10 +2,7 @@ package com.cluting.clutingbackend.evaluation.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationCompleteRequest;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationWithStatusResponse;
+import com.cluting.clutingbackend.evaluation.dto.*;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
@@ -340,4 +337,44 @@ public class DocumentEvaluationService {
         applicationRepository.save(application);
     }
 
+    // 지원서 상태 업데이트 및 지원자 정보 반환
+    public DocumentEvaluation2Response evaluateApplication(Long recruitId, Long applicationId, String result) {
+        ensureRecruitExists(recruitId);
+
+        // 지원서 찾기
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("지원서를 찾을 수 없습니다."));
+
+        // 결과에 따라 상태 변경 (PASS or FAIL)
+        if ("PASS".equalsIgnoreCase(result)) {
+            application.setState(EvaluateStatus.PASS);
+        } else if ("FAIL".equalsIgnoreCase(result)) {
+            application.setState(EvaluateStatus.FAIL);
+        } else {
+            throw new IllegalArgumentException("결과 값은 'PASS' 또는 'FAIL'이어야 합니다.");
+        }
+
+        // 지원자 정보 (이름, 전화번호) 가져오기
+        User user = application.getUser();
+        String applicantName = user.getName();
+        String applicantPhone = user.getPhone();
+
+        // 그룹명 가져오기
+        DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationId(applicationId);
+        Group group = evaluator != null ? evaluator.getGroup() : null;
+        String groupName = group != null ? group.getName() : null;
+
+        // 상태 저장
+        applicationRepository.save(application);
+
+        // 응답 객체 생성
+        DocumentEvaluation2Response response = new DocumentEvaluation2Response(
+                applicantName,
+                groupName,
+                applicantPhone,
+                result
+        );
+
+        return response;
+    }
 }
