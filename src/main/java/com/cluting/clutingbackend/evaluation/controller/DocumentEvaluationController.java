@@ -128,6 +128,16 @@ public class DocumentEvaluationController {
         return ResponseEntity.ok("서류 평가 완료되었습니다.");
     }
 
+    @Operation(summary = "[서류 평가하기] 4-2. <평가 완료 수정> 전송",
+            description = "서류 평가가 완료되면 모든 지원서의 상태를 PASS 또는 FAIL로 업데이트하고, 해당 리크루팅 단계도 DOC_PASS로 변경합니다.")
+    @PatchMapping("/complete-doc")
+    public ResponseEntity<String> patchCompleteDocumentEvaluation(
+            @PathVariable Long recruitId,
+            @RequestBody List<DocumentEvaluationCompleteRequest> evaluations) {
+        documentEvaluationService.completeDocument2Evaluation(recruitId, evaluations);
+        return ResponseEntity.ok("서류 평가 (PATCH) 완료되었습니다.");
+    }
+
     @Operation(summary = "[서류 평가하기] 4-2. <평가 완료 -이의제기> 지원서 상태를 이의제기 중으로 변경",
             description = "지정된 지원서 ID의 상태를 OBJECTION으로 변경합니다.")
     @PatchMapping("/state/objection")
@@ -154,5 +164,4 @@ public class DocumentEvaluationController {
         DocumentEvaluation2Response response = documentEvaluationService.evaluateApplication(recruitId, applicationId, result);
         return ResponseEntity.ok(response);
     }
-
 }

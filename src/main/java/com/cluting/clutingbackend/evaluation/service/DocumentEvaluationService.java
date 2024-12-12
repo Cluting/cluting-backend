@@ -298,7 +298,7 @@ public class DocumentEvaluationService {
         recruitRepository.save(recruit); // 변경된 리크루팅 저장
     }
 
-    // 평가 완료
+    /// 평가 완료
     public void completeDocument2Evaluation(Long recruitId, List<DocumentEvaluationCompleteRequest> evaluations) {
         // 리크루팅이 존재하는지 확인
         Recruit recruit = recruitRepository.findById(recruitId)
@@ -306,13 +306,13 @@ public class DocumentEvaluationService {
 
         // 각 평가를 처리
         for (DocumentEvaluationCompleteRequest evaluation : evaluations) {
-            // 사용자의 이름과 전화번호로 해당 Application을 찾음
-            User user = userRepository.findByNameAndPhone(evaluation.getName(), evaluation.getPhone())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
-
-            // 해당 사용자의 지원서를 찾음
-            Application application = applicationRepository.findByUserAndRecruit(user, recruit)
+            Application application = applicationRepository.findById(evaluation.getId())
                     .orElseThrow(() -> new IllegalArgumentException("해당 지원서를 찾을 수 없습니다."));
+
+            // 지원서의 리크루팅 정보가 올바른지 확인
+            if (!application.getRecruit().getId().equals(recruitId)) {
+                throw new IllegalArgumentException("리크루팅 ID가 일치하지 않습니다.");
+            }
 
             // 상태 업데이트
             application.setState(EvaluateStatus.valueOf(evaluation.getState().toUpperCase()));

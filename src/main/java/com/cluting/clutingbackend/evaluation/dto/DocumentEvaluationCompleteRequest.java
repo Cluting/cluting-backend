@@ -6,7 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DocumentEvaluationCompleteRequest {
-    private String name;        // 사용자의 이름
-    private String phone;       // 사용자의 전화번호
+    private  Long id;
     private String state;       // 상태 (PASS 또는 FAIL)
 }
