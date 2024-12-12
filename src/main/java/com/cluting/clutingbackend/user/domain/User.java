@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.user.domain;
 
+import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.Role;
 import com.cluting.clutingbackend.global.enums.Semester;
@@ -76,4 +77,15 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Todo> todoList;
+
+    public void updateUserInfo(ApplicantProfileRequestDto dto){
+        this.name= dto.getName();
+        this.phone = dto.getPhoneNum();
+        this.location = dto.getAddr();
+        this.school = dto.getUniversity();
+        this.major = dto.getMajor();
+        this.doubleMajor = dto.getDoubleMajor();
+        this.studentStatus = dto.getStudentStatus();
+        this.semester = dto.getSemester();
+    }
 }

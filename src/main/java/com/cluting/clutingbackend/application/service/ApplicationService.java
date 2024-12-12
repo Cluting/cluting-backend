@@ -1,6 +1,8 @@
 package com.cluting.clutingbackend.application.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
+import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
+import com.cluting.clutingbackend.application.dto.response.ApplicantProfileResponseDto;
 import com.cluting.clutingbackend.application.dto.response.ApplicationStatusResponseDto;
 import com.cluting.clutingbackend.application.dto.response.RecruitStatus;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
@@ -10,6 +12,7 @@ import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.repository.RecruitScheduleRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +68,32 @@ public class ApplicationService {
         } else{
             return RecruitStatus.E; // 최종합격자발표
         }
+    }
+
+    public ApplicantProfileResponseDto getInfo(CustomUserDetails userDetails){
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(()-> new RuntimeException("User Not Found!"));
+
+        return ApplicantProfileResponseDto.builder()
+                .name(user.getName())
+                .phoneNum(user.getPhone())
+                .addr(user.getLocation())
+                .university(user.getSchool())
+                .major(user.getMajor())
+                .doubleMajor(user.getDoubleMajor())
+                .studentStatus(user.getStudentStatus())
+                .semester(user.getSemester())
+                .build();
+
+    }
+
+    @Transactional
+    public String changeUserInfo(CustomUserDetails userDetails, ApplicantProfileRequestDto dto){
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(()-> new RuntimeException("User Not Found!"));
+        user.updateUserInfo(dto);
+
+        return "User's Info is Updated!" + dto.toString();
     }
 
 
