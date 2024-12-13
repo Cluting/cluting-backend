@@ -2,19 +2,15 @@ package com.cluting.clutingbackend.evaluation.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.evaluation.dto.*;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
-import com.cluting.clutingbackend.plan.domain.DocumentCriteria;
-import com.cluting.clutingbackend.plan.domain.DocumentEvalScore;
-import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
-import com.cluting.clutingbackend.plan.domain.Group;
-import com.cluting.clutingbackend.plan.repository.DocumentCriteriaRepository;
-import com.cluting.clutingbackend.plan.repository.DocumentEvalScoreRepository;
-import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
-import com.cluting.clutingbackend.plan.repository.GroupRepository;
+import com.cluting.clutingbackend.plan.domain.*;
+import com.cluting.clutingbackend.plan.repository.*;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
@@ -32,10 +28,15 @@ public class DocumentEvaluationService {
 
     private final ApplicationRepository applicationRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
-    private final RecruitRepository recruitRepository;
-    private final GroupRepository groupRepository;
     private final DocumentEvalScoreRepository documentEvalScoreRepository;
     private final DocumentCriteriaRepository documentCriteriaRepository;
+    private final DocumentAnswerRepository documentAnswerRepository;
+    private final DocumentQuestionRepository documentQuestionRepository;
+    private final OptionRepository optionRepository;
+    private final TalentProfileRepository talentProfileRepository;
+    private final ClubUserRepository clubUserRepository;
+    private final RecruitRepository recruitRepository;
+    private final GroupRepository groupRepository;
 
     // 모집 공고 확인
     private void ensureRecruitExists(Long recruitId) {
@@ -50,13 +51,13 @@ public class DocumentEvaluationService {
 
         return applications.stream()
                 .filter(application -> {
-                    DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationId(application.getId());
-                    if (evaluator == null || evaluator.getClubUser() == null) {
-                        return false;  // evaluator가 없거나 clubUser가 없으면 필터링
+                    List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());  // 여러 DocumentEvaluator 가져오기
+                    if (evaluators.isEmpty() || evaluators.stream().noneMatch(evaluator -> evaluator.getClubUser() != null && evaluator.getStage().name().equals(stage)
+                            && (request.getGroupName() == null || evaluator.getGroup() != null && evaluator.getGroup().getName().equals(request.getGroupName()))
+                            && evaluator.getClubUser().getUser().getId().equals(currentClubUserId))) {
+                        return false;  // 필터링: evaluator가 없거나 조건에 맞지 않으면 제외
                     }
-                    return evaluator.getStage().name().equals(stage)
-                            && (request.getGroupName() == null || (evaluator.getGroup() != null && evaluator.getGroup().getName().equals(request.getGroupName())))
-                            && evaluator.getClubUser().getUser().getId().equals(currentClubUserId);
+                    return true;
                 })
                 .map(application -> mapToResponse(application, recruitId))  // recruitId 전달
                 .sorted((response1, response2) -> {
@@ -175,8 +176,8 @@ public class DocumentEvaluationService {
 
     // 상태와 합격 여부를 포함한 response 생성
     private DocumentEvaluationWithStatusResponse mapToResponseWithStatus(Application app, Long recruitId) {
-        DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationId(app.getId());
-        Group group = evaluator != null ? evaluator.getGroup() : null;
+        List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(app.getId());
+        Group group = evaluators.isEmpty() ? null : evaluators.get(0).getGroup();  // 첫 번째 평가자의 그룹을 사용
 
         return new DocumentEvaluationWithStatusResponse(
                 app.getId(),
@@ -268,16 +269,16 @@ public class DocumentEvaluationService {
         int totalEvaluableClubUsers = documentEvaluatorRepository.countUniqueClubUserIdsByRecruitIdAndApplicationId(recruitId, application.getId());
 
         // 문서 평가자 정보 가져오기
-        DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationId(application.getId());
-        Group group = evaluator != null ? evaluator.getGroup() : null;
+        List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
+        Group group = evaluators.isEmpty() ? null : evaluators.get(0).getGroup();  // 첫 번째 평가자의 그룹을 사용
 
         return new DocumentEvaluationResponse(
-                evaluator != null ? evaluator.getStage().name() : null,          // evaluationStage
-                user.getName(),                                                  // applicantName
-                user.getPhone(),                                                 // applicantPhone
-                group != null ? group.getName() : null,                          // groupName
-                application.getNumClubUser() + "/" + totalEvaluableClubUsers,   // applicationNumClubUser
-                application.getCreatedAt()                                        // createdAt 값 추가
+                evaluators.isEmpty() ? null : evaluators.get(0).getStage().name(),  // evaluationStage
+                user.getName(),                                                     // applicantName
+                user.getPhone(),                                                    // applicantPhone
+                group != null ? group.getName() : null,                             // groupName
+                application.getNumClubUser() + "/" + totalEvaluableClubUsers,      // applicationNumClubUser
+                application.getCreatedAt()                                           // createdAt 값 추가
         );
     }
 
@@ -366,8 +367,8 @@ public class DocumentEvaluationService {
         String applicantPhone = user.getPhone();
 
         // 그룹명 가져오기
-        DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationId(applicationId);
-        Group group = evaluator != null ? evaluator.getGroup() : null;
+        List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(applicationId);
+        Group group = evaluators.isEmpty() ? null : evaluators.get(0).getGroup(); // 첫 번째 평가자의 그룹 사용
         String groupName = group != null ? group.getName() : null;
 
         // 상태 저장
@@ -386,13 +387,15 @@ public class DocumentEvaluationService {
 
     // ---
 
-    // 서류 평가
+    // 서류 평가 보내기
     @Transactional
     public DocumentEvaluation3Response evaluateDocument(Long recruitId, Long applicationId, DocumentEvaluation3Request request) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid application ID"));
 
-        DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationId(applicationId);
+        List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(applicationId);
+        DocumentEvaluator evaluator = evaluators.isEmpty() ? null : evaluators.get(0); // 첫 번째 평가자 선택
+
         if (evaluator == null) {
             evaluator = DocumentEvaluator.builder()
                     .application(application)
@@ -430,4 +433,90 @@ public class DocumentEvaluationService {
 
         return new DocumentEvaluation3Response(applicationId, totalScore, request.getComment(), "UPDATED");
     }
+
+
+    // 서류평가 가져오기
+    public DocumentEvaluation4Response getDocumentEvaluation(Long recruitId, Long applicationId, CustomUserDetails currentUser) {
+        // 1. 지원자 정보
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
+        User user = application.getUser();
+        List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(applicationId);
+        String groupName = evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getName(); // 첫 번째 평가자의 그룹 사용
+
+        ApplicantInfo applicantInfo = ApplicantInfo.of(
+                user.getName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getLocation(),
+                user.getProfile(),
+                user.getSchool(),
+                user.getMajor(),
+                user.getDoubleMajor(),
+                String.valueOf(user.getSemester()),
+                groupName
+        );
+
+        // 2. 지원서 질문 및 답변
+        List<DocumentAnswer> answers = documentAnswerRepository.findByApplicationId(applicationId);
+        List<QuestionAndAnswer> questionAndAnswers = new ArrayList<>();
+        for (DocumentAnswer answer : answers) {
+            DocumentQuestion question = documentQuestionRepository.findById(answer.getDocumentQuestion().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
+
+            List<OptionResponse> options = optionRepository.findByDocumentQuestionId(question.getId())
+                    .stream()
+                    .map(OptionResponse::of)
+                    .toList();
+
+            questionAndAnswers.add(QuestionAndAnswer.of(
+                    question.getContent(),
+                    answer.getContent(),
+                    options
+            ));
+        }
+
+        // 3. 인재상
+        List<TalentProfile> talentProfiles = talentProfileRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
+
+        if (talentProfiles.isEmpty()) {
+            throw new ResourceNotFoundException("Talent Profile not found");
+        }
+
+        // 프로필 정보를 리스트로 반환
+        List<String> talentProfileDetails = talentProfiles.stream()
+                .map(TalentProfile::getProfile)
+                .collect(Collectors.toList());
+
+        // 4. 총점 평균
+        Integer averageScore = application.getScore();
+
+        // 5. 다른 운영진 평가 보기
+        List<EvaluatorScores> evaluatorScores = evaluators.stream()
+                .map(otherEvaluator -> EvaluatorScores.of(otherEvaluator, documentEvalScoreRepository))
+                .toList();
+
+        // 6. 내 평가 보기
+        Long currentClubUserId = currentUser.getUser().getId();
+        ClubUser currentClubUser = clubUserRepository.findById(currentClubUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Club User not found"));
+        EvaluatorScores myEvaluation = EvaluatorScores.ofForUser(evaluators.get(0), currentClubUser, documentEvalScoreRepository);
+
+        return new DocumentEvaluation4Response(
+                applicantInfo,
+                questionAndAnswers,
+                talentProfileDetails,
+                averageScore,
+                evaluatorScores,
+                myEvaluation
+        );
+    }
+
+
+    public static class ResourceNotFoundException extends RuntimeException {
+        public ResourceNotFoundException(String message) {
+            super(message);
+        }
+    }
+
 }

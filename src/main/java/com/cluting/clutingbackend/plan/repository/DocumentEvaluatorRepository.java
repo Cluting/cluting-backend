@@ -15,7 +15,7 @@ public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvalu
     List<DocumentEvaluator> findByApplicationIdsAndStageBefore(@Param("applicationIds") List<Long> applicationIds);
 
     // [서류 평가하기] 지원서 ID로 DocumentEvaluator 찾기
-    DocumentEvaluator findByApplicationId(Long applicationId);
+    List<DocumentEvaluator> findByApplicationId(Long applicationId);
 
     // [서류 평가하기] 평가할 전체 운영진 수
     @Query("SELECT COUNT(DISTINCT de.clubUser.id) FROM DocumentEvaluator de " +
@@ -35,6 +35,7 @@ public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvalu
     // [서류 평가하기] Group ID로 DocumentEvaluator 조회
     List<DocumentEvaluator> findByGroupId(Long groupId);
 
+    List<DocumentEvaluator> findAllByApplicationId(Long applicationId);
 
 }
 

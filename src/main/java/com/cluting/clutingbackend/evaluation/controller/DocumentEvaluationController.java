@@ -169,7 +169,7 @@ public class DocumentEvaluationController {
     // ---
 
     // 서류 평가
-    @Operation(summary = "[서류 평가]", description = "지원서에 대한 기준별 점수와 코멘트를 저장합니다.")
+    @Operation(summary = "[서류 평가 전송]", description = "지원서에 대한 기준별 점수와 코멘트를 저장합니다.")
     @PostMapping("/{applicationId}/doc-evalute")
     public ResponseEntity<DocumentEvaluation3Response> evaluateDocument(
             @PathVariable Long recruitId,
@@ -177,6 +177,17 @@ public class DocumentEvaluationController {
             @Valid @RequestBody DocumentEvaluation3Request request) {
 
         DocumentEvaluation3Response response = documentEvaluationService.evaluateDocument(recruitId, applicationId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    // 서류평가
+    @Operation(summary = "[서류 평가 내용 가져오기]", description = "지원서 정보 및 내용, 기준별 점수와 코멘트를 가져옵니다.")
+    @GetMapping("/{applicationId}/doc-evaluate")
+    public ResponseEntity<DocumentEvaluation4Response> getDocumentEvaluation(
+            @PathVariable Long recruitId,
+            @PathVariable Long applicationId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+        DocumentEvaluation4Response response = documentEvaluationService.getDocumentEvaluation(recruitId, applicationId, currentUser);
         return ResponseEntity.ok(response);
     }
 

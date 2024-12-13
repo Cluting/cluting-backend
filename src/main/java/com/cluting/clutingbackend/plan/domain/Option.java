@@ -2,9 +2,11 @@ package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
 
 @Entity
 @Data
+@Getter
 @Table(name ="tb_option")
 public class Option {
 
