@@ -8,6 +8,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.time.LocalDateTime;
 
@@ -30,6 +31,13 @@ public class StompRabbitController {
         template.convertAndSend(CHAT_EXCHANGE_NAME, "room." + chatRoomId, chat); // exchange
         //template.convertAndSend("room." + chatRoomId, chat); //queue
         //template.convertAndSend("amq.topic", "room." + chatRoomId, chat); //topic
+    }
+
+    @GetMapping("/send")
+    public String sendMessage() {
+        ChatDto dto = new ChatDto(1L,1L,1L,"HI TEST","SEOUL",LocalDateTime.now());
+        template.convertAndSend(CHAT_EXCHANGE_NAME, "room." + 1, dto);
+        return "Message sent!";
     }
 
     @MessageMapping("chat.message.{chatRoomId}")

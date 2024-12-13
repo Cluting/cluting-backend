@@ -30,6 +30,9 @@ public class StompConfig implements WebSocketMessageBrokerConfigurer {
         registry.setPathMatcher(new AntPathMatcher(".")); // url을 chat/room/3 -> chat.room.3으로 참조하기 위한 설정
 
         registry.enableStompBrokerRelay("/queue","/topic","/exchange","amq/queue");
-
+//                .setRelayHost("http://13.125.49.239/")  // RabbitMQ의 IP 주소
+//                .setRelayPort(61613)           // STOMP 포트
+//                .setClientLogin("cluting")     // RabbitMQ 사용자 이름
+//                .setClientPasscode("happycluting"); // RabbitMQ 비밀번호;
     }
 }

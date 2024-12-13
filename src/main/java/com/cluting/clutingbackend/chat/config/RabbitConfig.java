@@ -32,6 +32,9 @@ public class RabbitConfig {
     @Value("${spring.rabbitmq.password}")
     private String rabbitPassword;
 
+    @Value("${spring.rabbitmq.port}")
+    private Integer rabbitPort;
+
     private static final String CHAT_QUEUE_NAME = "chat.queue";
     private static final String CHAT_EXCHANGE_NAME = "chat.exchange";
     private static final String ROUTING_KEY = "room.*";
@@ -76,9 +79,9 @@ public class RabbitConfig {
     //Spring에서 자동생성해주는 ConnectionFactory는 SimpleConnectionFactory인가? 그건데
     //여기서 사용하는 건 CachingConnectionFacotry라 새로 등록해줌
     @Bean
-    public ConnectionFactory connectionFactory(){
-        CachingConnectionFactory factory = new CachingConnectionFactory();
-        factory.setHost(rabbitHost);
+    public ConnectionFactory connectionFactory() {
+        CachingConnectionFactory factory = new CachingConnectionFactory(rabbitHost);
+        factory.setPort(rabbitPort);
         factory.setUsername(rabbitUsername);
         factory.setPassword(rabbitPassword);
         return factory;
