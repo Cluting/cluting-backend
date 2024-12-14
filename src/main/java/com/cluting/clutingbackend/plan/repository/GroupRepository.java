@@ -20,4 +20,6 @@ public interface GroupRepository extends JpaRepository<Group,Long> {
     @Query("SELECT g FROM Group g WHERE g.recruit.id = :recruitId")
     List<Group> findAllByRecruitId(@Param("recruitId") Long recruitId);
 
+    Optional<Group> findById(Long id);
+
 }
