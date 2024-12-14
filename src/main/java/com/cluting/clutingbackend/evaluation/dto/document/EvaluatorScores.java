@@ -1,4 +1,4 @@
-package com.cluting.clutingbackend.evaluation.dto;
+package com.cluting.clutingbackend.evaluation.dto.document;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.plan.domain.DocumentEvalScore;

@@ -1,15 +1,13 @@
 package com.cluting.clutingbackend.evaluation.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
 @AllArgsConstructor
-public class DocumentEvaluation2Response {
+public class GroupResponse {
+    private Long groupId;
     private String name;
-    private String groupName;
-    private String phone;
-    private String result;
 }

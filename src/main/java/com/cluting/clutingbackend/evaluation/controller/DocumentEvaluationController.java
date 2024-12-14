@@ -1,10 +1,9 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
-import com.cluting.clutingbackend.evaluation.dto.*;
+import com.cluting.clutingbackend.evaluation.dto.document.*;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
