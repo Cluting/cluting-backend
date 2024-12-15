@@ -2,19 +2,23 @@ package com.cluting.clutingbackend.evaluation.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
+import com.cluting.clutingbackend.evaluation.dto.document.ApplicantInfo;
 import com.cluting.clutingbackend.evaluation.dto.interview.*;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
+import com.cluting.clutingbackend.global.enums.QuestionType2;
+import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
-import com.cluting.clutingbackend.interview.domain.Interview;
-import com.cluting.clutingbackend.interview.domain.InterviewEvaluator;
-import com.cluting.clutingbackend.interview.repository.InterviewEvaluatorRepository;
-import com.cluting.clutingbackend.interview.repository.InterviewRepository;
+import com.cluting.clutingbackend.interview.domain.*;
+import com.cluting.clutingbackend.interview.repository.*;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
-import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
+import com.cluting.clutingbackend.plan.domain.TalentProfile;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
+import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
@@ -33,10 +37,14 @@ public class InterviewEvaluationService {
     private final ApplicationRepository applicationRepository;
     private final InterviewRepository interviewRepository;
     private final InterviewEvaluatorRepository interviewEvaluatorRepository;
-    private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final ClubUserRepository clubUserRepository;
     private final RecruitRepository recruitRepository;
+    private final TalentProfileRepository talentProfileRepository;
+    private final InterviewScoreRepository interviewScoreRepository;
+    private final InterviewQuestionRepository interviewQuestionRepository;
+    private final InterviewCriteriaRepository interviewCriteriaRepository;
 
     public List<InterviewEvaluationResponse> getInterviewEvaluations(Long recruitId, CustomUserDetails currentUser, InterviewEvaluationRequest request) {
         Long currentClubUserId = currentUser.getUser().getId();
@@ -276,5 +284,130 @@ public class InterviewEvaluationService {
         }
         return groupName;
     }
+
+    public EachInterviewEvaluationResponse getInterviewEvaluation(Long recruitId, Long interviewId, CustomUserDetails currentUser) {
+        // 1. 지원자 정보
+        Interview interview = interviewRepository.findById(interviewId)
+                .orElseThrow(() -> new DocumentEvaluationService.ResourceNotFoundException("Interview not found"));
+        Application application = interview.getApplication();
+        User user = application.getUser();
+
+        List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByInterviewId(interviewId);
+        String groupName = evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getName();
+
+        ApplicantInfo applicantInfo = ApplicantInfo.of(
+                user.getName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getLocation(),
+                user.getProfile(),
+                user.getSchool(),
+                user.getMajor(),
+                user.getDoubleMajor(),
+                String.valueOf(user.getSemester()),
+                groupName
+        );
+
+        // 2. 면접 질문 및 답변
+        List<InterviewQuestion> interviewQuestions = interviewQuestionRepository.findByInterviewId(interviewId);
+        Map<QuestionType2, List<InterviewQA>> groupedQuestions = new HashMap<>();
+        for (QuestionType2 type : QuestionType2.values()) {
+            groupedQuestions.put(type, new ArrayList<>());
+        }
+
+        for (InterviewQuestion question : interviewQuestions) {
+            InterviewAnswer answer = question.getInterviewAnswer();
+            groupedQuestions.get(question.getType()).add(InterviewQA.of(
+                    question.getContent(),
+                    answer == null ? null : answer.getContent()
+            ));
+        }
+
+        // 3. 인재상
+        List<TalentProfile> talentProfiles = talentProfileRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
+        List<String> talentProfileDetails = talentProfiles.stream()
+                .map(TalentProfile::getProfile)
+                .collect(Collectors.toList());
+
+        // 4. 총점 평균
+        Integer averageScore = interview.getScore();
+
+        // 5. 다른 운영진 평가 보기
+        List<InterviewEvaluatorScores> evaluatorScores = evaluators.stream()
+                .map(evaluator -> InterviewEvaluatorScores.of(evaluator, interviewScoreRepository))
+                .toList();
+
+        // 6. 내 평가 보기
+        Long currentClubUserId = currentUser.getUser().getId();
+        ClubUser currentClubUser = clubUserRepository.findById(currentClubUserId)
+                .orElseThrow(() -> new DocumentEvaluationService.ResourceNotFoundException("Club User not found"));
+        InterviewEvaluatorScores myEvaluation = evaluators.stream()
+                .filter(evaluator -> evaluator.getClubUser().getId().equals(currentClubUserId))
+                .findFirst()
+                .map(evaluator -> InterviewEvaluatorScores.of(evaluator, interviewScoreRepository))
+                .orElse(null);
+
+        return new EachInterviewEvaluationResponse(
+                applicantInfo,
+                groupedQuestions,
+                talentProfileDetails,
+                averageScore,
+                evaluatorScores,
+                myEvaluation
+        );
+    }
+
+    @Transactional
+    public InterviewEvaluationResponseDto evaluateInterview(Long interviewId, Long clubUserId, InterviewEvaluationRequestDto request) {
+        // 면접 평가자 찾기
+        Interview interview = interviewRepository.findById(interviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid interview ID"));
+
+        // 면접 평가자(InterviewEvaluator) 찾기
+        InterviewEvaluator evaluator = interviewEvaluatorRepository.findByInterviewIdAndClubUserId(interviewId, clubUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Evaluator not found"));
+
+        // 평가 기준 처리
+        int totalScore = 0;
+        for (InterviewEvaluationRequestDto.CriteriaEvaluation criteriaEvaluation : request.getCriteriaEvaluations()) {
+            InterviewCriteria criteria = interviewCriteriaRepository.findById(criteriaEvaluation.getCriteriaId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid criteria ID"));
+
+            InterviewScore score = new InterviewScore();
+            score.setInterviewCriteria(criteria);
+            score.setInterviewEvaluator(evaluator);
+            score.setScore(criteriaEvaluation.getScore());
+            totalScore += criteriaEvaluation.getScore();
+
+            interviewScoreRepository.save(score);
+        }
+
+        // 평가자의 총 점수 업데이트
+        evaluator.setScore(totalScore);
+        evaluator.setComment(request.getComment());
+        interviewEvaluatorRepository.save(evaluator);
+
+        // 면접 엔티티의 numClubUser 업데이트 (null이면 1로 설정, 아니면 증가)
+        if (interview.getNumClubUser() == null) {
+            interview.setNumClubUser(1);  // 처음 평가하는 경우 numClubUser가 null일 수 있으므로 1로 설정
+        } else {
+            interview.setNumClubUser(interview.getNumClubUser() + 1);  // 기존 값에 1을 더함
+        }
+
+        // 새로운 평균 점수 계산
+        int newAverageScore = interview.getScore() == null ?
+                totalScore : (interview.getScore() * (interview.getNumClubUser() - 1) + totalScore) / interview.getNumClubUser();
+        interview.setScore(newAverageScore);
+
+        // 면접 상태를 'EDITABLE'로 업데이트
+        evaluator.setStage(Stage.EDITABLE);
+        interviewEvaluatorRepository.save(evaluator);
+        interviewRepository.save(interview);
+
+        // 응답 생성
+        return new InterviewEvaluationResponseDto(interviewId, totalScore, request.getComment(), "UPDATED");
+    }
+
+
 
 }
