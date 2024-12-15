@@ -11,6 +11,7 @@ import com.cluting.clutingbackend.interview.domain.Interview;
 import com.cluting.clutingbackend.interview.domain.InterviewEvaluator;
 import com.cluting.clutingbackend.interview.repository.InterviewEvaluatorRepository;
 import com.cluting.clutingbackend.interview.repository.InterviewRepository;
+import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
@@ -70,6 +71,8 @@ public class InterviewEvaluationService {
         int totalEvaluators = interviewEvaluatorRepository.countDistinctByInterviewId(interview.getId());
         int currentEvaluators = interview.getNumClubUser() != null ? interview.getNumClubUser() : 0;
 
+
+
         return InterviewEvaluationResponse.builder()
                 .stage(evaluator.getStage().name())
                 .applicantName(applicant.getName())
@@ -91,7 +94,7 @@ public class InterviewEvaluationService {
 
     public List<GroupResponse> getGroupsByRecruitId(Long recruitId) {
         // Group 엔티티에서 recruitId로 그룹 조회
-        List<Group> groups = groupRepository.findAllByRecruitId(recruitId);
+        List<Group> groups = groupRepository.findAllByRecruitIdForInterview(recruitId);
 
         // GroupResponse로 매핑
         return groups.stream()
@@ -254,4 +257,24 @@ public class InterviewEvaluationService {
         interview.setState(EvaluateStatus.OBJECTION);
         interviewRepository.save(interview);
     }
+
+    private static String getString(List<DocumentEvaluator> evaluators) {
+        String groupName = null;
+        if(evaluators.get(0).getGroup().isCommon()){ //공통그룹이면
+            for (DocumentEvaluator evaluator : evaluators){
+                if (evaluator.getGroup().getEvalType().toString().equals("DOCUMENT")){
+                    groupName = evaluators.get(0).getGroup().getName();
+                    System.out.println("@@----\n\n그룹명 = "+evaluator.getGroup().getEvalType()+"\n\n");
+                }
+                else{
+                    groupName = "";
+                }
+            }
+        }
+        else {
+            groupName = evaluators.get(0).getGroup().getName(); // 첫 번째 평가자의 그룹 사용
+        }
+        return groupName;
+    }
+
 }

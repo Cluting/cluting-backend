@@ -85,6 +85,7 @@ public class InterviewEvaluationController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "[면접 평가하기] 이의제기")
     @PatchMapping("/{interviewId}/state")
     public ResponseEntity<Void> updateStateToObjection(@PathVariable Long interviewId) {
         interviewEvaluationService.updateStateToObjection(interviewId);

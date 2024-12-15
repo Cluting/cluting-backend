@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
+import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.*;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
@@ -187,6 +188,14 @@ public class DocumentEvaluationController {
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         DocumentEvaluation4Response response = documentEvaluationService.getDocumentEvaluation(recruitId, applicationId, currentUser);
         return ResponseEntity.ok(response);
+    }
+
+
+    @Operation(summary = "[서류 평가하기-필터링 용] 그룹명 가져오기")
+    @GetMapping("/groups")
+    public ResponseEntity<List<GroupResponse>> getGroupsByRecruitId(@RequestParam Long recruitId) {
+        List<GroupResponse> groups = documentEvaluationService.getGroupsByRecruitId(recruitId);
+        return ResponseEntity.ok(groups);
     }
 
 }

@@ -4,6 +4,7 @@ import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.*;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
@@ -269,13 +270,13 @@ public class DocumentEvaluationService {
 
         // 문서 평가자 정보 가져오기
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
-        Group group = evaluators.isEmpty() ? null : evaluators.get(0).getGroup();  // 첫 번째 평가자의 그룹을 사용
+        String groupName = getString(evaluators);
 
         return new DocumentEvaluationResponse(
                 evaluators.isEmpty() ? null : evaluators.get(0).getStage().name(),  // evaluationStage
                 user.getName(),                                                     // applicantName
                 user.getPhone(),                                                    // applicantPhone
-                group != null ? group.getName() : null,                             // groupName
+                groupName,                           // groupName
                 application.getNumClubUser() + "/" + totalEvaluableClubUsers,      // applicationNumClubUser
                 application.getCreatedAt()                                           // createdAt 값 추가
         );
@@ -367,8 +368,8 @@ public class DocumentEvaluationService {
 
         // 그룹명 가져오기
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(applicationId);
-        Group group = evaluators.isEmpty() ? null : evaluators.get(0).getGroup(); // 첫 번째 평가자의 그룹 사용
-        String groupName = group != null ? group.getName() : null;
+
+        String groupName = getString(evaluators);
 
         // 상태 저장
         applicationRepository.save(application);
@@ -441,7 +442,8 @@ public class DocumentEvaluationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Application not found"));
         User user = application.getUser();
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(applicationId);
-        String groupName = evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getName(); // 첫 번째 평가자의 그룹 사용
+
+        String groupName = getString(evaluators);
 
         ApplicantInfo applicantInfo = ApplicantInfo.of(
                 user.getName(),
@@ -511,11 +513,40 @@ public class DocumentEvaluationService {
         );
     }
 
+    private static String getString(List<DocumentEvaluator> evaluators) {
+        String groupName = null;
+        if(evaluators.get(0).getGroup().isCommon()){ //공통그룹이면
+            for (DocumentEvaluator evaluator : evaluators){
+                if (evaluator.getGroup().getEvalType().toString().equals("DOCUMENT")){
+                    groupName = evaluators.get(0).getGroup().getName();
+                    System.out.println("@@----\n\n그룹명 = "+evaluator.getGroup().getEvalType()+"\n\n");
+                }
+                else{
+                    groupName = "";
+                }
+            }
+        }
+        else {
+            groupName = evaluators.get(0).getGroup().getName(); // 첫 번째 평가자의 그룹 사용
+        }
+        return groupName;
+    }
+
 
     public static class ResourceNotFoundException extends RuntimeException {
         public ResourceNotFoundException(String message) {
             super(message);
         }
+    }
+
+    public List<GroupResponse> getGroupsByRecruitId(Long recruitId) {
+        // Group 엔티티에서 recruitId로 그룹 조회
+        List<Group> groups = groupRepository.findAllByRecruitIdForDocument(recruitId);
+
+        // GroupResponse로 매핑
+        return groups.stream()
+                .map(group -> new GroupResponse(group.getId(), group.getName()))
+                .toList();
     }
 
 }

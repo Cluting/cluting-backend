@@ -19,6 +19,18 @@ public interface GroupRepository extends JpaRepository<Group,Long> {
 
     @Query("SELECT g FROM Group g WHERE g.recruit.id = :recruitId")
     List<Group> findAllByRecruitId(@Param("recruitId") Long recruitId);
+    @Query("""
+    SELECT g FROM Group g\s
+    WHERE g.recruit.id = :recruitId\s
+    AND (g.isCommon = false OR (g.isCommon = true AND g.evalType = 'DOCUMENT'))
+   \s""")
+    List<Group> findAllByRecruitIdForDocument(@Param("recruitId") Long recruitId);
+    @Query("""
+    SELECT g FROM Group g\s
+    WHERE g.recruit.id = :recruitId\s
+    AND (g.isCommon = false OR (g.isCommon = true AND g.evalType = 'INTERVIEW'))
+   \s""")
+    List<Group> findAllByRecruitIdForInterview(@Param("recruitId") Long recruitId);
 
     Optional<Group> findById(Long id);
 
