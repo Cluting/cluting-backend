@@ -5,11 +5,9 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum SortType {
-    DEADLINE("마감임박순"),
-    NEWEST("최신순"),
-    OLDEST("오래된순"),
-    INORDER("가나다순");
+public enum EvalType {
+    DOCUMENT("서류"),
+    INTERVIEW("면접");
 
     private final String description;
 }

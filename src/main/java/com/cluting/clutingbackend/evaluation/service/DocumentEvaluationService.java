@@ -2,17 +2,23 @@ package com.cluting.clutingbackend.evaluation.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
+import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
+import com.cluting.clutingbackend.plan.repository.GroupRepository;
+import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -22,6 +28,7 @@ public class DocumentEvaluationService {
     private final ApplicationRepository applicationRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final RecruitRepository recruitRepository;
+    private final GroupRepository groupRepository;
 
     // 모집 공고가 존재하는지 확인
     private void ensureRecruitExists(Long recruitId) {
@@ -111,4 +118,78 @@ public class DocumentEvaluationService {
                 .collect(Collectors.toList());
     }
 
+    // 설정한 서류 합격자 수 조회
+    @Transactional(readOnly = true)
+    public RecruitNumResponseDto findDocRecruit(Long recruitId) {
+        Map<String, Integer> groupMap = new HashMap<>();
+        List<Group> groups = groupRepository.findByRecruitId(recruitId);
+        int totalNum = 0;
+        for (Group group : groups) {
+            totalNum += group.getNumRecruit();
+            if (!group.isCommon()) {
+                groupMap.put(group.getName(), group.getNumDoc());
+            }
+        }
+
+        return new RecruitNumResponseDto(totalNum, groupMap);
+    }
+
+    // 서류 합격/불합격 조회
+    @Transactional(readOnly = true)
+    public DocumentEvaluateResultsResponseDto findPassAndFail(Long recruitId, SortType sortType) {
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+
+        Map<String, Integer> groupCountMap = new HashMap<>();
+        List<DocumentEvaluateResultResponseDto> passed = new ArrayList<>();
+        List<DocumentEvaluateResultResponseDto> failed = new ArrayList<>();
+
+        applications.forEach(application -> {
+            DocumentEvaluator documentEvaluator = documentEvaluatorRepository.findByApplicationId(application.getId());
+
+            String groupName = documentEvaluator.getGroup().getName();
+            groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
+
+            DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
+                    application,
+                    documentEvaluator.getStage(),
+                    application.getState() == EvaluateStatus.PASS ? "합격" : "불합격"
+            );
+
+            if (application.getState() == EvaluateStatus.PASS) {
+                passed.add(dto);
+            } else if (application.getState() == EvaluateStatus.FAIL) {
+                failed.add(dto);
+            }
+        });
+        sortAndAssignRank(passed);
+        sortAndAssignRank(failed);
+
+        if (sortType == SortType.NEWEST) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt).reversed());
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt).reversed());
+        } else if (sortType == SortType.OLDEST) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt));
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt));
+        } else if (sortType == SortType.INORDER) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getName));
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getName));
+        } else {
+            throw new IllegalArgumentException("정의되지 않은 정렬 방식 입니다.");
+        }
+
+        return DocumentEvaluateResultsResponseDto.builder()
+                .passedCnt(passed.size())
+                .byGroup(groupCountMap)
+                .passed(passed)
+                .failedCnt(failed.size())
+                .failed(failed)
+                .build();
+    }
+
+    private void sortAndAssignRank(List<DocumentEvaluateResultResponseDto> list) {
+        list.sort((o1, o2) -> Integer.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
+        }
+    }
 }

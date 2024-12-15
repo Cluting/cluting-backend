@@ -1,14 +1,10 @@
 package com.cluting.clutingbackend.recruit.service;
 
-
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
-import com.cluting.clutingbackend.global.enums.Category;
-import com.cluting.clutingbackend.global.enums.ClubType;
-import com.cluting.clutingbackend.global.enums.SortType;
-import com.cluting.clutingbackend.global.enums.Stage;
+import com.cluting.clutingbackend.global.enums.*;
 import com.cluting.clutingbackend.global.util.StaticValue;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
@@ -24,7 +20,6 @@ import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitsResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
-import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,9 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class RecruitService {
@@ -49,7 +41,6 @@ public class RecruitService {
     private final ApplicationRepository applicationRepository;
     private final DocumentCriteriaRepository documentCriteriaRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
-    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public RecruitsResponseDto findAll(Integer pageNum, SortType sortType, ClubType clubType, Category category) {
@@ -111,9 +102,8 @@ public class RecruitService {
         int totalNum = 0;
         for (Group group : groups) {
             totalNum += group.getNumRecruit();
-            String groupName = group.getName();
-            if (groupName != null) {
-                groupMap.put(groupName, group.getNumDoc());
+            if (!group.isCommon()) {
+                groupMap.put(group.getName(), group.getNumDoc());
             }
         }
 
@@ -138,7 +128,7 @@ public class RecruitService {
         // 공통일 경우에는 그룹 추가 (그룹이 추가된 경우)
         // 모집공고에 대한 그룹이 한 개이며, (그룹 이름이 null 이거나 공통이고), requestDto 에 입력된 그룹의 개수가 1개 초과일 경우(= 그룹 추가가 이뤄진 경우)
         Group firstGroup = groups.get(0);
-        if (groups.size() == 1 && (firstGroup.getName() == null || firstGroup.getName().equals("공통")) && recruitDocSetRequestDto.getGroups().size() > 1) {
+        if (groups.size() == 1 && (firstGroup.getName() == null || firstGroup.getName().equals("공통") || firstGroup.isCommon()) && recruitDocSetRequestDto.getGroups().size() > 1 && firstGroup.getEvalType().equals(EvalType.DOCUMENT)) {
             int groupCount = recruitDocSetRequestDto.getGroups().size();
             int numRecruit = firstGroup.getNumRecruit();
             int divNum = numRecruit / groupCount;

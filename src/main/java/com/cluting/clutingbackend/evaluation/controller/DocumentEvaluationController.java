@@ -1,8 +1,10 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationRequest;
-import com.cluting.clutingbackend.evaluation.dto.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.request.DocumentEvaluationRequest;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
+import com.cluting.clutingbackend.global.enums.SortType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -73,5 +75,21 @@ public class DocumentEvaluationController {
     @GetMapping("/oldest")
     public List<DocumentEvaluationResponse> getDocumentsByOldest(@PathVariable Long recruitId) {
         return documentEvaluationService.getDocumentsByOldest(recruitId);
+    }
+
+    @Operation(
+            summary = "서류 합격자, 불합격자 리스트 불러오기",
+            description = "서류 합격자, 불합격자 리스트를 반환합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "서류 합격자, 불합격자 리스트 반환 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            }
+    )
+    @GetMapping("/result")
+    public DocumentEvaluateResultsResponseDto findPassAndFail(
+            @PathVariable("recruitId") Long recruitId,
+            @RequestParam("sort") SortType sortType) {
+        return documentEvaluationService.findPassAndFail(recruitId, sortType);
     }
 }
