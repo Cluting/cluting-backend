@@ -103,7 +103,6 @@ public class InterviewEvaluationController {
         return ResponseEntity.ok(response);
     }
 
-
     @Operation(summary = "[면접 평가하기] 전송하기", description = "면접에 대한 기준별 점수와 코멘트를 저장합니다.")
     @PostMapping("/{interviewId}/evaluate")
     public ResponseEntity<InterviewEvaluationResponseDto> evaluateInterview(
@@ -113,5 +112,13 @@ public class InterviewEvaluationController {
         Long currentClubUserId = currentUser.getUser().getId();  // 로그인한 사용자 ID
         InterviewEvaluationResponseDto response = interviewEvaluationService.evaluateInterview(interviewId, currentClubUserId, request);
         return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "면접 리스트", description = "날짜별 시간대별로 배정된 운영진, 지원자 리스트를 확인합니다.")
+    @GetMapping("/list")
+    public ResponseEntity<List<InterviewResponseDTO>> getInterviewSchedule(@PathVariable Long recruitId) {
+        List<InterviewResponseDTO> schedule = interviewEvaluationService.getInterviewScheduleByRecruitId(recruitId);
+
+        return ResponseEntity.ok(schedule);
     }
 }

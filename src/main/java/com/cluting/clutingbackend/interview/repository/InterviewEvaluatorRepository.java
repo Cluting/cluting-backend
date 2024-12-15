@@ -16,5 +16,6 @@ public interface InterviewEvaluatorRepository extends JpaRepository<InterviewEva
     Optional<InterviewEvaluator> findFirstByInterviewId(Long interviewId);
     List<InterviewEvaluator> findByInterviewId(Long interviewId);
     Optional<InterviewEvaluator> findByInterviewIdAndClubUserId(Long interviewId, Long clubUserId);
+    List<InterviewEvaluator> findAllByInterviewIdIn(List<Long> interviewIds);
 
 }

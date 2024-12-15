@@ -27,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -408,6 +410,91 @@ public class InterviewEvaluationService {
         return new InterviewEvaluationResponseDto(interviewId, totalScore, request.getComment(), "UPDATED");
     }
 
+    public List<InterviewResponseDTO> getInterviewScheduleByRecruitId(Long recruitId) {
+        // Step 1: Application 엔티티 조회
+        List<Application> applications = applicationRepository.findAllByRecruitId(recruitId);
+        List<Long> applicationIds = applications.stream().map(Application::getId).collect(Collectors.toList());
+
+        // Step 2: Interview 엔티티 조회
+        List<Interview> interviews = interviewRepository.findAllByApplicationIdIn(applicationIds);
+        List<Long> interviewIds = interviews.stream().map(Interview::getId).collect(Collectors.toList());
+
+        // Step 3: InterviewEvaluator 엔티티 조회
+        List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findAllByInterviewIdIn(interviewIds);
+
+        // Step 4: 날짜 및 시간대 오름차순 정렬
+        List<InterviewEvaluator> sortedEvaluators = evaluators.stream()
+                .sorted(Comparator.comparing(e -> e.getInterviewTime())) // 날짜 및 시간대 기준 정렬
+                .collect(Collectors.toList());
+
+        // Step 5: 날짜별, 시간대별로 데이터 그룹화
+        Map<LocalDate, Map<LocalTime, List<InterviewEvaluator>>> groupedData = sortedEvaluators.stream()
+                .collect(Collectors.groupingBy(
+                        e -> e.getInterviewTime().toLocalDate(),
+                        Collectors.groupingBy(e -> e.getInterviewTime().toLocalTime())
+                ));
+
+        // Step 6: DTO 생성
+        List<InterviewResponseDTO> response = groupedData.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey()) // 날짜 오름차순 정렬
+                .map(dateEntry -> {
+                    LocalDate date = dateEntry.getKey();
+                    Map<LocalTime, List<InterviewEvaluator>> timeData = dateEntry.getValue();
+
+                    List<InterviewResponseDTO.TimeSlotDTO> timeSlots = timeData.entrySet().stream()
+                            .sorted(Map.Entry.comparingByKey()) // 시간대 오름차순 정렬
+                            .map(timeEntry -> {
+                                LocalTime time = timeEntry.getKey();
+                                List<InterviewEvaluator> evaluatorsAtTime = timeEntry.getValue();
+
+                                // 그룹별 데이터 분리
+                                Map<Long, List<InterviewEvaluator>> groupedByGroup = evaluatorsAtTime.stream()
+                                        .collect(Collectors.groupingBy(evaluator -> evaluator.getGroup().getId()));
+
+                                List<InterviewResponseDTO.TimeSlotDTO.GroupDTO> groups = groupedByGroup.entrySet().stream()
+                                        .map(groupEntry -> {
+                                            Long groupId = groupEntry.getKey();
+                                            List<InterviewEvaluator> groupEvaluators = groupEntry.getValue();
+
+                                            // 면접관 이름 리스트
+                                            List<Long> clubUserIds = groupEvaluators.stream()
+                                                    .map(evaluator -> evaluator.getClubUser().getId())
+                                                    .distinct()
+                                                    .collect(Collectors.toList());
+                                            List<String> evaluatorNames = clubUserRepository.findAllByIdIn(clubUserIds).stream()
+                                                    .map(clubUser -> clubUser.getUser().getName())
+                                                    .collect(Collectors.toList());
+
+                                            // 면접자 이름 리스트
+                                            List<Long> applicantIds = groupEvaluators.stream()
+                                                    .map(e -> e.getInterview().getApplication().getUser().getId())
+                                                    .distinct()
+                                                    .collect(Collectors.toList());
+                                            List<String> applicantNames = userRepository.findAllByIdIn(applicantIds).stream()
+                                                    .map(User::getName)
+                                                    .collect(Collectors.toList());
+
+                                            return InterviewResponseDTO.TimeSlotDTO.GroupDTO.builder()
+                                                    .groupName(groupEvaluators.get(0).getGroup().getName()) // 그룹 이름
+                                                    .interviewer(evaluatorNames)
+                                                    .interviewee(applicantNames)
+                                                    .build();
+                                        }).collect(Collectors.toList());
+
+                                return InterviewResponseDTO.TimeSlotDTO.builder()
+                                        .time(time.toString())
+                                        .groups(groups)
+                                        .build();
+                            }).collect(Collectors.toList());
+
+                    return InterviewResponseDTO.builder()
+                            .date(date.toString())
+                            .timeSlots(timeSlots)
+                            .build();
+                }).collect(Collectors.toList());
+
+        return response;
+    }
 
 
 }
