@@ -37,7 +37,7 @@ public class RabbitConfig {
 
     private static final String CHAT_QUEUE_NAME = "chat.queue";
     private static final String CHAT_EXCHANGE_NAME = "chat.exchange";
-    private static final String ROUTING_KEY = "room.*";
+    private static final String ROUTING_KEY = "*.room.*";
 
     // Queue 등록
     @Bean
@@ -68,6 +68,7 @@ public class RabbitConfig {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory());
         container.setQueueNames(CHAT_QUEUE_NAME);
+//        container.setMessageListener(null);
         container.setMessageListener(message -> {
             String body = new String(message.getBody());
             System.out.println("Received message: " + body);
@@ -80,7 +81,8 @@ public class RabbitConfig {
     //여기서 사용하는 건 CachingConnectionFacotry라 새로 등록해줌
     @Bean
     public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory factory = new CachingConnectionFactory(rabbitHost);
+        CachingConnectionFactory factory = new CachingConnectionFactory();
+        factory.setHost(rabbitHost);
         factory.setPort(rabbitPort);
         factory.setUsername(rabbitUsername);
         factory.setPassword(rabbitPassword);

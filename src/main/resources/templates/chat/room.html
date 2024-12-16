@@ -73,7 +73,17 @@
 
     stomp.debug = onDebug;
 
-    stomp.connect('guest', 'guest', function (frame) {
+    stomp.connect({
+        login: "cluting",
+        passcode: "happycluting"
+    }, function (frame) {
+        console.log("hellohello");
+        console.log('STOMP Connected');
+    }, onError, '/');
+
+
+
+    stomp.connect('cluting', 'happycluting', function (frame) {
 
         console.log('STOMP Connected');
 
