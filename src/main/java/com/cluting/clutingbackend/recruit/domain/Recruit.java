@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.recruit.domain;
 
+import com.cluting.clutingbackend.application.domain.Scrapped;
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.plan.domain.Group;
@@ -33,6 +34,9 @@ public class Recruit {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruit_id", nullable = false)
     private RecruitSchedule recruitSchedule;
+
+    @OneToMany(mappedBy = "recruit")
+    private List<Scrapped> scrappedList;
 
     @Column(length = 100, nullable = false)
     private String title; // 공고 제목

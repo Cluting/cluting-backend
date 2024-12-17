@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.recruit.controller;
 
 
+import com.cluting.clutingbackend.application.service.CookieService;
 import com.cluting.clutingbackend.global.enums.Category;
 import com.cluting.clutingbackend.global.enums.ClubType;
 import com.cluting.clutingbackend.global.enums.SortType;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,10 +35,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecruitController {
     private final RecruitService recruitService;
-    private static final String RECENT_CLUBS_COOKIE_NAME = "recentClubs";
-    private static final int MAX_RECENT_CLUBS = 5; // 최대 저장할 동아리 개수
-
-
+    private final CookieService cookieService;
 
     @Operation(
             summary = "홈화면 동아리 리스트 조회",
@@ -71,6 +70,16 @@ public class RecruitController {
     public RecruitResponseDto findPosts(
             @PathVariable("recruitId") Long recruitId) {
         return recruitService.findById(recruitId);
+    }
+    @PostMapping("/{recruitId}")
+    public ResponseEntity<Void> saveRecentRecruit(
+            @PathVariable Long recruitId,  // 경로 변수로 recruitId 받기
+            HttpServletResponse response,
+            HttpServletRequest request) throws IOException {
+
+        // 서비스 레이어 호출하여 쿠키에 저장
+        cookieService.saveRecentRecruitToCookie(recruitId, response, request);
+        return ResponseEntity.ok().build();
     }
 
 

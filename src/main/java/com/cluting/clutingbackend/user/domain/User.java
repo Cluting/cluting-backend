@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.user.domain;
 
+import com.cluting.clutingbackend.application.domain.Scrapped;
 import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.Role;
@@ -77,6 +78,9 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Todo> todoList;
+
+    @OneToMany(mappedBy = "user")
+    private List<Scrapped> scrappedList;
 
     public void updateUserInfo(ApplicantProfileRequestDto dto){
         this.name= dto.getName();

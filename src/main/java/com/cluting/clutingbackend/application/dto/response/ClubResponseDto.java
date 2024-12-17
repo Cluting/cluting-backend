@@ -8,13 +8,15 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-@AllArgsConstructor
 public class ClubResponseDto {
+
+    private Long recruitId; //공고 ID
     private String recruitName; // 공고명
     private String clubName; // 동아리명
     private String keywords; // 동아리 키워드
     private LocalDate recruitEndDate; // 모집마감일
-//    private LocalDate lastViewDate; // 최근 본 날짜
+
+    //    private LocalDate lastViewDate; // 최근 본 날짜
     public ClubResponseDto(Application application) {
         this.recruitName = application.getRecruit().getTitle();
         this.clubName = application.getRecruit().getClub().getName();
@@ -28,4 +30,13 @@ public class ClubResponseDto {
         this.keywords = recruit.getClub().getKeyword();
         this.recruitEndDate = recruit.getRecruitSchedule().getStage3End();
     }
+
+    public ClubResponseDto(Long recruitId, String recruitName, String clubName, String keywords, LocalDate recruitEndDate) {
+        this.recruitId = recruitId;
+        this.recruitName = recruitName;
+        this.clubName = clubName;
+        this.keywords = keywords;
+        this.recruitEndDate = recruitEndDate;
+    }
 }
+
