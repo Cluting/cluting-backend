@@ -32,7 +32,7 @@ public class Application {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RecruitStatus applicateStatus = RecruitStatus.A; // 지원상태
+    private RecruitStatus recruitStatus = RecruitStatus.Z; // 지원상태
 
     @Column(nullable = true)
     private Integer score;  //모든 운영진 평가 점수의 평균

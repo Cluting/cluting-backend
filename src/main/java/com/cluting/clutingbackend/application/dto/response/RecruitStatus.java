@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum RecruitStatus {
+    Z("지원중"),
     A("지원완료"),
     B("서류평가중"),
     C("서류평가완료"),

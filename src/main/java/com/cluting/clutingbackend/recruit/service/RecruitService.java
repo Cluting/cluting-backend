@@ -85,8 +85,12 @@ public class RecruitService {
                         )
                 );
 
+
+
         return RecruitResponseDto.toDto(recruit);
     }
+
+
 
     @Transactional(readOnly = true)
     public RecruitNumResponseDto findAppliedNum(Long recruitId) {

@@ -1,22 +1,29 @@
 package com.cluting.clutingbackend.application.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
+import com.cluting.clutingbackend.application.domain.Scrapped;
 import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
 import com.cluting.clutingbackend.application.dto.response.ApplicantProfileResponseDto;
 import com.cluting.clutingbackend.application.dto.response.ApplicationStatusResponseDto;
+import com.cluting.clutingbackend.application.dto.response.ClubResponseDto;
 import com.cluting.clutingbackend.application.dto.response.RecruitStatus;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.application.repository.ScrapRepository;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.repository.RecruitScheduleRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +33,7 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
     private final RecruitScheduleRepository recruitScheduleRepository;
+    private final ScrapRepository scrapRepository;
 
     public List<ApplicationStatusResponseDto> getApplicationStatusAndCalendar(CustomUserDetails userDetails) {
         // 현재 유저가 지원한 모든 Application을 가져오기
@@ -95,6 +103,33 @@ public class ApplicationService {
 
         return "User's Info is Updated!" + dto.toString();
     }
+
+    public List<ClubResponseDto> getApplyingClubs(CustomUserDetails customUserDetails){
+        return applicationRepository.findByUserIdAndRecruitStatus(customUserDetails.getId(),RecruitStatus.Z)
+                .stream()
+                .map(ClubResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<ClubResponseDto> getAppliedClubs(CustomUserDetails customUserDetails){
+        return applicationRepository.findByUserIdAndRecruitStatus(customUserDetails.getId(),RecruitStatus.A)
+                .stream()
+                .map(ClubResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<ClubResponseDto> getScrapedClubs(CustomUserDetails customUserDetails){
+        List<Scrapped> scrappeds = scrapRepository.findAllByUserId(customUserDetails.getId());
+        List<Recruit> recruits = new ArrayList<>();
+
+        for (int i=0;i<scrappeds.size();i++){
+            recruits.add(scrappeds.get(i).getRecruit());
+        }
+        return recruits.stream()
+                .map(ClubResponseDto::new)
+                .collect(Collectors.toList());
+    }
+
 
 
 }

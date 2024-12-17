@@ -14,10 +14,18 @@ import com.cluting.clutingbackend.recruit.service.RecruitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 @Tag(name = "[리크루팅 홈]", description = "리크루팅 홈 관련 API")
 @RestController
@@ -25,6 +33,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class RecruitController {
     private final RecruitService recruitService;
+    private static final String RECENT_CLUBS_COOKIE_NAME = "recentClubs";
+    private static final int MAX_RECENT_CLUBS = 5; // 최대 저장할 동아리 개수
+
 
 
     @Operation(
@@ -61,6 +72,8 @@ public class RecruitController {
             @PathVariable("recruitId") Long recruitId) {
         return recruitService.findById(recruitId);
     }
+
+
 
     @Operation(
             summary = "모집 공고에 지원한 지원자 수 조회",
