@@ -8,6 +8,7 @@ import lombok.*;
 
 @Entity
 @Data
+@Getter
 public class DocumentAnswer {
 
     @Id

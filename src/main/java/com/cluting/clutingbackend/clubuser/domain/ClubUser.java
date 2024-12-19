@@ -35,7 +35,7 @@ public class ClubUser {
     private ClubRole role; // 부원 혹은 운영진
 
     @Enumerated
-    @Column(nullable = false)
+    @Column(nullable = true)
     private PermissionLevel permissionLevel; // 모집하기 단계에서의 권한 체크를 위한 enum
 
     @Column(nullable = true)

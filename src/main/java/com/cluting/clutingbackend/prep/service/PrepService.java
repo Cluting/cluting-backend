@@ -94,7 +94,7 @@ public class PrepService {
         }
 
         List<String> applicantGroups = prepRequestDto.getApplicantGroups();
-        if (applicantGroups.isEmpty()) {
+        if (applicantGroups.get(0)==null) {
             applicantGroups = List.of("공통");
         }
 
@@ -102,6 +102,9 @@ public class PrepService {
             Group group = new Group();
             group.setRecruit(recruit);
             group.setName(groupName);
+            if (groupName.equals("공통")){
+                group.setCommon(true);
+            }
             groupRepository.save(group);
         }
 

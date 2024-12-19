@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.plan.domain;
 
 
+import com.cluting.clutingbackend.global.enums.EvalType;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import jakarta.persistence.*;
 import lombok.*;
@@ -42,6 +43,14 @@ public class Group {
 
     @Column(nullable = true)
     private String warning;
+
+    @Column(nullable = true)
+    @Builder.Default
+    private boolean isCommon = false; //공통인지 아닌지
+
+    @Column(nullable = true)
+    @Enumerated(EnumType.STRING)
+    private EvalType evalType;
 
     public static Group of(
             Recruit recruit,
