@@ -4,6 +4,7 @@ package com.cluting.clutingbackend.recruit.controller;
 import com.cluting.clutingbackend.global.enums.Category;
 import com.cluting.clutingbackend.global.enums.ClubType;
 import com.cluting.clutingbackend.global.enums.SortType;
+import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.recruit.dto.request.RecruitDocSetRequestDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "[리크루팅 홈]", description = "리크루팅 홈 관련 API")
@@ -56,8 +58,9 @@ public class RecruitController {
     @GetMapping("/{recruitId}")
     @ResponseStatus(value = HttpStatus.OK)
     public RecruitResponseDto findPosts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("recruitId") Long recruitId) {
-        return recruitService.findById(recruitId);
+        return recruitService.findById(userDetails.getUser(), recruitId);
     }
 
     @Operation(

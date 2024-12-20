@@ -15,12 +15,13 @@ import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.dto.request.RecruitCriteriaSaveRequestDto;
 import com.cluting.clutingbackend.recruit.dto.request.RecruitDocSetRequestDto;
 import com.cluting.clutingbackend.recruit.dto.request.RecruitRoleAllocateRequestDto;
-import com.cluting.clutingbackend.recruit.dto.response.RecruitDocPrepSavedResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitsResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
-import com.cluting.clutingbackend.user.repository.UserRepository;
+import com.cluting.clutingbackend.user.domain.Recent;
+import com.cluting.clutingbackend.user.domain.User;
+import com.cluting.clutingbackend.user.repository.RecentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class RecruitService {
     private final ApplicationRepository applicationRepository;
     private final DocumentCriteriaRepository documentCriteriaRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
+    private final RecentRepository recentRepository;
 
     @Transactional(readOnly = true)
     public RecruitsResponseDto findAll(Integer pageNum, SortType sortType, ClubType clubType, Category category) {
@@ -68,14 +70,14 @@ public class RecruitService {
     }
 
     @Transactional(readOnly = true)
-    public RecruitResponseDto findById(Long recruitId) {
+    public RecruitResponseDto findById(User user, Long recruitId) {
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(
                         () -> new ResponseStatusException(
                                 HttpStatus.BAD_REQUEST, "존재하지 않는 리크루팅 입니다."
                         )
                 );
-
+        recentRepository.save(Recent.of(user, recruit));
         return RecruitResponseDto.toDto(recruit);
     }
 

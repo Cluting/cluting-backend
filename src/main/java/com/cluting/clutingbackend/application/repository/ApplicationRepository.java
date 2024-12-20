@@ -12,4 +12,5 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     // [서류 평가하기] 해당 모집공고에 지원한 지원서 불러오기
     List<Application> findByRecruitId(Long recruitId);
 
+    List<Application> findByUser_Id(Long userId);
 }
