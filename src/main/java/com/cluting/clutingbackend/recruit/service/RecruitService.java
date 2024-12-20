@@ -142,7 +142,7 @@ public class RecruitService {
                     groupRepository.save(firstGroup);
                 }
                 String newGroupName = recruitDocSetRequestDto.getGroups().get(i).getGroupName();
-                groupRepository.save(Group.of(firstGroup.getRecruit(), newGroupName, firstGroup.getNumDoc(), firstGroup.getNumFinal(), firstGroup.getNumRecruit(), firstGroup.getWarning(), EvalType.DOCUMENT));
+                groupRepository.save(Group.of(firstGroup.getRecruit(), newGroupName, firstGroup.getNumDoc(), firstGroup.getNumFinal(), firstGroup.getNumRecruit(), firstGroup.getWarning(), EvalType.DOCUMENT, false));
             }
 
             // 새로운 데이터셋
