@@ -11,7 +11,6 @@ import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
-import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -116,22 +115,6 @@ public class DocumentEvaluationService {
                 .map(application -> mapToResponse(application, recruitId)) // recruitId 전달
                 .sorted(Comparator.comparing(DocumentEvaluationResponse::getCreatedAt))
                 .collect(Collectors.toList());
-    }
-
-    // 설정한 서류 합격자 수 조회
-    @Transactional(readOnly = true)
-    public RecruitNumResponseDto findDocRecruit(Long recruitId) {
-        Map<String, Integer> groupMap = new HashMap<>();
-        List<Group> groups = groupRepository.findByRecruitId(recruitId);
-        int totalNum = 0;
-        for (Group group : groups) {
-            totalNum += group.getNumRecruit();
-            if (!group.isCommon()) {
-                groupMap.put(group.getName(), group.getNumDoc());
-            }
-        }
-
-        return new RecruitNumResponseDto(totalNum, groupMap);
     }
 
     // 서류 합격/불합격 조회

@@ -1,7 +1,6 @@
 package com.cluting.clutingbackend.interview.domain;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
-import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.plan.domain.Group;
 import jakarta.persistence.*;
@@ -40,4 +39,19 @@ public class InterviewEvaluator {
 
     @Column(nullable = true)
     private String comment;
+
+    public static InterviewEvaluator of(
+            ClubUser clubUser,
+            Interview interview,
+            Group group
+    ) {
+        return InterviewEvaluator.builder()
+                .clubUser(clubUser)
+                .interview(interview)
+                .group(group)
+                .stage(Stage.BEFORE)
+                .score(null)
+                .comment(null)
+                .build();
+    }
 }

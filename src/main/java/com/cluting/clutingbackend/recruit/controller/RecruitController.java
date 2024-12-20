@@ -4,9 +4,7 @@ package com.cluting.clutingbackend.recruit.controller;
 import com.cluting.clutingbackend.global.enums.Category;
 import com.cluting.clutingbackend.global.enums.ClubType;
 import com.cluting.clutingbackend.global.enums.SortType;
-import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.recruit.dto.request.RecruitDocSetRequestDto;
-import com.cluting.clutingbackend.recruit.dto.response.RecruitDocPrepSavedResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitsResponseDto;
@@ -16,7 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "[리크루팅 홈]", description = "리크루팅 홈 관련 API")
@@ -105,10 +103,10 @@ public class RecruitController {
     )
     @PostMapping("/doc/pre/{recruitId}")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public RecruitDocPrepSavedResponseDto saveDocRecruit(
+    public ResponseEntity<Void> saveDocRecruit(
             @PathVariable("recruitId") Long recruitId,
             @RequestBody RecruitDocSetRequestDto recruitDocSetRequestDto) {
-        return recruitService.saveDocRecruit(recruitId, recruitDocSetRequestDto);
-
+        recruitService.saveDocRecruit(recruitId, recruitDocSetRequestDto);
+        return ResponseEntity.ok().build();
     }
 }

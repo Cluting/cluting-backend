@@ -111,7 +111,7 @@ public class RecruitService {
     }
 
     @Transactional
-    public RecruitDocPrepSavedResponseDto saveDocRecruit(Long recruitId, RecruitDocSetRequestDto recruitDocSetRequestDto) {
+    public void saveDocRecruit(Long recruitId, RecruitDocSetRequestDto recruitDocSetRequestDto) {
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(
                         () -> new ResponseStatusException(
@@ -120,7 +120,7 @@ public class RecruitService {
                 );
         List<Group> groups                       = groupRepository.findByRecruitId(recruitId);
         List<Application> applications           = applicationRepository.findByRecruitId(recruitId);
-        Map<String, Group> groupMap                = new HashMap<>();
+        Map<String, Group> groupMap              = new HashMap<>();
         Map<String, Application> applicationMap  = new HashMap<>();
         for (Group group : groups) groupMap.put(group.getName(), group);
         for (Application application : applications) applicationMap.put(application.getRecruit_group(), application);
@@ -141,13 +141,8 @@ public class RecruitService {
                     modNum--;
                     groupRepository.save(firstGroup);
                 }
-                int newRecruitNum = divNum;
-                if(modNum > 0) {
-                    newRecruitNum++;
-                    modNum--;
-                }
                 String newGroupName = recruitDocSetRequestDto.getGroups().get(i).getGroupName();
-                groupRepository.save(Group.of(firstGroup.getRecruit(), newGroupName, firstGroup.getNumDoc(), firstGroup.getNumFinal(), newRecruitNum, firstGroup.getWarning()));
+                groupRepository.save(Group.of(firstGroup.getRecruit(), newGroupName, firstGroup.getNumDoc(), firstGroup.getNumFinal(), firstGroup.getNumRecruit(), firstGroup.getWarning(), EvalType.DOCUMENT));
             }
 
             // 새로운 데이터셋
@@ -193,8 +188,6 @@ public class RecruitService {
                 count++;
             }
         }
-
-        return RecruitDocPrepSavedResponseDto.builder().build(); //TODO
     }
 
     public ClubUser getClubUser(Long clubUserId) {

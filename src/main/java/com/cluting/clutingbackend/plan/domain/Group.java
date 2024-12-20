@@ -55,7 +55,9 @@ public class Group {
             Integer numDoc,
             Integer numFinal,
             Integer numRecruit,
-            String warning
+            String warning,
+            EvalType evalType,
+            Boolean isCommon
     ) {
         return Group.builder()
                 .recruit(recruit)
@@ -64,6 +66,8 @@ public class Group {
                 .numFinal(numFinal)
                 .numRecruit(numRecruit)
                 .warning(warning)
+                .evalType(evalType)
+                .isCommon(isCommon)
                 .build();
     }
 }
