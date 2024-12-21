@@ -8,13 +8,14 @@ import java.util.List;
 
 @Entity
 @Data
+@Getter
 public class DocumentQuestion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "documentQuestion")
+    @OneToMany(mappedBy = "documentQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DocumentAnswer> documentAnswerList;
 
     @ManyToOne

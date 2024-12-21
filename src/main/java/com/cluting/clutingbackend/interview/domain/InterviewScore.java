@@ -1,12 +1,14 @@
 package com.cluting.clutingbackend.interview.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class InterviewScore {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

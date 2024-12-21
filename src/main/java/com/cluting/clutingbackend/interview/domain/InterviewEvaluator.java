@@ -6,6 +6,8 @@ import com.cluting.clutingbackend.plan.domain.Group;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -39,6 +41,9 @@ public class InterviewEvaluator {
 
     @Column(nullable = true)
     private String comment;
+  
+    @Column(nullable = true)
+    private LocalDateTime interviewTime; //운영진과 지원자의 면접 확정 시간
 
     public static InterviewEvaluator of(
             ClubUser clubUser,
