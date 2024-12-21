@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,18 +23,32 @@ import java.util.List;
 public class ClubController {
     private final ClubService clubService;
 
+    @Operation(description = "동아리 프로필 사진 등록 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "동아리 프로필 사진 등록 성공"),
+            @ApiResponse(responseCode = "404", description = "동아리 프로필 사진 등록 실패"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")})
+    @PutMapping(value = "/register/image/{clubId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public ResponseEntity<Void> register(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("clubId") Long clubId,
+            @RequestPart(value = "profile") MultipartFile profile) {
+        clubService.registerClubProfile(clubId, profile);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(description = "동아리 등록 API")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "동아리 추가 성공"),
             @ApiResponse(responseCode = "404", description = "동아리 추가 실패"),
             @ApiResponse(responseCode = "500", description = "Internal server error")})
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/register")
     @ResponseStatus(value = HttpStatus.CREATED)
     public ClubResponseDto register(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @ModelAttribute ClubRegisterRequestDto clubCreateRequestDto,
-            @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        return clubService.registerClub(userDetails.getUser(), clubCreateRequestDto, profile);
+            @RequestBody ClubRegisterRequestDto clubCreateRequestDto) {
+        return clubService.registerClub(userDetails.getUser(), clubCreateRequestDto);
     }
 
     // 홈페이지

@@ -13,6 +13,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -61,6 +62,12 @@ public class User {
     @Column(length = 255, nullable = true)
     private String profile;
 
+    @Column(length = 255, nullable = true)
+    private String portfolioFile;
+
+    @Column(length = 255, nullable = true)
+    private String portfolioUrl;
+
     @Column(nullable = false)
     private Boolean termsOfService; // 클루팅 이용약관 동의 여부 (필수)
 
@@ -76,4 +83,19 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Todo> todoList;
+
+    public void update(String name, String phone, String location, String school, String major, String doubleMajor, StudentStatus studentStatus, Semester semester) {
+        this.name = name;
+        this.phone = phone;
+        this.location = location;
+        this.school = school;
+        this.major = major;
+        this.doubleMajor = doubleMajor;
+        this.studentStatus = studentStatus;
+        this.semester = semester;
+    }
+
+    public void update(String profile) {
+        this.profile = profile;
+    }
 }

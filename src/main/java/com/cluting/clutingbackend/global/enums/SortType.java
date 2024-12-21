@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum SortType {
     DEADLINE("마감임박순"),
     NEWEST("최신순"),
-    OLDEST("오래된순");
+    OLDEST("오래된순"),
+    INORDER("가나다순");
 
     private final String description;
 }

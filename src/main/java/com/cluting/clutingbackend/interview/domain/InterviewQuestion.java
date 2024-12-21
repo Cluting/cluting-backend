@@ -34,4 +34,19 @@ public class InterviewQuestion {
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private QuestionType2 type;
+
+    public static InterviewQuestion of(
+            InterviewEvaluator interviewEvaluator,
+            Interview interview,
+            String content,
+            QuestionType2 type
+    ) {
+        return InterviewQuestion.builder()
+                .interviewEvaluator(interviewEvaluator)
+                .interview(interview)
+                .interviewAnswer(null)
+                .content(content)
+                .type(type)
+                .build();
+    }
 }

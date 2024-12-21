@@ -12,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -30,7 +31,7 @@ public class Club {
     @Column(nullable = true)
     private String description; // 소개
 
-    @Column(length = 255, nullable = true)
+    @Column(length = 1000, nullable = true)
     private String profile; // 프로필사진
 
     @Enumerated(EnumType.STRING)

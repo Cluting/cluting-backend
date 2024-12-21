@@ -33,4 +33,15 @@ public class Interview {
 
     @Column(length = 100, nullable = true)
     private String recruit_group; // 직렬화, 역직렬화 필요
+
+    public static Interview of(
+            Application application
+    ) {
+        return Interview.builder()
+                .application(application)
+                .state(null)
+                .numClubUser(null)
+                .recruit_group(application.getRecruit_group())
+                .build();
+    }
 }

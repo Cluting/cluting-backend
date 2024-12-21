@@ -1,5 +1,8 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
+import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
+import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.interview.*;
@@ -120,5 +123,50 @@ public class InterviewEvaluationController {
         List<InterviewResponseDTO> schedule = interviewEvaluationService.getInterviewScheduleByRecruitId(recruitId);
 
         return ResponseEntity.ok(schedule);
+    }
+  
+    @Operation(
+            summary = "[면접 평가하기] 모집 그룹 공통/다수 여부 확인",
+            description = "모집 그룹 공통/다수 여부를 확인합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "모집 그룹 공통/다수 여부 확인 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            }
+    )
+    @GetMapping("/check")
+    public Boolean isCommon(
+            @PathVariable("recruitId") Long recruitId) {
+        return interviewEvaluationService.isCommon(recruitId);
+    }
+
+    @Operation(
+            summary = "[면접 평가하기] 이전에 설정한 서류 합격자 수 조회하기",
+            description = "서류 합격자 수를 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "서류 합격자 수 조회 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            }
+    )
+    @GetMapping("/num")
+    public RecruitNumResponseDto findDocRecruit(
+            @PathVariable("recruitId") Long recruitId) {
+        return interviewEvaluationService.findDocRecruit(recruitId);
+    }
+
+    @Operation(
+            summary = "[면접 평가하기] 서류 합격자들 모두 조회하기",
+            description = "서류 합격자들 모두 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "서류 합격자들 모두 조회 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            }
+    )
+    @GetMapping("/prep")
+    public List<InterviewPrepResponseDto> findApplicants(
+            @PathVariable("recruitId") Long recruitId) {
+        return interviewEvaluationService.findApplicants(recruitId);
     }
 }
