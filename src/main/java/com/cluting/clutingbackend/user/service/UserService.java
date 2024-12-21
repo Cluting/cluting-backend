@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -202,14 +203,14 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto update(User user, UserProfileSaveRequestDto userProfileSaveRequestDto) {
-        user.update(awsS3Service.uploadFile(userProfileSaveRequestDto.getProfile()));
+    public UserResponseDto update(User user, MultipartFile profile) {
+        user.update(awsS3Service.uploadFile(profile));
         return UserResponseDto.toDto(userRepository.save(user));
     }
 
     @Transactional
-    public UserResponseDto updatePortfolioFile(User user, UserPortfolioUpdateRequestDto userPortfolioUpdateRequestDto) {
-        user.setPortfolioFile(awsS3Service.uploadFile(userPortfolioUpdateRequestDto.getProfile()));
+    public UserResponseDto updatePortfolioFile(User user, MultipartFile portfolio) {
+        user.setPortfolioFile(awsS3Service.uploadFile(portfolio));
         return UserResponseDto.toDto(userRepository.save(user));
     }
 

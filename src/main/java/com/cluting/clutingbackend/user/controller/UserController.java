@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -84,8 +85,8 @@ public class UserController {
     @PutMapping("/home/profile/update")
     public UserResponseDto update(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestPart UserProfileSaveRequestDto userProfileSaveRequestDto) {
-        return userService.update(userDetails.getUser(), userProfileSaveRequestDto);
+            @RequestPart("profile") MultipartFile profile) {
+        return userService.update(userDetails.getUser(), profile);
     }
 
     @Operation(description = "사용자 포트폴리오 url 업데이트")
@@ -106,9 +107,9 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자 입니다."),
             @ApiResponse(responseCode = "500", description = "Internal server error")})
     @PutMapping("/home/portfolio/file")
-    public UserResponseDto update(
+    public UserResponseDto updatePortfolio(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestPart UserPortfolioUpdateRequestDto userPortfolioUpdateRequestDto) {
-        return userService.updatePortfolioFile(userDetails.getUser(), userPortfolioUpdateRequestDto);
+            @RequestPart("portfolio") MultipartFile portfolio) {
+        return userService.updatePortfolioFile(userDetails.getUser(), portfolio);
     }
 }

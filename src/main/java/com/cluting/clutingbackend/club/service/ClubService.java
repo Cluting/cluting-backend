@@ -32,14 +32,22 @@ public class ClubService {
         return clubRepository.findPopular().stream().map(ClubResponseDto::toDto).toList();
     }
 
+    @Transactional
+    public void registerClubProfile(Long clubId, MultipartFile profile) {
+        Club club = clubRepository.findById(clubId)
+                .orElseThrow(
+                        () -> new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST, "존재하지 않는 동아리 입니다."
+                        )
+                );
+        club.setProfile(awsS3Service.uploadFile(profile));
+        clubRepository.save(club);
+    }
+
     // 동아리 등록
     @Transactional
-    public ClubResponseDto registerClub(User user, ClubRegisterRequestDto clubRegisterRequestDto, MultipartFile profile) {
-        String imageUrl;
-        if (profile == null) imageUrl = StaticValue.profileImage;
-        else imageUrl = awsS3Service.uploadFile(profile);
-
-        return ClubResponseDto.toDto(clubRepository.save(clubRegisterRequestDto.toEntity(imageUrl)));
+    public ClubResponseDto registerClub(User user, ClubRegisterRequestDto clubRegisterRequestDto) {
+        return ClubResponseDto.toDto(clubRepository.save(clubRegisterRequestDto.toEntity()));
     }
 
     // 동아리 id로 조회
