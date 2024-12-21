@@ -1,15 +1,14 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
-import com.cluting.clutingbackend.evaluation.dto.request.DocumentEvaluationRequest;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
 import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.*;
-import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

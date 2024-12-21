@@ -23,7 +23,6 @@ import com.cluting.clutingbackend.plan.repository.*;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -568,23 +567,28 @@ public class DocumentEvaluationService {
         List<DocumentEvaluateResultResponseDto> failed = new ArrayList<>();
 
         applications.forEach(application -> {
-            DocumentEvaluator documentEvaluator = documentEvaluatorRepository.findByApplicationId(application.getId());
+            List<DocumentEvaluator> documentEvaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
 
-            String groupName = documentEvaluator.getGroup().getName();
-            groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
+            documentEvaluators.forEach(documentEvaluator -> {
+                // 그룹별 지원자 수 계산
+                String groupName = documentEvaluator.getGroup().getName();
+                groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
 
-            DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
-                    application,
-                    documentEvaluator.getStage(),
-                    application.getState() == EvaluateStatus.PASS ? "합격" : "불합격"
-            );
+                DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
+                        application,
+                        documentEvaluator.getStage(),
+                        application.getState() == EvaluateStatus.PASS ? "합격" : "불합격"
+                );
 
-            if (application.getState() == EvaluateStatus.PASS) {
-                passed.add(dto);
-            } else if (application.getState() == EvaluateStatus.FAIL) {
-                failed.add(dto);
-            }
+                // 합격/불합격 분류
+                if (application.getState() == EvaluateStatus.PASS) {
+                    passed.add(dto);
+                } else if (application.getState() == EvaluateStatus.FAIL) {
+                    failed.add(dto);
+                }
+            });
         });
+
         sortAndAssignRank(passed);
         sortAndAssignRank(failed);
 

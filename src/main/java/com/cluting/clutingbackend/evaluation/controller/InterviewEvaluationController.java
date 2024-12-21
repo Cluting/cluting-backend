@@ -134,7 +134,7 @@ public class InterviewEvaluationController {
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류")
             }
     )
-    @GetMapping("/check/{recruitId}")
+    @GetMapping("/check")
     public Boolean isCommon(
             @PathVariable("recruitId") Long recruitId) {
         return interviewEvaluationService.isCommon(recruitId);
@@ -149,7 +149,7 @@ public class InterviewEvaluationController {
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류")
             }
     )
-    @GetMapping("/num/{recruitId}")
+    @GetMapping("/num")
     public RecruitNumResponseDto findDocRecruit(
             @PathVariable("recruitId") Long recruitId) {
         return interviewEvaluationService.findDocRecruit(recruitId);
@@ -164,7 +164,7 @@ public class InterviewEvaluationController {
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류")
             }
     )
-    @GetMapping("/prep/{recruitId}")
+    @GetMapping("/prep")
     public List<InterviewPrepResponseDto> findApplicants(
             @PathVariable("recruitId") Long recruitId) {
         return interviewEvaluationService.findApplicants(recruitId);

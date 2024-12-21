@@ -15,13 +15,8 @@ import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.QuestionType2;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
-import com.cluting.clutingbackend.interview.domain.Interview;
-import com.cluting.clutingbackend.interview.domain.InterviewEvaluator;
-import com.cluting.clutingbackend.interview.domain.InterviewQuestion;
-import com.cluting.clutingbackend.interview.repository.InterviewCriteriaRepository;
-import com.cluting.clutingbackend.interview.repository.InterviewEvaluatorRepository;
-import com.cluting.clutingbackend.interview.repository.InterviewQuestionRepository;
-import com.cluting.clutingbackend.interview.repository.InterviewRepository;
+import com.cluting.clutingbackend.interview.domain.*;
+import com.cluting.clutingbackend.interview.repository.*;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.domain.TalentProfile;
@@ -637,7 +632,7 @@ public class InterviewEvaluationService {
                         .findFirst()
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "대상을 찾을 수 없습니다: " + individualQuestion.getName()));
 
-                InterviewEvaluator evaluator = interviewEvaluatorRepository.findByInterviewId(targetInterview.getId());
+                InterviewEvaluator evaluator = interviewEvaluatorRepository.findByInterview_Id(targetInterview.getId());
 
                 for (String question : individualQuestion.getQuestion()) {
                     interviewQuestionRepository.save(

@@ -3,6 +3,8 @@ package com.cluting.clutingbackend.interview.repository;
 import com.cluting.clutingbackend.interview.domain.Interview;
 import com.cluting.clutingbackend.interview.domain.InterviewEvaluator;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -17,6 +19,8 @@ public interface InterviewEvaluatorRepository extends JpaRepository<InterviewEva
     List<InterviewEvaluator> findByInterviewId(Long interviewId);
     Optional<InterviewEvaluator> findByInterviewIdAndClubUserId(Long interviewId, Long clubUserId);
     List<InterviewEvaluator> findAllByInterviewIdIn(List<Long> interviewIds);
-    InterviewEvaluator findByInterviewId(Long interviewId);
     InterviewEvaluator findByGroupId(Long groupId);
+
+    @Query("SELECT ie FROM InterviewEvaluator ie WHERE ie.interview.id = :interviewId")
+    InterviewEvaluator findByInterview_Id(@Param("interviewId") Long interviewId);
 }
