@@ -15,4 +15,6 @@ public interface ClubRepository extends JpaRepository<Club, Long> {
             "FROM tb_club " +
             "ORDER BY RAND() LIMIT 3", nativeQuery = true)
     List<Club> findPopular();
+
+    List<Club> findByIdIn(List<Long> ids);
 }
