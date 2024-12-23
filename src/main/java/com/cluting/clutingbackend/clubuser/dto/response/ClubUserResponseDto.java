@@ -12,6 +12,8 @@ public class ClubUserResponseDto {
     private Long id;
     private Long userId;
     private Long clubId;
+    private String name;
+    private String email;
     private ClubRole role;
     private PermissionLevel permissionLevel;
     private Integer generation;
@@ -21,6 +23,8 @@ public class ClubUserResponseDto {
                 .id(entity.getId())
                 .userId(entity.getUser().getId())
                 .clubId(entity.getClub().getId())
+                .name(entity.getUser().getName())
+                .email(entity.getUser().getEmail())
                 .role(entity.getRole())
                 .permissionLevel(entity.getPermissionLevel())
                 .generation(entity.getGeneration())
