@@ -8,7 +8,9 @@ import com.cluting.clutingbackend.application.dto.response.ApplicationStatusResp
 import com.cluting.clutingbackend.application.dto.response.ClubResponseDto;
 import com.cluting.clutingbackend.application.dto.response.RecruitStatus;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.application.repository.InterviewRepository;
 import com.cluting.clutingbackend.application.repository.ScrapRepository;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
@@ -34,6 +36,7 @@ public class ApplicationService {
     private final UserRepository userRepository;
     private final RecruitScheduleRepository recruitScheduleRepository;
     private final ScrapRepository scrapRepository;
+    private final InterviewRepository interviewRepository;
 
     public List<ApplicationStatusResponseDto> getApplicationStatusAndCalendar(CustomUserDetails userDetails) {
         // 현재 유저가 지원한 모든 Application을 가져오기
@@ -128,6 +131,42 @@ public class ApplicationService {
         return recruits.stream()
                 .map(ClubResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    public List<ClubResponseDto> getPassedClubs(Long userId) {
+        // 지원서 합격 리스트
+        List<ClubResponseDto> passedApplications = applicationRepository.findByUserIdAndState(userId, EvaluateStatus.PASS)
+                .stream()
+                .map(application -> new ClubResponseDto(application))
+                .collect(Collectors.toList());
+
+        // 면접 합격 리스트
+        List<ClubResponseDto> passedInterviews = interviewRepository.findByApplication_UserIdAndState(userId, EvaluateStatus.PASS)
+                .stream()
+                .map(interview -> new ClubResponseDto(interview.getApplication()))
+                .collect(Collectors.toList());
+
+        // 두 리스트를 합치기
+        passedApplications.addAll(passedInterviews);
+        return passedApplications;
+    }
+
+    public List<ClubResponseDto> getFailedClubs(Long userId) {
+        // 지원서 불합격 리스트
+        List<ClubResponseDto> failedApplications = applicationRepository.findByUserIdAndState(userId, EvaluateStatus.FAIL)
+                .stream()
+                .map(application -> new ClubResponseDto(application))
+                .collect(Collectors.toList());
+
+        // 면접 불합격 리스트
+        List<ClubResponseDto> failedInterviews = interviewRepository.findByApplication_UserIdAndState(userId, EvaluateStatus.FAIL)
+                .stream()
+                .map(interview -> new ClubResponseDto(interview.getApplication()))
+                .collect(Collectors.toList());
+
+        // 두 리스트를 합치기
+        failedApplications.addAll(failedInterviews);
+        return failedApplications;
     }
 
 

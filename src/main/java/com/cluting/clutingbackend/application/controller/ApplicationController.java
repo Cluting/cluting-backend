@@ -37,14 +37,14 @@ public class ApplicationController {
         return ResponseEntity.ok().body(dto);
     }
 
-    @Operation(summary = "기본 프로필 설정",description = "지원자의 정보를 수정할 수 있습니다")
+    @Operation(summary = "기본 프로필 설정 - 수정",description = "지원자의 정보를 수정할 수 있습니다")
     @PutMapping("/profile")
     public ResponseEntity<String> modifyProfileInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody ApplicantProfileRequestDto requestDto){
          String res = applicationService.changeUserInfo(userDetails,requestDto);
         return ResponseEntity.ok().body(res);
     }
 
-    @Operation(summary = "기본 프로필 설정",description = "지원자의 포트폴리오를 저장할 수 있습니다")
+    @Operation(summary = "기본 프로필 설정 - 저장",description = "지원자의 포트폴리오를 저장할 수 있습니다")
     @PutMapping("/portfolio")
     public ResponseEntity<String> savePortfolio(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody ApplicantProfileRequestDto requestDto){
         String res = applicationService.changeUserInfo(userDetails,requestDto);

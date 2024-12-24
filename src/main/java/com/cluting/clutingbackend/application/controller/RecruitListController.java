@@ -44,7 +44,6 @@ public class RecruitListController {
     @Operation(summary = "스크랩한 동아리 공고 리스트")
     public ResponseEntity<List<ClubResponseDto>> showScrappedRecruitList(@AuthenticationPrincipal CustomUserDetails userDetails){
         return ResponseEntity.ok(applicationService.getScrapedClubs(userDetails));
-
     }
     @GetMapping("/recruitList/recent")
     @Operation(summary = "최근에 본 동아리 공고 리스트")
@@ -52,5 +51,19 @@ public class RecruitListController {
         // 서비스 레이어 호출하여 쿠키에서 최근 본 공고 조회
         List<ClubResponseDto> recentRecruits = cookieService.getRecentRecruitsFromCookie(request);
         return ResponseEntity.ok(recentRecruits);
+    }
+
+    @GetMapping("/recruitList/passed")
+    @Operation(summary = "나의 지원 기록 - 합격한 동아리")
+    public ResponseEntity<List<ClubResponseDto>> getPassedClubs(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<ClubResponseDto> passedClubs = applicationService.getPassedClubs(userDetails.getId());
+        return ResponseEntity.ok(passedClubs);
+    }
+
+    @GetMapping("/recruitList/failed")
+    @Operation(summary = "나의 지원 기록 - 불합격한 동아리")
+    public ResponseEntity<List<ClubResponseDto>> getFailedClubs(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<ClubResponseDto> failedClubs = applicationService.getFailedClubs(userDetails.getId());
+        return ResponseEntity.ok(failedClubs);
     }
 }
