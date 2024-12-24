@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Rooms</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <!-- Chat Room List -->
+    <div>
+        <h3>Available Chat Rooms</h3>
+        <ul class="list-group" th:each="room : ${list}">
+            <li class="list-group-item">
+                <a th:href="@{/chat/room(roomId=${room.roomId})}" class="text-decoration-none">[[${room.name}]]</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Create Chat Room Form -->
+    <div class="mt-4">
+        <h3>Create a New Chat Room</h3>
+        <form th:action="@{/chat/room}" method="post" id="create-room-form">
+            <div class="form-group">
+                <input type="text" name="name" class="form-control" placeholder="Enter room name" required>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-create">Create Room</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script th:inline="javascript">
+    $(document).ready(function () {
+        // Show alert if a room has been created
+        var roomName = /*[[${roomName}]]*/ null;
+        if (roomName) {
+            alert(roomName + " room has been created.");
+        }
+
+        // Form submission validation
+        $(".btn-create").on("click", function (e) {
+            e.preventDefault();
+
+            var name = $("input[name='name']").val().trim();
+            if (name === "") {
+                alert("Please write the name.");
+            } else {
+                $("#create-room-form").submit();
+            }
+        });
+    });
+</script>
+</body>
+</html>
