@@ -1,8 +1,12 @@
 package com.cluting.clutingbackend.application.controller;
 
+import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
 import com.cluting.clutingbackend.application.dto.response.ApplicantProfileResponseDto;
+import com.cluting.clutingbackend.application.dto.response.ApplicationDetailResponseDto;
 import com.cluting.clutingbackend.application.dto.response.ApplicationStatusResponseDto;
+import com.cluting.clutingbackend.application.dto.response.DocumentAnswerResponseDto;
+import com.cluting.clutingbackend.application.service.ApplicationDetailService;
 import com.cluting.clutingbackend.application.service.ApplicationService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,9 +22,10 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/applicant")
-@Tag(name = "지원자 관련 API 모음")
+@Tag(name = "지원자 프로필 및 지원 내역 API")
 public class ApplicationController {
     private final ApplicationService applicationService;
+    private final ApplicationDetailService applicationDetailService;
 
 
     @Operation(summary = "지원자 프로필 홈",description = "내 지원 상황 및 지원 캘린더를 확인할 수 있습니다")
@@ -49,5 +54,15 @@ public class ApplicationController {
     public ResponseEntity<String> savePortfolio(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody ApplicantProfileRequestDto requestDto){
         String res = applicationService.changeUserInfo(userDetails,requestDto);
         return ResponseEntity.ok().body(res);
+    }
+
+    @Operation(summary = "동아리 공고에 대한 지원 상세 보기")
+    @GetMapping("/application-detail/{recruitId}")
+    public ResponseEntity<ApplicationDetailResponseDto> getApplicationDetails(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PathVariable(name = "recruitId") Long recruitId) {
+        Long userId = customUserDetails.getId(); // CustomUserDetails에서 유저 ID 가져오기
+        ApplicationDetailResponseDto response = applicationDetailService.getApplicationDetail(userId, recruitId);
+        return ResponseEntity.ok(response);
     }
 }

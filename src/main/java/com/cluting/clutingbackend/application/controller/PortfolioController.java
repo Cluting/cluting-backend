@@ -16,7 +16,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/applicant")
-@Tag(name = "지원자 관련 API 모음")
+@Tag(name = "지원자 포트폴리오 API")
 public class PortfolioController {
 
     private final PortfolioService portfolioService;

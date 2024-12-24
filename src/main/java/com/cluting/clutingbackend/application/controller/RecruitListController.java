@@ -2,12 +2,11 @@ package com.cluting.clutingbackend.application.controller;
 
 
 import com.cluting.clutingbackend.application.dto.response.ClubResponseDto;
-import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.application.dto.response.RecruitDetailResponseDto;
 import com.cluting.clutingbackend.application.service.ApplicationService;
 import com.cluting.clutingbackend.application.service.CookieService;
-import com.cluting.clutingbackend.global.annotation.RequiredPermission;
+import com.cluting.clutingbackend.application.service.RecruitDetailService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
-import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,12 +23,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/applicant")
-@Tag(name = "지원자 관련 API 모음")
+@Tag(name = "지원자의 공고리스트 API")
 @RequiredArgsConstructor
 public class RecruitListController {
 
     private final ApplicationService applicationService;
     private final CookieService cookieService;
+    private final RecruitDetailService recruitService;
 
     @GetMapping("/recruitList/applying")
     @Operation(summary = "지원 중인 공고 리스트")
@@ -66,4 +67,12 @@ public class RecruitListController {
         List<ClubResponseDto> failedClubs = applicationService.getFailedClubs(userDetails.getId());
         return ResponseEntity.ok(failedClubs);
     }
+
+    @GetMapping("/detail/{recruitId}")
+    public ResponseEntity<RecruitDetailResponseDto> getRecruitmentDetails(@PathVariable(name = "recruitId") Long recruitId) {
+        RecruitDetailResponseDto response = recruitService.getRecruitmentDetails(recruitId);
+        return ResponseEntity.ok(response);
+    }
+
+
 }

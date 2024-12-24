@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
@@ -21,12 +22,9 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     // 지원한 동아리
     List<Application> findByUserIdAndRecruitStatus(Long userId, RecruitStatus recruitStatus);
 
-//    // 스크랩한 동아리
-//    List<Application> findByUserIdAndRecruit_Club_IdIn(Long userId, List<Long> clubIds);
-//
-//    // 최근 본 동아리
-//    List<Application> findByUserIdOrderByCreatedAtDesc(Long userId);
-
     // 합격/붏합격한 동아리 조회
     List<Application> findByUserIdAndState(Long userId, EvaluateStatus state);
+
+    // 지원한 동아리 가져오기
+    Optional<Application> findByUserIdAndRecruitId(Long userId, Long recruitId);
 }
