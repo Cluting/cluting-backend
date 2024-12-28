@@ -1,10 +1,14 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "tb_document_eval_score")
 public class DocumentEvalScore {
 
     @Id
