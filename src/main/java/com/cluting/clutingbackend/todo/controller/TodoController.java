@@ -112,8 +112,8 @@ public class TodoController {
 
     // [리크루팅 홈] 투두 리스트 완료/미완료 상태 분리해서 가져오기
     @Operation(
-            summary = "[리크루팅 홈] 투두 완료 상태 바꾸기",
-            description = "투두 ID와 유저 ID를 기반으로 해당 투두의 완료 상태(true:완료, false:미완료)를 변경합니다.",
+            summary = "[리크루팅 홈] 투두 리스트 불러오기",
+            description = "유저 ID를 기반으로 해당 투두 리스트를 조회합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "투두 리스트 불러오기 성공"),
                     @ApiResponse(responseCode = "401", description = "유효하지 않은 인증 토큰"),
