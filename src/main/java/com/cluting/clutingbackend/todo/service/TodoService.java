@@ -36,38 +36,38 @@ public class TodoService {
     }
 
     // [리크루팅 홈] 투두 삭제하기
-    public void deleteTodo(Long clubUserId, Long todoId) {
-        Todo todo = todoRepository.findByIdAndUserId(todoId, clubUserId)
+    public void deleteTodo(User user, Long todoId) {
+        Todo todo = todoRepository.findByIdAndUserId(todoId, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 투두 항목을 찾을 수 없음"));
         todoRepository.delete(todo);
     }
 
     // [리크루팅 홈] 투두 완료 상태 바꾸기
-    public void toggleTodoStatus(Long clubUserId, Long todoId) {
-        Todo todo = todoRepository.findByIdAndUserId(todoId, clubUserId)
+    public void toggleTodoStatus(User user, Long todoId) {
+        Todo todo = todoRepository.findByIdAndUserId(todoId, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 투두 항목을 찾을 수 없음"));
         todo.setStatus(!todo.getStatus());
         todoRepository.save(todo);
     }
 
     // [리크루팅 홈] 투두 내용 변경하기
-    public void updateTodoContent(Long clubUserId, Long todoId, String updatedContent) {
-        Todo todo = todoRepository.findByIdAndUserId(todoId, clubUserId)
+    public void updateTodoContent(User user, Long todoId, String updatedContent) {
+        Todo todo = todoRepository.findByIdAndUserId(todoId, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 투두 항목을 찾을 수 없음"));
         todo.setContent(updatedContent);
         todoRepository.save(todo);
     }
 
     // [리크루팅 홈] 투두 리스트 완료/미완료 분리해서 가져오기
-    public Map<String, List<TodoResponse>> getTodosByStatus(Long clubUserId) {
+    public Map<String, List<TodoResponse>> getTodosByStatus(User user) {
         // 미완료 리스트
-        List<TodoResponse> incompleteTodos = todoRepository.findByUserIdAndStatus(clubUserId, false)
+        List<TodoResponse> incompleteTodos = todoRepository.findByUserIdAndStatus(user.getId(), false)
                 .stream()
                 .map(TodoResponse::fromEntity)
                 .collect(Collectors.toList());
 
         // 완료 리스트
-        List<TodoResponse> completeTodos = todoRepository.findByUserIdAndStatus(clubUserId, true)
+        List<TodoResponse> completeTodos = todoRepository.findByUserIdAndStatus(user.getId(), true)
                 .stream()
                 .map(TodoResponse::fromEntity)
                 .collect(Collectors.toList());

@@ -60,10 +60,9 @@ public class TodoController {
     @DeleteMapping("/{todoId}")
     public ResponseEntity<Void> deleteTodo(
             @PathVariable Long todoId,
-            @RequestHeader("Authorization") String token
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long clubUserId = getClubUserIdFromToken(token);
-        todoService.deleteTodo(clubUserId, todoId);
+        todoService.deleteTodo(userDetails.getUser(), todoId);
         return ResponseEntity.noContent().build();
     }
 
@@ -81,10 +80,9 @@ public class TodoController {
     @PatchMapping("/status/{todoId}")
     public ResponseEntity<Void> toggleTodoStatus(
             @PathVariable Long todoId,
-            @RequestHeader("Authorization") String token
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long clubUserId = getClubUserIdFromToken(token);
-        todoService.toggleTodoStatus(clubUserId, todoId);
+        todoService.toggleTodoStatus(userDetails.getUser(), todoId);
         return ResponseEntity.noContent().build();
     }
 
@@ -101,12 +99,11 @@ public class TodoController {
     )
     @PatchMapping("/{todoId}")
     public ResponseEntity<Void> updateTodoContent(
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long todoId,
             @RequestBody TodoRequest request
     ) {
-        Long clubUserId = getClubUserIdFromToken(token);
-        todoService.updateTodoContent(clubUserId, todoId, request.getContent());
+        todoService.updateTodoContent(userDetails.getUser(), todoId, request.getContent());
         return ResponseEntity.ok().build();
     }
 
@@ -123,10 +120,9 @@ public class TodoController {
     )
     @GetMapping
     public ResponseEntity<Map<String, List<TodoResponse>>> getTodoList(
-            @RequestHeader("Authorization") String token
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long clubUserId = getClubUserIdFromToken(token);
-        Map<String, List<TodoResponse>> todos = todoService.getTodosByStatus(clubUserId);
+        Map<String, List<TodoResponse>> todos = todoService.getTodosByStatus(userDetails.getUser());
         return ResponseEntity.ok(todos);
     }
 

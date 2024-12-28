@@ -117,11 +117,10 @@ public class ClubController {
 
     @Operation(description = "동아리 리크루팅 시작(기수+타입 저장) API")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "동아리 리크루팅 시작 성공"),
+            @ApiResponse(responseCode = "201", description = "동아리 리크루팅 시작 성공"),
             @ApiResponse(responseCode = "404", description = "동아리 리크루팅 시작 실패"),
             @ApiResponse(responseCode = "500", description = "Internal server error")})
     @PostMapping("/start/{clubId}")
-    @ResponseStatus(value = HttpStatus.OK)
     public RecruitResponseDto recruitStart(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("clubId") Long clubId,
