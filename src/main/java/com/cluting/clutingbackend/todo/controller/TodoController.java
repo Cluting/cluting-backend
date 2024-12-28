@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,10 +41,9 @@ public class TodoController {
     @PostMapping
     public ResponseEntity<TodoResponse> createTodo(
             @RequestBody TodoRequest request,
-            @RequestHeader("Authorization") String token
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        Long clubUserId = getClubUserIdFromToken(token);
-        return ResponseEntity.ok(todoService.createTodo(clubUserId, request));
+        return ResponseEntity.ok(todoService.createTodo(userDetails.getUser(), request));
     }
 
     // 개인(운영진) 투두 삭제하기

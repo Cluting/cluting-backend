@@ -6,6 +6,7 @@ import com.cluting.clutingbackend.todo.domain.Todo;
 import com.cluting.clutingbackend.todo.dto.TodoRequest;
 import com.cluting.clutingbackend.todo.dto.TodoResponse;
 import com.cluting.clutingbackend.todo.repository.TodoRepository;
+import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,7 @@ public class TodoService {
     private final ClubUserRepository clubUserRepository;
 
     // [리크루팅 홈] 투두 작성하기
-    public TodoResponse createTodo(Long clubUserId, TodoRequest request) {
-        var user = userRepository.findById(clubUserId)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 인증 토큰"));
+    public TodoResponse createTodo(User user, TodoRequest request) {
 
         Todo todo = Todo.builder()
                 .user(user)
