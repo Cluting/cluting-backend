@@ -19,9 +19,9 @@ import com.cluting.clutingbackend.interview.domain.*;
 import com.cluting.clutingbackend.interview.repository.*;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
-import com.cluting.clutingbackend.plan.domain.TalentProfile;
+import com.cluting.clutingbackend.plan.domain.Ideal;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
-import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
+import com.cluting.clutingbackend.plan.repository.IdealRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
@@ -50,7 +50,7 @@ public class InterviewEvaluationService {
     private final InterviewCriteriaRepository interviewCriteriaRepository;
     private final InterviewQuestionRepository interviewQuestionRepository;
     private final UserRepository userRepository;
-    private final TalentProfileRepository talentProfileRepository;
+    private final IdealRepository idealRepository;
     private final InterviewScoreRepository interviewScoreRepository;
 
 
@@ -332,9 +332,9 @@ public class InterviewEvaluationService {
         }
 
         // 3. 인재상
-        List<TalentProfile> talentProfiles = talentProfileRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
-        List<String> talentProfileDetails = talentProfiles.stream()
-                .map(TalentProfile::getProfile)
+        List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
+        List<String> idealDetails = ideals.stream()
+                .map(Ideal::getContent)
                 .collect(Collectors.toList());
 
         // 4. 총점 평균
@@ -358,7 +358,7 @@ public class InterviewEvaluationService {
         return new EachInterviewEvaluationResponse(
                 applicantInfo,
                 groupedQuestions,
-                talentProfileDetails,
+                idealDetails,
                 averageScore,
                 evaluatorScores,
                 myEvaluation

@@ -25,7 +25,7 @@ public class Group {
     private Recruit recruit;
 
     @OneToMany(mappedBy = "group")
-    private List<TalentProfile> talentProfileList;
+    private List<Ideal> idealList;
 
     @Column(nullable = true)
     private String name;

@@ -1,20 +1,18 @@
 package com.cluting.clutingbackend.plan.service;
 
-import com.cluting.clutingbackend.club.domain.Club;
-import com.cluting.clutingbackend.club.repository.ClubRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
 import com.cluting.clutingbackend.plan.domain.Group;
-import com.cluting.clutingbackend.plan.domain.TalentProfile;
+import com.cluting.clutingbackend.plan.domain.Ideal;
 import com.cluting.clutingbackend.plan.dto.request.*;
 import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.plan.repository.InterviewTimeSlotRepository;
-import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
+import com.cluting.clutingbackend.plan.repository.IdealRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
@@ -32,7 +30,7 @@ import java.util.List;
 public class PlanService {
 
     private final GroupRepository groupRepository;
-    private final TalentProfileRepository talentProfileRepository;
+    private final IdealRepository idealRepository;
     private final RecruitRepository recruitRepository;
     private final RecruitScheduleRepository recruitScheduleRepository;
     private final InterviewTimeSlotRepository interviewTimeSlotRepository;
@@ -84,20 +82,20 @@ public class PlanService {
     }
 
     @Transactional
-    public void saveTalentProfiles(Long recruitId, Plan2RequestDto requestDto) {
+    public void saveIdeals(Long recruitId, Plan2RequestDto requestDto) {
 
         //  인재상 저장
-        if (requestDto.getPartProfiles() != null) {
-            requestDto.getPartProfiles().forEach(partProfile -> {
-                Group group = groupRepository.findByRecruitIdAndName(recruitId, partProfile.getPartName())
-                        .orElseThrow(() -> new IllegalArgumentException("Group not found for part: " + partProfile.getPartName()));
+        if (requestDto.getPartIdeals() != null) {
+            requestDto.getPartIdeals().forEach(partIdeal -> {
+                Group group = groupRepository.findByRecruitIdAndName(recruitId, partIdeal.getPartName())
+                        .orElseThrow(() -> new IllegalArgumentException("Group not found for part: " + partIdeal.getPartName()));
 
-                partProfile.getProfiles().forEach(profile -> {
-                    TalentProfile talentProfile = TalentProfile.builder()
-                            .profile(profile)
+                partIdeal.getContent().forEach(content -> {
+                    Ideal ideal = Ideal.builder()
+                            .content(content)
                             .group(group) // 파트별 인재상은 group 설정
                             .build();
-                    talentProfileRepository.save(talentProfile);
+                    idealRepository.save(ideal);
                 });
             });
         }

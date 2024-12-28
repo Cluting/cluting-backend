@@ -41,7 +41,7 @@ public class DocumentEvaluationService {
     private final DocumentAnswerRepository documentAnswerRepository;
     private final DocumentQuestionRepository documentQuestionRepository;
     private final OptionRepository optionRepository;
-    private final TalentProfileRepository talentProfileRepository;
+    private final IdealRepository idealRepository;
     private final ClubUserRepository clubUserRepository;
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
@@ -193,7 +193,7 @@ public class DocumentEvaluationService {
                 app.getUser().getName(),                             // 사용자 이름
                 app.getUser().getPhone(),                            // 사용자 전화번호
                 group != null ? group.getName() : null,              // 그룹명 (Group이 있으면 그 이름, 없으면 null)
-                EvaluateStatus.PASS.equals(app.getState()),         // 합격 여부 (true/false)
+                EvaluateStatus.PASS.equals(app.getState()),          // 합격 여부 (true/false)
                 app.getCreatedAt()                                   // 지원서 제출일
         );
     }
@@ -486,15 +486,15 @@ public class DocumentEvaluationService {
         }
 
         // 3. 인재상
-        List<TalentProfile> talentProfiles = talentProfileRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
+        List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
 
-        if (talentProfiles.isEmpty()) {
+        if (ideals.isEmpty()) {
             throw new ResourceNotFoundException("Talent Profile not found");
         }
 
         // 프로필 정보를 리스트로 반환
-        List<String> talentProfileDetails = talentProfiles.stream()
-                .map(TalentProfile::getProfile)
+        List<String> idealDetails = ideals.stream()
+                .map(Ideal::getContent)
                 .collect(Collectors.toList());
 
         // 4. 총점 평균
@@ -514,7 +514,7 @@ public class DocumentEvaluationService {
         return new DocumentEvaluation4Response(
                 applicantInfo,
                 questionAndAnswers,
-                talentProfileDetails,
+                idealDetails,
                 averageScore,
                 evaluatorScores,
                 myEvaluation
