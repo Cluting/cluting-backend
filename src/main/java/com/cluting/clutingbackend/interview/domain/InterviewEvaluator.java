@@ -9,11 +9,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter
-@Setter
+@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_interview_evaluator")
 public class InterviewEvaluator {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

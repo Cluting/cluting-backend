@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_recruitschedule")
+@Table(name = "tb_recruit_schedule")
 public class RecruitSchedule {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_clubuser")
+@Table(name = "tb_club_user")
 public class ClubUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
