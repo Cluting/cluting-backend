@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TalentProfile {
+@Table(name="tb_ideal")
+public class Ideal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

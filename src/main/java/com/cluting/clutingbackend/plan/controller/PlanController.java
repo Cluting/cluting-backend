@@ -39,7 +39,7 @@ public class PlanController {
     @RequiredPermission(PermissionLevel.TWO)
     @Operation(summary = "모집하기(2)",description = "인재상 구축하기")
     public ResponseEntity<Void> stage2(@PathVariable(name="recuritId") Long recruitId, @RequestBody Plan2RequestDto dto) {
-        planService.saveTalentProfiles(recruitId, dto);
+        planService.saveIdeals(recruitId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
