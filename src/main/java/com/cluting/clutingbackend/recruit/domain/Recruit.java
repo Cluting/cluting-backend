@@ -30,7 +30,7 @@ public class Recruit {
     @OneToMany(mappedBy = "recruit")
     private List<Group> groupList;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = true)
     private String title; // 공고 제목
 
     @Lob
