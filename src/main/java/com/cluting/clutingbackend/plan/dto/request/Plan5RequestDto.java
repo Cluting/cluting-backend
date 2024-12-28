@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.plan.dto.request;
 
+import com.cluting.clutingbackend.global.enums.QuestionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +24,8 @@ public class Plan5RequestDto {
     @AllArgsConstructor
     public static class QuestionDto {
         private String content;                  // 질문 내용
-        private Boolean isRequired;              // 필수 여부
+        private QuestionType questionType;       // 질문 종류
+        private List<String> objects;            // questionType = OBJECT (객관식)이라면, object 존재
     }
 
     @Data
