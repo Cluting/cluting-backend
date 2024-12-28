@@ -494,7 +494,7 @@ public class DocumentEvaluationService {
 
         // 프로필 정보를 리스트로 반환
         List<String> idealDetails = ideals.stream()
-                .map(Ideal::getProfile)
+                .map(Ideal::getContent)
                 .collect(Collectors.toList());
 
         // 4. 총점 평균

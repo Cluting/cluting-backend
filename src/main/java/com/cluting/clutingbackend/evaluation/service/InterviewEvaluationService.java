@@ -334,7 +334,7 @@ public class InterviewEvaluationService {
         // 3. 인재상
         List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
         List<String> idealDetails = ideals.stream()
-                .map(Ideal::getProfile)
+                .map(Ideal::getContent)
                 .collect(Collectors.toList());
 
         // 4. 총점 평균

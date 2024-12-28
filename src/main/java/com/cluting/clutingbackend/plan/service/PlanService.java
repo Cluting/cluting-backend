@@ -85,14 +85,14 @@ public class PlanService {
     public void saveIdeals(Long recruitId, Plan2RequestDto requestDto) {
 
         //  인재상 저장
-        if (requestDto.getPartProfiles() != null) {
-            requestDto.getPartProfiles().forEach(partProfile -> {
-                Group group = groupRepository.findByRecruitIdAndName(recruitId, partProfile.getPartName())
-                        .orElseThrow(() -> new IllegalArgumentException("Group not found for part: " + partProfile.getPartName()));
+        if (requestDto.getPartIdeals() != null) {
+            requestDto.getPartIdeals().forEach(partIdeal -> {
+                Group group = groupRepository.findByRecruitIdAndName(recruitId, partIdeal.getPartName())
+                        .orElseThrow(() -> new IllegalArgumentException("Group not found for part: " + partIdeal.getPartName()));
 
-                partProfile.getProfiles().forEach(profile -> {
+                partIdeal.getContent().forEach(content -> {
                     Ideal ideal = Ideal.builder()
-                            .profile(profile)
+                            .content(content)
                             .group(group) // 파트별 인재상은 group 설정
                             .build();
                     idealRepository.save(ideal);
