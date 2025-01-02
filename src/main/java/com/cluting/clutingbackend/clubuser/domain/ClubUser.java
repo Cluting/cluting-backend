@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.clubuser.domain;
 
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
+import com.cluting.clutingbackend.global.security.PermissionLevelConverter;
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
 import com.cluting.clutingbackend.todo.domain.Todo;
 import com.cluting.clutingbackend.user.domain.User;
@@ -34,9 +35,9 @@ public class ClubUser {
     @Column(nullable = true)
     private ClubRole role; // 부원 혹은 운영진
 
-    @Enumerated
-    @Column(nullable = true)
-    private PermissionLevel permissionLevel; // 모집하기 단계에서의 권한 체크를 위한 enum
+    @Convert(converter = PermissionLevelConverter.class)
+    @Column(columnDefinition = "TEXT")
+    private List<PermissionLevel> permissionLevels; // 모집하기 단계에서의 권한 체크를 위한 enum
 
     @Column(nullable = true)
     private Integer generation;
