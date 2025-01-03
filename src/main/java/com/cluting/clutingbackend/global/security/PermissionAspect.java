@@ -25,6 +25,8 @@ public class PermissionAspect {
         // 로그인한 사용자의 정보 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        System.out.println("customUserDetail 찍어보기 -> " + customUserDetails.toString());
         // CLubUser 조회
         ClubUser clubUser = customUserDetails.getClubUser();
         System.out.println("ClubUser 제대로 가져오는지? " + clubUser.toString());

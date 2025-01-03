@@ -20,9 +20,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
+                );
+        ClubUser clubUser = clubUserRepository.findByUserId(user.getId())
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
+                );
 
         return CustomUserDetails.builder()
+                .clubUser(clubUser)
                 .user(user)
                 .build();
     }
