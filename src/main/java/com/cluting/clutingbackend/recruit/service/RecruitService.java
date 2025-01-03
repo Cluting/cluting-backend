@@ -6,6 +6,7 @@ import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.global.enums.*;
 import com.cluting.clutingbackend.global.util.StaticValue;
+import com.cluting.clutingbackend.plan.domain.DocumentCriteria;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentCriteriaRepository;
@@ -155,8 +156,12 @@ public class RecruitService {
 
         // 서류 평가 기준 저장
         for (RecruitRoleAllocateRequestDto dto : recruitDocSetRequestDto.getGroups()) {
-            dto.getCriteria().forEach(documentCriteriaRepository.save(RecruitCriteriaSaveRequestDto::toEntity));
+            dto.getCriteria().forEach(criteriaDto -> {
+                DocumentCriteria entity = criteriaDto.toEntity();
+                documentCriteriaRepository.save(entity);
+            });
         }
+
 
         // 서류 평가 중간 테이블 저장
         for (RecruitRoleAllocateRequestDto dto : recruitDocSetRequestDto.getGroups()) {

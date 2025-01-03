@@ -107,7 +107,7 @@ public class ClubService {
     }
 
     @Transactional
-    public RecruitResponseDto recruitStart(User user, Long clubId, RecruitSaveRequestDto recruitSaveRequestDto) {
+    public RecruitResponseDto recruitStart(Long clubId, RecruitSaveRequestDto recruitSaveRequestDto) {
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(
                         () -> new ResponseStatusException(

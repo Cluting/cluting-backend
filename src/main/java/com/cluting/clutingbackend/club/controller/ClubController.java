@@ -125,6 +125,6 @@ public class ClubController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("clubId") Long clubId,
             @RequestBody RecruitSaveRequestDto recruitSaveRequestDto) {
-        return clubService.recruitStart(userDetails.getUser(), clubId, recruitSaveRequestDto);
+        return clubService.recruitStart(clubId, recruitSaveRequestDto);
     }
 }
