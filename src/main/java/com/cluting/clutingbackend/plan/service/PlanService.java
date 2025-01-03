@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.plan.service;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
 import com.cluting.clutingbackend.plan.domain.Group;
@@ -25,6 +26,9 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.cluting.clutingbackend.global.exception.ErrorCode.GROUP_NOT_FOUND;
+import static com.cluting.clutingbackend.global.exception.ErrorCode.RECRUIT_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class PlanService {
@@ -40,7 +44,8 @@ public class PlanService {
     public Plan1ResponseDto createRecruitment(Long recruitId, Plan1RequestDto requestDto) {
         // Recruit 엔티티 조회
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND,  "[recrutId : " + recruitId + "]에 대한 공고를 찾을 수 없습니다."));
+
 
         // Recruit 엔티티 업데이트
         recruit.setNumDoc(requestDto.getTotalDocumentPassCount());
@@ -88,7 +93,7 @@ public class PlanService {
         if (requestDto.getPartIdeals() != null) {
             requestDto.getPartIdeals().forEach(partIdeal -> {
                 Group group = groupRepository.findByRecruitIdAndName(recruitId, partIdeal.getPartName())
-                        .orElseThrow(() -> new IllegalArgumentException("Group not found for part: " + partIdeal.getPartName()));
+                        .orElseThrow(() -> new CustomException(GROUP_NOT_FOUND, recruitId + "에 대한 파트를 찾을 수 없습니다."));
 
                 partIdeal.getContent().forEach(content -> {
                     Ideal ideal = Ideal.builder()

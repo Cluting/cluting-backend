@@ -18,10 +18,15 @@ public enum ErrorCode {
     INVALID_AUTH_TOKEN(UNAUTHORIZED, "권한 정보가 없는 토큰입니다"),
     UNAUTHORIZED_MEMBER(UNAUTHORIZED, "현재 내 계정 정보가 존재하지 않습니다"),
 
+    /* 403 FORBIDDEN : 접근 권한 없음 */
+    ACCESS_DENIED(FORBIDDEN, "접근이 거부되었습니다"),
+    INVALID_PERMISSION(FORBIDDEN, "유효하지 않은 권한입니다"),
+
     /* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
     MEMBER_NOT_FOUND(NOT_FOUND, "해당 유저 정보를 찾을 수 없습니다"),
     REFRESH_TOKEN_NOT_FOUND(NOT_FOUND, "로그아웃 된 사용자입니다"),
-    NOT_FOLLOW(NOT_FOUND, "팔로우 중이지 않습니다"),
+    RECRUIT_NOT_FOUND(NOT_FOUND, "해당 리크루팅 공고를 찾을 수 없습니다"),
+    GROUP_NOT_FOUND(NOT_FOUND, "해당 파트(그룹)을 찾을 수 없습니다"),
 
     /* 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재 */
     DUPLICATE_RESOURCE(CONFLICT, "데이터가 이미 존재합니다"),

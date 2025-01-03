@@ -25,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PlanController {
 
-    private PlanService planService;
+    private final PlanService planService;
 
     @PostMapping("/stage1/{recruitId}")
     @RequiredPermission(PermissionLevel.ONE)
