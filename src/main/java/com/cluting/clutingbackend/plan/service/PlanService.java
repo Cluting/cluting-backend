@@ -150,7 +150,7 @@ public class PlanService {
     @Transactional
     public void saveTimeSlots(List<LocalDateTime> timeSlots, @AuthenticationPrincipal CustomUserDetails currentUser) {
         // 현재 로그인한 유저의 ClubUser 조회
-        ClubUser clubUser = clubUserRepository.findById(currentUser.getUser().getId())
+        ClubUser clubUser = clubUserRepository.findByUserId(currentUser.getUser().getId())
                 .orElseThrow(() -> new IllegalArgumentException("ClubUser not found for logged-in user"));
 
         // 각 시간대 저장
