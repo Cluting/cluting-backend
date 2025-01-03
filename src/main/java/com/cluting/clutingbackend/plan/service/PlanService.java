@@ -11,9 +11,8 @@ import com.cluting.clutingbackend.plan.dto.request.*;
 import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
-import com.cluting.clutingbackend.plan.repository.GroupRepository;
-import com.cluting.clutingbackend.plan.repository.InterviewTimeSlotRepository;
-import com.cluting.clutingbackend.plan.repository.IdealRepository;
+import com.cluting.clutingbackend.plan.dto.response.RecruitDetailResponseDto;
+import com.cluting.clutingbackend.plan.repository.*;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.cluting.clutingbackend.global.exception.ErrorCode.GROUP_NOT_FOUND;
 import static com.cluting.clutingbackend.global.exception.ErrorCode.RECRUIT_NOT_FOUND;
@@ -39,6 +39,8 @@ public class PlanService {
     private final RecruitScheduleRepository recruitScheduleRepository;
     private final InterviewTimeSlotRepository interviewTimeSlotRepository;
     private final ClubUserRepository clubUserRepository;
+    private final DocumentQuestionRepository documentQuestionRepository;
+    private final DocumentAnswerRepository documentAnswerRepository;
 
     @Transactional
     public Plan1ResponseDto createRecruitment(Long recruitId, Plan1RequestDto requestDto) {
@@ -93,7 +95,7 @@ public class PlanService {
         if (requestDto.getPartIdeals() != null) {
             requestDto.getPartIdeals().forEach(partIdeal -> {
                 Group group = groupRepository.findByRecruitIdAndName(recruitId, partIdeal.getPartName())
-                        .orElseThrow(() -> new CustomException(GROUP_NOT_FOUND, recruitId + "에 대한 파트를 찾을 수 없습니다."));
+                        .orElseThrow(() -> new CustomException(GROUP_NOT_FOUND, recruitId + "에 대한 그룹을 찾을 수 없습니다."));
 
                 partIdeal.getContent().forEach(content -> {
                     Ideal ideal = Ideal.builder()
@@ -187,6 +189,27 @@ public class PlanService {
                 .partQuestions(requestDto.getPartQuestions())
                 .isPortfolioRequired(requestDto.getIsPortfolioRequired())
                 .build();
+    }
+
+    public RecruitDetailResponseDto getRecruitDetails(Long recruitId) {
+        // 공고 데이터 가져오기
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+
+        // 인재상 목록 가져오기
+        List<RecruitDetailResponseDto.IdealResponse> ideals = recruit.getGroupList().stream()
+                .flatMap(group -> group.getIdealList().stream())
+                .map(ideal -> new RecruitDetailResponseDto.IdealResponse(ideal.getId(), ideal.getContent()))
+                .collect(Collectors.toList());
+
+        // 응답 생성
+        return new RecruitDetailResponseDto(
+                recruit.getId(),
+                recruit.getTitle(),
+                recruit.getNumDoc(),
+                recruit.getNumFinal(),
+                ideals
+        );
     }
 
 }

@@ -31,13 +31,16 @@ public class Group {
     private String name;
 
     @Column(nullable = true)
-    private Integer numDoc;
+    @Builder.Default
+    private Integer numDoc = 0;
 
     @Column(nullable = true)
-    private Integer numFinal;
+    @Builder.Default
+    private Integer numFinal = 0;
 
     @Column(nullable = true)
-    private Integer numRecruit;
+    @Builder.Default
+    private Integer numRecruit = 0;
 
     @Column(nullable = true)
     private String warning;

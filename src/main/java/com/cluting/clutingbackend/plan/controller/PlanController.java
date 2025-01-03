@@ -7,6 +7,7 @@ import com.cluting.clutingbackend.plan.dto.request.*;
 import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
+import com.cluting.clutingbackend.plan.dto.response.RecruitDetailResponseDto;
 import com.cluting.clutingbackend.plan.service.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,7 +39,7 @@ public class PlanController {
     @PostMapping("/stage2/{recruitId}")
     @RequiredPermission(PermissionLevel.TWO)
     @Operation(summary = "모집하기(2)",description = "인재상 구축하기")
-    public ResponseEntity<Void> stage2(@PathVariable(name="recuritId") Long recruitId, @RequestBody Plan2RequestDto dto) {
+    public ResponseEntity<Void> stage2(@PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
         planService.saveIdeals(recruitId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -87,4 +88,10 @@ public class PlanController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
+    @GetMapping("/details/{recruitId}")
+    @Operation(summary = "합격 인원 및 인재상 확인")
+    public ResponseEntity<RecruitDetailResponseDto> getRecruitDetails(@PathVariable Long recruitId) {
+        RecruitDetailResponseDto response = planService.getRecruitDetails(recruitId);
+        return ResponseEntity.ok(response);
+    }
 }
