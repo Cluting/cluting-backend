@@ -6,6 +6,7 @@ import com.cluting.clutingbackend.application.repository.ApplicantInterviewTimeS
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
@@ -741,25 +742,34 @@ public class InterviewEvaluationService {
             }
         }
 
-        // 7. 개인 질문 저장
-        if (interviewQuestionSaveRequestDto.getIndividual() != null) {
-            for (InterviewQuestionSaveRequestDto.InterviewIndividualQuestion individualQuestion : interviewQuestionSaveRequestDto.getIndividual()) {
-                Interview targetInterview = interviews.stream()
-                        .filter(interview -> interview.getApplication().getUser().getName().equals(individualQuestion.getName()) &&
-                                interview.getApplication().getUser().getPhone().equals(individualQuestion.getPhone()))
-                        .findFirst()
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "대상을 찾을 수 없습니다: " + individualQuestion.getName()));
-
-                InterviewEvaluator evaluator = interviewEvaluatorRepository.findByInterview_Id(targetInterview.getId());
-
-                for (String question : individualQuestion.getQuestion()) {
-                    interviewQuestionRepository.save(
-                            InterviewQuestion.of(evaluator, targetInterview, question, QuestionType2.PERSONAL)
+        // 7. 면접 평가 기준 저장
+        Map<String, InterviewQuestionSaveRequestDto.InterviewEvaluateCriteria> criteriaMap = interviewQuestionSaveRequestDto.getCriteria();
+        for (Group g : groups) {
+            for (String groupName : criteriaMap.keySet()) {
+                if (g.getName().equals(groupName)) {
+                    InterviewEvaluator evaluator = interviewEvaluatorRepository.findByGroupId(g.getId());
+                    InterviewQuestionSaveRequestDto.InterviewEvaluateCriteria c = criteriaMap.get(groupName);
+                    interviewCriteriaRepository.save(
+                            InterviewCriteria.of(evaluator, c.getName(), c.getContent(), c.getScore())
                     );
                 }
             }
         }
+    }
 
+    @Transactional
+    public void saveIndividualQuestion(Long recruitId, Long userId, InterviewIndividualQuestionRequestDto interviewIndividualQuestionRequestDto) {
+        Interview interview = interviewRepository.findByUser_IdAndRecruit_Id(recruitId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("면접을 찾을 수 없음"));
+        List<InterviewEvaluator> interviewEvaluators = interviewEvaluatorRepository.findByInterviewId(interview.getId());
+
+        for (String question : interviewIndividualQuestionRequestDto.getQuestion()) {
+            for (InterviewEvaluator interviewEvaluator : interviewEvaluators) {
+                interviewQuestionRepository.save(
+                        InterviewQuestion.of(interviewEvaluator, interview, question, QuestionType2.PERSONAL)
+                );
+            }
+        }
     }
 
     // 면접 합격자 리스트

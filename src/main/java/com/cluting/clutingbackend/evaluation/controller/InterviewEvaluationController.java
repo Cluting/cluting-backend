@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
+import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
 import com.cluting.clutingbackend.global.enums.SortType;
@@ -35,6 +36,17 @@ public class InterviewEvaluationController {
             @PathVariable Long recruitId,
             @RequestBody InterviewQuestionSaveRequestDto interviewQuestionSaveRequestDto) {
         interviewEvaluationService.saveInterviewQuestions(recruitId, interviewQuestionSaveRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "[면접 평가하기] 5-1. <평가 전> 면접 평가 준비하기",
+            description = "개인 질문 저장")
+    @PostMapping("/prep/{userId}")
+    public ResponseEntity<Void> updateStagesToAfter(
+            @PathVariable("recruitId") Long recruitId,
+            @PathVariable("userId") Long userId,
+            @RequestBody InterviewIndividualQuestionRequestDto interviewIndividualQuestionRequestDto) {
+        interviewEvaluationService.saveIndividualQuestion(recruitId, userId, interviewIndividualQuestionRequestDto);
         return ResponseEntity.ok().build();
     }
 
