@@ -503,6 +503,7 @@ public class DocumentEvaluationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Club User not found"));
         EvaluatorScores myEvaluation = EvaluatorScores.ofForUser(evaluators.get(0), currentClubUser, documentEvalScoreRepository);
 
+
         return new DocumentEvaluation4Response(
                 applicantInfo,
                 questionAndAnswers,
