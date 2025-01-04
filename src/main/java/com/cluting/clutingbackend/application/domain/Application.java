@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.application.domain;
 
+import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
@@ -8,6 +9,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
@@ -45,4 +47,7 @@ public class Application {
     @Column
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "application")
+    private List<DocumentEvaluator> documentEvaluatorList;
 }

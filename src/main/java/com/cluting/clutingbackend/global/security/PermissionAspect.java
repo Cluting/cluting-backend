@@ -26,13 +26,11 @@ public class PermissionAspect {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        System.out.println("customUserDetail 찍어보기 -> " + customUserDetails.toString());
         // CLubUser 조회
         ClubUser clubUser = customUserDetails.getClubUser();
-        System.out.println("ClubUser 제대로 가져오는지? " + clubUser.toString());
 
         List<PermissionLevel> userPermissionLevels = clubUser.getPermissionLevels();
-        System.out.println("ClubUser의 권한 레벨 체크");
+        System.out.println("ClubUser의 권한 레벨 체크" + userPermissionLevels);
 
         if (userPermissionLevels == null || userPermissionLevels.isEmpty()) {
             throw new SecurityException("사용자의 권한 정보가 없습니다.");

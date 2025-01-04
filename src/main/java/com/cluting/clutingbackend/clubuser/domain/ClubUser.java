@@ -36,7 +36,7 @@ public class ClubUser {
     private ClubRole role; // 부원 혹은 운영진
 
     @Convert(converter = PermissionLevelConverter.class)
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT",name = "permission_levels")
     private List<PermissionLevel> permissionLevels; // 모집하기 단계에서의 권한 체크를 위한 enum
 
     @Column(nullable = true)

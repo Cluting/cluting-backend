@@ -70,7 +70,7 @@ public class RecruitService {
         return new RecruitsResponseDto(recruitDtos.size(), recruitDtos);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = false)
     public RecruitResponseDto findById(User user, Long recruitId) {
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(

@@ -21,6 +21,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("handleDataException throw Exception : {}", DUPLICATE_RESOURCE);
         return ErrorResponseEntity.toResponseEntity(DUPLICATE_RESOURCE);
     }
+
     @ExceptionHandler(CustomException.class)
     protected ResponseEntity<ErrorResponseEntity> handleCustomException(CustomException e) {
         return ErrorResponseEntity.toResponseEntity(e.getErrorCode());
