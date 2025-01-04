@@ -1,14 +1,13 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
+import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.interview.*;
 import com.cluting.clutingbackend.evaluation.service.InterviewEvaluationService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
-import com.cluting.clutingbackend.interview.repository.InterviewRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -27,6 +26,38 @@ import java.util.Map;
 public class InterviewEvaluationController {
 
     private final InterviewEvaluationService interviewEvaluationService;
+
+    @Operation(
+            summary = "[최종합격자 및 활동 안내] 6-1. <지원자 합불 결과>",
+            description = "면접 합격자, 불합격자 리스트를 반환합니다. sort: NEWEST(최신순) OLDEST(오래된순) INORDER(가나다순)",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "면접 합격자, 불합격자 리스트 반환 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            }
+    )
+    @GetMapping("/result")
+    public InterviewEvaluationResultResponseDto findInterviewPassAndFail(
+            @PathVariable("recruitId") Long recruitId,
+            @RequestParam("sort") SortType sortType) {
+        return interviewEvaluationService.findInterviewPassAndFail(recruitId, sortType);
+    }
+
+    @Operation(
+            summary = "[서류 합격자 및 면접 안내] 4-2. <면접 가능 일정 조회하기>",
+            description = "운영진 및 지원자들의 면접 가능 일정을 조회합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "면접 가능 일정 리스트 반환 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            }
+    )
+    @GetMapping("/available")
+    public InterviewClassifyResponseDto findInterviewAvailable(
+            @PathVariable("recruitId") Long recruitId,
+            @RequestParam(value = "part", defaultValue = "공통") String partName) {
+        return interviewEvaluationService.findInterviewAvailable(recruitId, partName);
+    }
 
     @Operation(summary = "평가전/중/후 지원자 정보 불러오기",
             description = "면접 평가 단계의 지원자 정보를 단계별로 분리하여 가져옵니다.+" +

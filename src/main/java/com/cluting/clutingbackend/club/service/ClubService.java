@@ -8,11 +8,9 @@ import com.cluting.clutingbackend.club.repository.ClubRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.global.s3.AwsS3Service;
-import com.cluting.clutingbackend.global.util.StaticValue;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
-import com.cluting.clutingbackend.user.domain.Scrap;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.user.repository.ScrapRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

@@ -4,6 +4,9 @@ import com.cluting.clutingbackend.application.domain.ApplicantInterviewTimeSlot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
-public interface ApplicationInterviewTimeSlotRepository extends JpaRepository<ApplicantInterviewTimeSlot, Long> {
+public interface ApplicantInterviewTimeSlotRepository extends JpaRepository<ApplicantInterviewTimeSlot, Long> {
+    List<ApplicantInterviewTimeSlot> findAllByApplication_Recruit_Id(Long recruitId);
 }
