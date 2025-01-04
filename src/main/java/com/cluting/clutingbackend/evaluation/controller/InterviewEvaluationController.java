@@ -45,7 +45,7 @@ public class InterviewEvaluationController {
 
     @Operation(
             summary = "[서류 합격자 및 면접 안내] 4-2. <면접 가능 일정 조회하기>",
-            description = "운영진 및 지원자들의 면접 가능 일정을 조회합니다.",
+            description = "운영진 및 지원자들의 면접 가능 일정을 조회합니다. part 입력 안하면 _공통_ 으로 처리합니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "면접 가능 일정 리스트 반환 성공"),
                     @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
