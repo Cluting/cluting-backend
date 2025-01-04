@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Getter
-@Setter
+@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_perp_stage")
 public class PrepStage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,20 +1,18 @@
 package com.cluting.clutingbackend.plan.service;
 
-import com.cluting.clutingbackend.club.domain.Club;
-import com.cluting.clutingbackend.club.repository.ClubRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
 import com.cluting.clutingbackend.plan.domain.Group;
-import com.cluting.clutingbackend.plan.domain.TalentProfile;
+import com.cluting.clutingbackend.plan.domain.Ideal;
 import com.cluting.clutingbackend.plan.dto.request.*;
 import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
 import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
-import com.cluting.clutingbackend.plan.repository.GroupRepository;
-import com.cluting.clutingbackend.plan.repository.InterviewTimeSlotRepository;
-import com.cluting.clutingbackend.plan.repository.TalentProfileRepository;
+import com.cluting.clutingbackend.plan.dto.response.RecruitDetailResponseDto;
+import com.cluting.clutingbackend.plan.repository.*;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
@@ -26,23 +24,30 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.cluting.clutingbackend.global.exception.ErrorCode.GROUP_NOT_FOUND;
+import static com.cluting.clutingbackend.global.exception.ErrorCode.RECRUIT_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
 public class PlanService {
 
     private final GroupRepository groupRepository;
-    private final TalentProfileRepository talentProfileRepository;
+    private final IdealRepository idealRepository;
     private final RecruitRepository recruitRepository;
     private final RecruitScheduleRepository recruitScheduleRepository;
     private final InterviewTimeSlotRepository interviewTimeSlotRepository;
     private final ClubUserRepository clubUserRepository;
+    private final DocumentQuestionRepository documentQuestionRepository;
+    private final DocumentAnswerRepository documentAnswerRepository;
 
     @Transactional
     public Plan1ResponseDto createRecruitment(Long recruitId, Plan1RequestDto requestDto) {
         // Recruit 엔티티 조회
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND,  "[recrutId : " + recruitId + "]에 대한 공고를 찾을 수 없습니다."));
+
 
         // Recruit 엔티티 업데이트
         recruit.setNumDoc(requestDto.getTotalDocumentPassCount());
@@ -84,20 +89,20 @@ public class PlanService {
     }
 
     @Transactional
-    public void saveTalentProfiles(Long recruitId, Plan2RequestDto requestDto) {
+    public void saveIdeals(Long recruitId, Plan2RequestDto requestDto) {
 
         //  인재상 저장
-        if (requestDto.getPartProfiles() != null) {
-            requestDto.getPartProfiles().forEach(partProfile -> {
-                Group group = groupRepository.findByRecruitIdAndName(recruitId, partProfile.getPartName())
-                        .orElseThrow(() -> new IllegalArgumentException("Group not found for part: " + partProfile.getPartName()));
+        if (requestDto.getPartIdeals() != null) {
+            requestDto.getPartIdeals().forEach(partIdeal -> {
+                Group group = groupRepository.findByRecruitIdAndName(recruitId, partIdeal.getPartName())
+                        .orElseThrow(() -> new CustomException(GROUP_NOT_FOUND, recruitId + "에 대한 그룹을 찾을 수 없습니다."));
 
-                partProfile.getProfiles().forEach(profile -> {
-                    TalentProfile talentProfile = TalentProfile.builder()
-                            .profile(profile)
+                partIdeal.getContent().forEach(content -> {
+                    Ideal ideal = Ideal.builder()
+                            .content(content)
                             .group(group) // 파트별 인재상은 group 설정
                             .build();
-                    talentProfileRepository.save(talentProfile);
+                    idealRepository.save(ideal);
                 });
             });
         }
@@ -152,7 +157,7 @@ public class PlanService {
     @Transactional
     public void saveTimeSlots(List<LocalDateTime> timeSlots, @AuthenticationPrincipal CustomUserDetails currentUser) {
         // 현재 로그인한 유저의 ClubUser 조회
-        ClubUser clubUser = clubUserRepository.findById(currentUser.getUser().getId())
+        ClubUser clubUser = clubUserRepository.findByUserId(currentUser.getUser().getId())
                 .orElseThrow(() -> new IllegalArgumentException("ClubUser not found for logged-in user"));
 
         // 각 시간대 저장
@@ -184,6 +189,27 @@ public class PlanService {
                 .partQuestions(requestDto.getPartQuestions())
                 .isPortfolioRequired(requestDto.getIsPortfolioRequired())
                 .build();
+    }
+
+    public RecruitDetailResponseDto getRecruitDetails(Long recruitId) {
+        // 공고 데이터 가져오기
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+
+        // 인재상 목록 가져오기
+        List<RecruitDetailResponseDto.IdealResponse> ideals = recruit.getGroupList().stream()
+                .flatMap(group -> group.getIdealList().stream())
+                .map(ideal -> new RecruitDetailResponseDto.IdealResponse(ideal.getId(), ideal.getContent()))
+                .collect(Collectors.toList());
+
+        // 응답 생성
+        return new RecruitDetailResponseDto(
+                recruit.getId(),
+                recruit.getTitle(),
+                recruit.getNumDoc(),
+                recruit.getNumFinal(),
+                ideals
+        );
     }
 
 }

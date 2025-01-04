@@ -67,6 +67,7 @@ public class TodoController {
         Long currentClubUserId = currentUser.getUser().getId();
 
         todoService.deleteTodo(currentClubUserId, todoId);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -90,6 +91,7 @@ public class TodoController {
         Long currentClubUserId = currentUser.getUser().getId();
 
         todoService.toggleTodoStatus(currentClubUserId, todoId);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -114,6 +116,7 @@ public class TodoController {
         Long currentClubUserId = currentUser.getUser().getId();
 
         todoService.updateTodoContent(currentClubUserId, todoId, request.getContent());
+
         return ResponseEntity.ok().build();
     }
 
@@ -135,6 +138,7 @@ public class TodoController {
         Long currentClubUserId = currentUser.getUser().getId();
 
         Map<String, List<TodoResponse>> todos = todoService.getTodosByStatus(currentClubUserId);
+
         return ResponseEntity.ok(todos);
     }
 

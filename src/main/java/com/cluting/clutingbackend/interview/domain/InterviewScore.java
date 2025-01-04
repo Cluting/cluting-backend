@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter
-@Setter
+@Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "tb_interview_score")
 public class InterviewScore {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

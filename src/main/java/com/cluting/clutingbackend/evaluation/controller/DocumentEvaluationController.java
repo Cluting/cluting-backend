@@ -1,10 +1,14 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
+import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.*;
-import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -150,6 +154,22 @@ public class DocumentEvaluationController {
         return ResponseEntity.ok("지원서 상태가 OBJECTION으로 변경되었습니다.");
     }
 
+    @Operation(
+            summary = "서류 합격자, 불합격자 리스트 불러오기",
+            description = "서류 합격자, 불합격자 리스트를 반환합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "서류 합격자, 불합격자 리스트 반환 성공"),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류")
+            }
+    )
+    @GetMapping("/result")
+    public DocumentEvaluateResultsResponseDto findPassAndFail(
+            @PathVariable("recruitId") Long recruitId,
+            @RequestParam("sort") SortType sortType) {
+        return documentEvaluationService.findPassAndFail(recruitId, sortType);
+    }
+
     // [서류 평가하기] 지원서 상태를 PASS/FAIL로 변경하고 지원자 정보 반환
     @Operation(summary = "[서류 평가하기] 4-3. <서류 평가 상태 업데이트>",
             description = "지원서 상태를 합격(PASS) 또는 불합격(FAIL)으로 업데이트하고, 해당 지원자 정보(이름, 그룹명, 전화번호, 합격여부)를 반환합니다."+
@@ -197,5 +217,4 @@ public class DocumentEvaluationController {
         List<GroupResponse> groups = documentEvaluationService.getGroupsByRecruitId(recruitId);
         return ResponseEntity.ok(groups);
     }
-
 }

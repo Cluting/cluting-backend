@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.prep.controller;
 
+import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.prep.dto.PrepDetailsResponseDto;
 import com.cluting.clutingbackend.prep.dto.PrepRequestDto;
 import com.cluting.clutingbackend.prep.service.PrepService;
@@ -51,4 +52,6 @@ public class PrepController {
     public PrepDetailsResponseDto getPrepDetails(@RequestParam Long recruitId) {
         return prepService.getPrepDetails(recruitId);
     }
+
+
 }

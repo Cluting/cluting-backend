@@ -17,11 +17,10 @@ public class ClubRegisterRequestDto {
     private ClubType type;
     private List<String> keyword;
 
-    public Club toEntity(String imageUrl) {
+    public Club toEntity() {
         return Club.builder()
                 .name(name)
                 .description(description)
-                .profile(imageUrl)
                 .category(category)
                 .type(type)
                 .keyword((keyword != null) ? String.join(":::", keyword) : "")

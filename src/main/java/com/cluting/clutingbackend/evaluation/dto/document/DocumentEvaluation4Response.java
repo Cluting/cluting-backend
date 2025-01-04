@@ -10,7 +10,7 @@ import java.util.List;
 public class DocumentEvaluation4Response {
     private ApplicantInfo applicantInfo;                  // 지원자 정보
     private List<QuestionAndAnswer> questionAndAnswers;   // 질문 및 답변 리스트
-    private  List<String> talentProfiles;                 // 인재상 (프로필)
+    private  List<String> ideals;                         // 인재상 (프로필)
     private Integer averageScore;                         // 평균 점수
     private List<EvaluatorScores> evaluatorScores;        // 다른 평가자의 점수
     private EvaluatorScores myEvaluation;                 // 자신의 평가 정보
