@@ -2,6 +2,14 @@ package com.cluting.clutingbackend.evaluation.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.global.enums.SortType;
+import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
+import com.cluting.clutingbackend.plan.domain.Group;
+import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
+import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
@@ -15,9 +23,9 @@ import com.cluting.clutingbackend.plan.repository.*;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,7 +41,7 @@ public class DocumentEvaluationService {
     private final DocumentAnswerRepository documentAnswerRepository;
     private final DocumentQuestionRepository documentQuestionRepository;
     private final OptionRepository optionRepository;
-    private final TalentProfileRepository talentProfileRepository;
+    private final IdealRepository idealRepository;
     private final ClubUserRepository clubUserRepository;
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
@@ -185,7 +193,7 @@ public class DocumentEvaluationService {
                 app.getUser().getName(),                             // 사용자 이름
                 app.getUser().getPhone(),                            // 사용자 전화번호
                 group != null ? group.getName() : null,              // 그룹명 (Group이 있으면 그 이름, 없으면 null)
-                EvaluateStatus.PASS.equals(app.getState()),         // 합격 여부 (true/false)
+                EvaluateStatus.PASS.equals(app.getState()),          // 합격 여부 (true/false)
                 app.getCreatedAt()                                   // 지원서 제출일
         );
     }
@@ -478,15 +486,15 @@ public class DocumentEvaluationService {
         }
 
         // 3. 인재상
-        List<TalentProfile> talentProfiles = talentProfileRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
+        List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
 
-        if (talentProfiles.isEmpty()) {
+        if (ideals.isEmpty()) {
             throw new ResourceNotFoundException("Talent Profile not found");
         }
 
         // 프로필 정보를 리스트로 반환
-        List<String> talentProfileDetails = talentProfiles.stream()
-                .map(TalentProfile::getProfile)
+        List<String> idealDetails = ideals.stream()
+                .map(Ideal::getContent)
                 .collect(Collectors.toList());
 
         // 4. 총점 평균
@@ -507,7 +515,7 @@ public class DocumentEvaluationService {
         return new DocumentEvaluation4Response(
                 applicantInfo,
                 questionAndAnswers,
-                talentProfileDetails,
+                idealDetails,
                 averageScore,
                 evaluatorScores,
                 myEvaluation
@@ -550,4 +558,67 @@ public class DocumentEvaluationService {
                 .toList();
     }
 
+    // 서류 합격/불합격 조회
+    @Transactional(readOnly = true)
+    public DocumentEvaluateResultsResponseDto findPassAndFail(Long recruitId, SortType sortType) {
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+
+        Map<String, Integer> groupCountMap = new HashMap<>();
+        List<DocumentEvaluateResultResponseDto> passed = new ArrayList<>();
+        List<DocumentEvaluateResultResponseDto> failed = new ArrayList<>();
+
+        applications.forEach(application -> {
+            List<DocumentEvaluator> documentEvaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
+
+            documentEvaluators.forEach(documentEvaluator -> {
+                // 그룹별 지원자 수 계산
+                String groupName = documentEvaluator.getGroup().getName();
+                groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
+
+                DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
+                        application,
+                        documentEvaluator.getStage(),
+                        application.getState() == EvaluateStatus.PASS ? "합격" : "불합격"
+                );
+
+                // 합격/불합격 분류
+                if (application.getState() == EvaluateStatus.PASS) {
+                    passed.add(dto);
+                } else if (application.getState() == EvaluateStatus.FAIL) {
+                    failed.add(dto);
+                }
+            });
+        });
+
+        sortAndAssignRank(passed);
+        sortAndAssignRank(failed);
+
+        if (sortType == SortType.NEWEST) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt).reversed());
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt).reversed());
+        } else if (sortType == SortType.OLDEST) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt));
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt));
+        } else if (sortType == SortType.INORDER) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getName));
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getName));
+        } else {
+            throw new IllegalArgumentException("정의되지 않은 정렬 방식 입니다.");
+        }
+
+        return DocumentEvaluateResultsResponseDto.builder()
+                .passedCnt(passed.size())
+                .byGroup(groupCountMap)
+                .passed(passed)
+                .failedCnt(failed.size())
+                .failed(failed)
+                .build();
+    }
+
+    private void sortAndAssignRank(List<DocumentEvaluateResultResponseDto> list) {
+        list.sort((o1, o2) -> Integer.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
+        }
+    }
 }

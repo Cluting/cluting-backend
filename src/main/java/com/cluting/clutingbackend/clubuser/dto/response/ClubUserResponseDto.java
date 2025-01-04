@@ -6,14 +6,18 @@ import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
+
 @Getter
 @Builder
 public class ClubUserResponseDto {
     private Long id;
     private Long userId;
     private Long clubId;
+    private String name;
+    private String email;
     private ClubRole role;
-    private PermissionLevel permissionLevel;
+    private List<PermissionLevel> permissionLevel;
     private Integer generation;
 
     public static ClubUserResponseDto toDto(ClubUser entity) {
@@ -21,8 +25,10 @@ public class ClubUserResponseDto {
                 .id(entity.getId())
                 .userId(entity.getUser().getId())
                 .clubId(entity.getClub().getId())
+                .name(entity.getUser().getName())
+                .email(entity.getUser().getEmail())
                 .role(entity.getRole())
-                .permissionLevel(entity.getPermissionLevel())
+                .permissionLevel(entity.getPermissionLevels())
                 .generation(entity.getGeneration())
                 .build();
     }

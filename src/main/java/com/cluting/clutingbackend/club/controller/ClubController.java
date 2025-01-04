@@ -1,15 +1,18 @@
 package com.cluting.clutingbackend.club.controller;
 
 import com.cluting.clutingbackend.club.dto.request.ClubRegisterRequestDto;
+import com.cluting.clutingbackend.club.dto.request.RecruitSaveRequestDto;
 import com.cluting.clutingbackend.club.dto.response.ClubResponseDto;
 import com.cluting.clutingbackend.club.service.ClubService;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
+import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,18 +25,32 @@ import java.util.List;
 public class ClubController {
     private final ClubService clubService;
 
+    @Operation(description = "동아리 프로필 사진 등록 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "동아리 프로필 사진 등록 성공"),
+            @ApiResponse(responseCode = "404", description = "동아리 프로필 사진 등록 실패"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")})
+    @PutMapping(value = "/register/image/{clubId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public ResponseEntity<Void> register(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("clubId") Long clubId,
+            @RequestPart(value = "profile") MultipartFile profile) {
+        clubService.registerClubProfile(clubId, profile);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(description = "동아리 등록 API")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "동아리 추가 성공"),
             @ApiResponse(responseCode = "404", description = "동아리 추가 실패"),
             @ApiResponse(responseCode = "500", description = "Internal server error")})
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/register")
     @ResponseStatus(value = HttpStatus.CREATED)
     public ClubResponseDto register(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @ModelAttribute ClubRegisterRequestDto clubCreateRequestDto,
-            @RequestPart(value = "profile", required = false) MultipartFile profile) {
-        return clubService.registerClub(userDetails.getUser(), clubCreateRequestDto, profile);
+            @RequestBody ClubRegisterRequestDto clubCreateRequestDto) {
+        return clubService.registerClub(userDetails.getUser(), clubCreateRequestDto);
     }
 
     // 홈페이지
@@ -44,9 +61,8 @@ public class ClubController {
             @ApiResponse(responseCode = "500", description = "Internal server error")})
     @GetMapping("/popular")
     @ResponseStatus(value = HttpStatus.OK)
-    public List<ClubResponseDto> popular(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return clubService.popular(userDetails.getUser());
+    public List<ClubResponseDto> popular() {
+        return clubService.popular();
     }
 
     @Operation(description = "ID로 동아리 단일 조회 API")
@@ -74,6 +90,18 @@ public class ClubController {
         return clubService.findByUser(userDetails.getUser());
     }
 
+    @Operation(description = "로그인 된 사용자가 가입한 동아리 중에 리크루팅 중인 동아리 목록 조회 API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "동아리 조회 성공"),
+            @ApiResponse(responseCode = "404", description = "동아리 조회 실패"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")})
+    @GetMapping("/user/recruiting")
+    @ResponseStatus(value = HttpStatus.OK)
+    public List<ClubResponseDto> findRecruitingByUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return clubService.findRecruitingByUser(userDetails.getUser());
+    }
+
     @Operation(description = "동아리 리크루팅 시작 API")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "동아리 리크루팅 시작 성공"),
@@ -85,5 +113,18 @@ public class ClubController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("clubId") Long clubId) {
         return clubService.recruitingStart(userDetails.getUser(), clubId);
+    }
+
+    @Operation(description = "동아리 리크루팅 시작(기수+타입 저장) API")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "동아리 리크루팅 시작 성공"),
+            @ApiResponse(responseCode = "404", description = "동아리 리크루팅 시작 실패"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")})
+    @PostMapping("/start/{clubId}")
+    public RecruitResponseDto recruitStart(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("clubId") Long clubId,
+            @RequestBody RecruitSaveRequestDto recruitSaveRequestDto) {
+        return clubService.recruitStart(clubId, recruitSaveRequestDto);
     }
 }

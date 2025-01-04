@@ -7,11 +7,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
+@Data
 @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_interview_time_slot")
 public class InterviewTimeSlot {
 
     @Id

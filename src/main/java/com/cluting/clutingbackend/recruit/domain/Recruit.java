@@ -30,7 +30,7 @@ public class Recruit {
     @OneToMany(mappedBy = "recruit")
     private List<Group> groupList;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = true)
     private String title; // 공고 제목
 
     @Lob
@@ -100,4 +100,11 @@ public class Recruit {
     @Column
     private Integer clubFee; // 동아리 회비
 
+    public static Recruit of(Club club, Integer generation, Boolean isInterview) {
+        return Recruit.builder()
+                .club(club)
+                .generation(generation)
+                .isInterview(isInterview)
+                .build();
+    }
 }
