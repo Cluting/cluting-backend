@@ -17,14 +17,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class TodoService {
+
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
-    private final ClubUserRepository clubUserRepository;
+
+    public TodoService(TodoRepository todoRepository, UserRepository userRepository) {
+        this.todoRepository = todoRepository;
+        this.userRepository = userRepository;
+    }
 
     // [리크루팅 홈] 투두 작성하기
-    public TodoResponse createTodo(User user, TodoRequest request) {
+    public TodoResponse createTodo(Long userId, TodoRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없음"));
 
         Todo todo = Todo.builder()
                 .user(user)
@@ -36,38 +42,38 @@ public class TodoService {
     }
 
     // [리크루팅 홈] 투두 삭제하기
-    public void deleteTodo(User user, Long todoId) {
-        Todo todo = todoRepository.findByIdAndUserId(todoId, user.getId())
+    public void deleteTodo(Long userId, Long todoId) {
+        Todo todo = todoRepository.findByIdAndUserId(todoId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 투두 항목을 찾을 수 없음"));
         todoRepository.delete(todo);
     }
 
     // [리크루팅 홈] 투두 완료 상태 바꾸기
-    public void toggleTodoStatus(User user, Long todoId) {
-        Todo todo = todoRepository.findByIdAndUserId(todoId, user.getId())
+    public void toggleTodoStatus(Long userId, Long todoId) {
+        Todo todo = todoRepository.findByIdAndUserId(todoId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 투두 항목을 찾을 수 없음"));
         todo.setStatus(!todo.getStatus());
         todoRepository.save(todo);
     }
 
     // [리크루팅 홈] 투두 내용 변경하기
-    public void updateTodoContent(User user, Long todoId, String updatedContent) {
-        Todo todo = todoRepository.findByIdAndUserId(todoId, user.getId())
+    public void updateTodoContent(Long userId, Long todoId, String updatedContent) {
+        Todo todo = todoRepository.findByIdAndUserId(todoId, userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 투두 항목을 찾을 수 없음"));
         todo.setContent(updatedContent);
         todoRepository.save(todo);
     }
 
     // [리크루팅 홈] 투두 리스트 완료/미완료 분리해서 가져오기
-    public Map<String, List<TodoResponse>> getTodosByStatus(User user) {
+    public Map<String, List<TodoResponse>> getTodosByStatus(Long userId) {
         // 미완료 리스트
-        List<TodoResponse> incompleteTodos = todoRepository.findByUserIdAndStatus(user.getId(), false)
+        List<TodoResponse> incompleteTodos = todoRepository.findByUserIdAndStatus(userId, false)
                 .stream()
                 .map(TodoResponse::fromEntity)
                 .collect(Collectors.toList());
 
         // 완료 리스트
-        List<TodoResponse> completeTodos = todoRepository.findByUserIdAndStatus(user.getId(), true)
+        List<TodoResponse> completeTodos = todoRepository.findByUserIdAndStatus(userId, true)
                 .stream()
                 .map(TodoResponse::fromEntity)
                 .collect(Collectors.toList());
