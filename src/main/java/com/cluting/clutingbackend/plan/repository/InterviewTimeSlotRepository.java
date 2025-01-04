@@ -2,6 +2,11 @@ package com.cluting.clutingbackend.plan.repository;
 
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface InterviewTimeSlotRepository extends JpaRepository<InterviewTimeSlot,Long> {
+import java.util.List;
+
+@Repository
+public interface InterviewTimeSlotRepository extends JpaRepository<InterviewTimeSlot, Long> {
+    List<InterviewTimeSlot> findAllByRecruit_Id(Long recruitId);
 }
