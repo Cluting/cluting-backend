@@ -15,12 +15,10 @@ public class EvaluatorScores {
     private String evaluatorName;
     private List<CriteriaScore> scores;
     private Integer totalScore;
+    private String comment;
 
     public static EvaluatorScores of(DocumentEvaluator evaluator, DocumentEvalScoreRepository evalScoreRepository) {
-        // DocumentEvaluator에 연결된 평가 점수 가져오기
         List<DocumentEvalScore> scores = evalScoreRepository.findByDocumentEvaluatorId(evaluator.getId());
-
-        // CriteriaScore로 변환
         List<CriteriaScore> criteriaScores = scores.stream()
                 .map(score -> CriteriaScore.of(
                         score.getDocumentCriteria().getName(),
@@ -28,24 +26,21 @@ public class EvaluatorScores {
                         score.getDocumentCriteria().getScore()
                 ))
                 .toList();
+        int totalScore = scores.stream().mapToInt(DocumentEvalScore::getScore).sum();
 
-        // 총점 계산
-        int totalScore = scores.stream()
-                .mapToInt(DocumentEvalScore::getScore)
-                .sum();
+        // 코멘트 가져오기
+        String comment = evaluator.getComment();
 
         return EvaluatorScores.of(
                 evaluator.getClubUser().getUser().getName(),
                 criteriaScores,
-                totalScore
+                totalScore,
+                comment
         );
     }
 
     public static EvaluatorScores ofForUser(DocumentEvaluator evaluator, ClubUser user, DocumentEvalScoreRepository evalScoreRepository) {
-        // 특정 사용자가 평가한 점수 가져오기
         List<DocumentEvalScore> scores = evalScoreRepository.findByEvaluatorIdAndClubUserId(evaluator.getId(), user.getId());
-
-        // CriteriaScore로 변환
         List<CriteriaScore> criteriaScores = scores.stream()
                 .map(score -> CriteriaScore.of(
                         score.getDocumentCriteria().getName(),
@@ -53,16 +48,16 @@ public class EvaluatorScores {
                         score.getDocumentCriteria().getScore()
                 ))
                 .toList();
+        int totalScore = scores.stream().mapToInt(DocumentEvalScore::getScore).sum();
 
-        // 총점 계산
-        int totalScore = scores.stream()
-                .mapToInt(DocumentEvalScore::getScore)
-                .sum();
+        // 코멘트 가져오기
+        String comment = evaluator.getComment();
 
         return EvaluatorScores.of(
                 user.getUser().getName(),
                 criteriaScores,
-                totalScore
+                totalScore,
+                comment
         );
     }
 }
