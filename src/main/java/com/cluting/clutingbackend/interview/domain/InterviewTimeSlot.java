@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.interview.domain;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.recruit.domain.Recruit;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,4 +28,8 @@ public class InterviewTimeSlot {
     @ManyToOne
     @JoinColumn(name="clubUser_id")
     private ClubUser clubUser;
+
+    @ManyToOne
+    @JoinColumn(name="recruit_id")
+    private Recruit recruit;
 }

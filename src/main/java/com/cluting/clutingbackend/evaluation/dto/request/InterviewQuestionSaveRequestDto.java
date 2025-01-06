@@ -3,6 +3,7 @@ package com.cluting.clutingbackend.evaluation.dto.request;
 import lombok.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @NoArgsConstructor
@@ -11,7 +12,7 @@ public class InterviewQuestionSaveRequestDto {
     private List<InterviewStaffAllocate> allocates;         // 면접 그룹에 운영진 배정
     private List<String> common;                            // 공통 질문
     private List<InterviewGroupQuestion> group;             // 그룹이 공통일 경우에는 그냥 null 로 받기
-    private List<InterviewIndividualQuestion> individual;   // 개인 질문
+    private Map<String, InterviewEvaluateCriteria> criteria; // 면접 평가 기준
 
     @Getter
     @NoArgsConstructor
@@ -32,9 +33,9 @@ public class InterviewQuestionSaveRequestDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class InterviewIndividualQuestion {
+    public static class InterviewEvaluateCriteria {
         private String name;
-        private String phone; // 이름과 번호로 특정
-        private List<String> question;
+        private Integer score;
+        private String content;
     }
 }

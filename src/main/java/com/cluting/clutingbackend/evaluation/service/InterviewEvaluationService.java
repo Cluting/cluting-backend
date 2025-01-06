@@ -1,27 +1,30 @@
 package com.cluting.clutingbackend.evaluation.service;
 
+import com.cluting.clutingbackend.application.domain.ApplicantInterviewTimeSlot;
 import com.cluting.clutingbackend.application.domain.Application;
+import com.cluting.clutingbackend.application.repository.ApplicantInterviewTimeSlotRepository;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.ApplicantInfo;
 import com.cluting.clutingbackend.evaluation.dto.interview.*;
-import com.cluting.clutingbackend.global.enums.CurrentStage;
-import com.cluting.clutingbackend.global.enums.EvalType;
-import com.cluting.clutingbackend.global.enums.EvaluateStatus;
-import com.cluting.clutingbackend.global.enums.QuestionType2;
-import com.cluting.clutingbackend.global.enums.Stage;
+import com.cluting.clutingbackend.global.enums.*;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.domain.*;
 import com.cluting.clutingbackend.interview.repository.*;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.domain.Ideal;
+import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.plan.repository.IdealRepository;
+import com.cluting.clutingbackend.plan.repository.InterviewTimeSlotRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
@@ -34,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,6 +48,7 @@ public class InterviewEvaluationService {
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
     private final ApplicationRepository applicationRepository;
+    private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final ClubUserRepository clubUserRepository;
     private final InterviewRepository interviewRepository;
     private final InterviewEvaluatorRepository interviewEvaluatorRepository;
@@ -52,7 +57,121 @@ public class InterviewEvaluationService {
     private final UserRepository userRepository;
     private final IdealRepository idealRepository;
     private final InterviewScoreRepository interviewScoreRepository;
+    private final InterviewTimeSlotRepository interviewTimeSlotRepository;
+    private final ApplicantInterviewTimeSlotRepository applicantInterviewTimeSlotRepository;
 
+    public InterviewClassifyResponseDto findInterviewAvailable(Long recruitId, String partName) {
+        List<InterviewTimeSlot> staffTimeSlot = interviewTimeSlotRepository.findAllByRecruit_Id(recruitId); // 운영진 면접 가능 시간
+        List<ApplicantInterviewTimeSlot> applicantTimeSlot = applicantInterviewTimeSlotRepository.findAllByApplication_Recruit_Id(recruitId); // 지원자 면접 가능 시간
+
+        InterviewClassifyResponseDto interviewClassifyResponseDto = new InterviewClassifyResponseDto();
+        Map<LocalDateTime, InterviewClassifyResponseDto.InterviewClassify> map = new HashMap<>();
+
+        for (InterviewTimeSlot interviewTimeSlot : staffTimeSlot) {
+            LocalDateTime timeSlot = interviewTimeSlot.getTime();
+            InterviewClassifyResponseDto.InterviewClassify classify = map.getOrDefault(timeSlot, new InterviewClassifyResponseDto.InterviewClassify());
+
+            List<InterviewClassifyResponseDto.InterviewAssign> staffList = classify.getStaff();
+            if (staffList == null) {
+                staffList = new ArrayList<>();
+            }
+
+            InterviewClassifyResponseDto.InterviewAssign staffAssign = new InterviewClassifyResponseDto.InterviewAssign();
+            staffAssign.setId(interviewTimeSlot.getClubUser().getId());
+            staffAssign.setName(interviewTimeSlot.getClubUser().getUser().getName());
+            staffList.add(staffAssign);
+
+            classify.setStaff(staffList);
+            map.put(timeSlot, classify);
+        }
+
+        for (ApplicantInterviewTimeSlot applicantInterviewTimeSlot : applicantTimeSlot) {
+            LocalDateTime timeSlot = applicantInterviewTimeSlot.getTime();
+            InterviewClassifyResponseDto.InterviewClassify classify = map.getOrDefault(timeSlot, new InterviewClassifyResponseDto.InterviewClassify());
+
+            List<InterviewClassifyResponseDto.InterviewAssign> applicantList = classify.getApplicant();
+            if (applicantList == null) {
+                applicantList = new ArrayList<>();
+            }
+
+            if (applicantInterviewTimeSlot.getApplication().getRecruit_group().equals(partName)) { // 파트 이름 검사
+                InterviewClassifyResponseDto.InterviewAssign applicantAssign = new InterviewClassifyResponseDto.InterviewAssign();
+                applicantAssign.setId(applicantInterviewTimeSlot.getApplication().getUser().getId());
+                applicantAssign.setName(applicantInterviewTimeSlot.getApplication().getUser().getName());
+                applicantList.add(applicantAssign);
+
+                classify.setApplicant(applicantList);
+                map.put(timeSlot, classify);
+            }
+        }
+
+        interviewClassifyResponseDto.setList(map);
+        return interviewClassifyResponseDto;
+    }
+
+    @Transactional(readOnly = true)
+    public InterviewEvaluationResultResponseDto findInterviewPassAndFail(Long recruitId, SortType sortType) {
+        List<Interview> interviews = interviewRepository.findAllByApplication_Recruit_Id(recruitId);
+
+        int passCnt = 0;
+        int failCnt = 0;
+        Map<String, Integer> cnt = new HashMap<>();
+        List<InterviewEvaluationResultResponseDto.InterviewEvaluateResult> passed = new ArrayList<>();
+        List<InterviewEvaluationResultResponseDto.InterviewEvaluateResult> failed = new ArrayList<>();
+
+        for (Interview interview : interviews) {
+            if (interview.getState() == EvaluateStatus.PASS) {
+                passCnt++;
+                String groupName = interview.getRecruit_group();
+                cnt.put(groupName, cnt.getOrDefault(groupName, 0) + 1);
+                InterviewEvaluationResultResponseDto.InterviewEvaluateResult result = InterviewEvaluationResultResponseDto.InterviewEvaluateResult.toDto(
+                        interview,
+                        Stage.AFTER,
+                        "합격"
+                );
+                passed.add(result);
+            } else if (interview.getState() == EvaluateStatus.FAIL) {
+                failCnt++;
+                InterviewEvaluationResultResponseDto.InterviewEvaluateResult result = InterviewEvaluationResultResponseDto.InterviewEvaluateResult.toDto(
+                        interview,
+                        Stage.AFTER,
+                        "불합격"
+                );
+                failed.add(result);
+            }
+        }
+
+        sortInterviewAndAssignRank(passed);
+        sortInterviewAndAssignRank(failed);
+
+        if (sortType == SortType.NEWEST) {
+            passed.sort(Comparator.comparing(InterviewEvaluationResultResponseDto.InterviewEvaluateResult::getCreatedAt).reversed());
+            failed.sort(Comparator.comparing(InterviewEvaluationResultResponseDto.InterviewEvaluateResult::getCreatedAt).reversed());
+        } else if (sortType == SortType.OLDEST) {
+            passed.sort(Comparator.comparing(InterviewEvaluationResultResponseDto.InterviewEvaluateResult::getCreatedAt));
+            failed.sort(Comparator.comparing(InterviewEvaluationResultResponseDto.InterviewEvaluateResult::getCreatedAt));
+        } else if (sortType == SortType.INORDER) {
+            passed.sort(Comparator.comparing(InterviewEvaluationResultResponseDto.InterviewEvaluateResult::getName));
+            failed.sort(Comparator.comparing(InterviewEvaluationResultResponseDto.InterviewEvaluateResult::getName));
+        } else {
+            throw new IllegalArgumentException("정의되지 않은 정렬 방식 입니다.");
+        }
+
+        return InterviewEvaluationResultResponseDto.builder()
+                .passedCnt(passCnt)
+                .byGroup(cnt)
+                .passed(passed)
+                .failedCnt(failCnt)
+                .failed(failed)
+                .build();
+    }
+
+    private void sortInterviewAndAssignRank(List<InterviewEvaluationResultResponseDto.InterviewEvaluateResult> list) {
+        list.sort((o1, o2) -> Integer.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
+        }
+    }
 
     public List<InterviewEvaluationResponse> getInterviewEvaluations(Long recruitId, CustomUserDetails currentUser, InterviewEvaluationRequest request) {
         Long currentClubUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
@@ -667,25 +786,38 @@ public class InterviewEvaluationService {
             }
         }
 
-        // 7. 개인 질문 저장
-        if (interviewQuestionSaveRequestDto.getIndividual() != null) {
-            for (InterviewQuestionSaveRequestDto.InterviewIndividualQuestion individualQuestion : interviewQuestionSaveRequestDto.getIndividual()) {
-                Interview targetInterview = interviews.stream()
-                        .filter(interview -> interview.getApplication().getUser().getName().equals(individualQuestion.getName()) &&
-                                interview.getApplication().getUser().getPhone().equals(individualQuestion.getPhone()))
-                        .findFirst()
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "대상을 찾을 수 없습니다: " + individualQuestion.getName()));
-
-                InterviewEvaluator evaluator = interviewEvaluatorRepository.findByInterview_Id(targetInterview.getId());
-
-                for (String question : individualQuestion.getQuestion()) {
-                    interviewQuestionRepository.save(
-                            InterviewQuestion.of(evaluator, targetInterview, question, QuestionType2.PERSONAL)
+        // 7. 면접 평가 기준 저장
+        Map<String, InterviewQuestionSaveRequestDto.InterviewEvaluateCriteria> criteriaMap = interviewQuestionSaveRequestDto.getCriteria();
+        for (Group g : groups) {
+            for (String groupName : criteriaMap.keySet()) {
+                if (g.getName().equals(groupName)) {
+                    InterviewEvaluator evaluator = interviewEvaluatorRepository.findByGroupId(g.getId());
+                    InterviewQuestionSaveRequestDto.InterviewEvaluateCriteria c = criteriaMap.get(groupName);
+                    interviewCriteriaRepository.save(
+                            InterviewCriteria.of(evaluator, c.getName(), c.getContent(), c.getScore())
                     );
                 }
             }
         }
+    }
 
+    @Transactional
+    public void saveIndividualQuestion(Long recruitId, Long userId, InterviewIndividualQuestionRequestDto interviewIndividualQuestionRequestDto) {
+        Interview interview = interviewRepository.findByUser_IdAndRecruit_Id(recruitId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("면접을 찾을 수 없음"));
+        List<InterviewEvaluator> interviewEvaluators = interviewEvaluatorRepository.findByInterviewId(interview.getId());
+
+        for (String question : interviewIndividualQuestionRequestDto.getQuestion()) {
+            for (InterviewEvaluator interviewEvaluator : interviewEvaluators) {
+                interviewQuestionRepository.save(
+                        InterviewQuestion.of(interviewEvaluator, interview, question, QuestionType2.PERSONAL)
+                );
+            }
+        }
+    }
+
+    // 면접 합격자 리스트
+    public void interviewResult(Long recruitId, SortType sortType) {
     }
 
     public ClubUser findClubUser(Long clubUserId) {

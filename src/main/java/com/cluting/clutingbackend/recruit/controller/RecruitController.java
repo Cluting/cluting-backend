@@ -39,7 +39,7 @@ public class RecruitController {
     @GetMapping("/list")
     @ResponseStatus(value = HttpStatus.OK)
     public RecruitsResponseDto findPosts(
-            @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
+            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
             @RequestParam(value = "sortType", required = false) SortType sortType, // 마감임박순, 최신순, 오래된 순
             @RequestParam(value = "clubType", required = false) ClubType clubType, // 연합동아리, 교내동아리
             @RequestParam(value = "fieldType", required = false) Category category) { // 동아리 분류

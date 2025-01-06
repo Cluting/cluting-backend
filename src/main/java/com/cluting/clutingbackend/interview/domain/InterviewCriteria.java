@@ -27,4 +27,18 @@ public class InterviewCriteria {
 
     @Column(nullable = true)
     private Integer score;
+
+    public static InterviewCriteria of(
+            InterviewEvaluator interviewEvaluator,
+            String name,
+            String content,
+            Integer score
+    ) {
+        return InterviewCriteria.builder()
+                .interviewEvaluator(interviewEvaluator)
+                .name(name)
+                .content(content)
+                .score(score)
+                .build();
+    }
 }
