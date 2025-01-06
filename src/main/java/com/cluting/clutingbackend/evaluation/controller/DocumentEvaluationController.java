@@ -1,9 +1,11 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
-import com.cluting.clutingbackend.evaluation.dto.interview.InterviewClassifyResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentResultListResponseDto;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.*;
@@ -27,6 +29,34 @@ import java.util.Map;
 public class DocumentEvaluationController {
 
     private final DocumentEvaluationService documentEvaluationService;
+
+    @Operation(summary = "[서류 합격자 및 면접 안내] 4-3. 서류 합격자/불합격자 리스트 조회하기",
+            description = "입력 받는 state(PASS 또는 FAIL)에 따라 서류 합격자 또는 불합격자 리스트를 조회합니다.")
+    @GetMapping("/result/each")
+    public List<DocumentResultListResponseDto> getList(
+            @PathVariable Long recruitId,
+            @RequestParam("state")EvaluateStatus status) {
+        return documentEvaluationService.getList(recruitId, status);
+    }
+
+    @Operation(summary = "[서류 합격자 및 면접 안내] 4-3. 서류 결과 전송하기",
+            description = "입력 받는 전화번호로 입력 받은 메시지를 전송합니다.")
+    @PostMapping("/send")
+    public ResponseEntity<Void> send(
+            @PathVariable Long recruitId,
+            @RequestBody MessageSendRequestDto messageSendRequestDto) {
+        documentEvaluationService.send(messageSendRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "문자 전송 테스트")
+    @PostMapping("/send/test")
+    public ResponseEntity<Void> send(
+            @PathVariable Long recruitId,
+            @RequestParam("phone") String phone) {
+        documentEvaluationService.send(phone);
+        return ResponseEntity.ok().build();
+    }
 
     // [서류 평가하기] 평가 전 상태 불러오기
     @Operation(summary = "[서류 평가하기] 1. <평가 전> 지원서 리스트 불러오기", description = "서류 평가 상태가 '평가 전'인 지원서들을 불러옵니다. 요청 시 필터링 조건으로 그룹명과 정렬 순서를 지정할 수 있습니다." +

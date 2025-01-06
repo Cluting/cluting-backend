@@ -4,12 +4,13 @@ import com.cluting.clutingbackend.application.domain.ApplicantInterviewTimeSlot;
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicantInterviewTimeSlotRepository;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
-import com.cluting.clutingbackend.evaluation.dto.interview.InterviewClassifyResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentResultListResponseDto;
 import com.cluting.clutingbackend.global.enums.SortType;
-import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
+import com.cluting.clutingbackend.global.message.MessageUtil;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
@@ -31,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,18 +41,55 @@ import java.util.stream.Collectors;
 public class DocumentEvaluationService {
 
     private final ApplicationRepository applicationRepository;
+    private final ApplicantInterviewTimeSlotRepository applicantInterviewTimeSlotRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final DocumentEvalScoreRepository documentEvalScoreRepository;
     private final DocumentCriteriaRepository documentCriteriaRepository;
     private final DocumentAnswerRepository documentAnswerRepository;
     private final DocumentQuestionRepository documentQuestionRepository;
-    private final InterviewTimeSlotRepository interviewTimeSlotRepository;
-    private final ApplicantInterviewTimeSlotRepository applicantInterviewTimeSlotRepository;
     private final OptionRepository optionRepository;
     private final IdealRepository idealRepository;
     private final ClubUserRepository clubUserRepository;
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
+    private final MessageUtil messageUtil;
+
+    public void send(String phone) {
+        messageUtil.send(phone, "클루팅");
+    }
+
+    // 메시지 일괄 전송
+    public void send(MessageSendRequestDto messageSendRequestDto) {
+        for (MessageSendRequestDto.Content content : messageSendRequestDto.getList()) {
+            messageUtil.send(content.getPhone(), content.getMessage());
+        }
+    }
+
+    // 서류 결과 리스트
+    @Transactional(readOnly = true)
+    public List<DocumentResultListResponseDto> getList(Long recruitId, EvaluateStatus status) {
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId)
+                .stream()
+                .filter(application -> status.equals(application.getState()))
+                .toList();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분");
+        List<DocumentResultListResponseDto> result = new ArrayList<>();
+        for (Application application : applications) {
+            List<ApplicantInterviewTimeSlot> applicationSlots = applicantInterviewTimeSlotRepository.findByApplication_Id(application.getId());
+
+            for (ApplicantInterviewTimeSlot slot : applicationSlots) {
+                if (slot.getIsAssigned()) {
+                    result.add(DocumentResultListResponseDto.toDto(
+                            application,
+                            slot.getTime().format(formatter)
+                    ));
+                }
+            }
+        }
+
+        return result;
+    }
 
     // 모집 공고 확인
     private void ensureRecruitExists(Long recruitId) {
