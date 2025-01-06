@@ -43,6 +43,17 @@ public class Application {
     private String recruit_group; // 직렬화, 역직렬화 필요
 
     @Column
-    @CreatedDate
     private LocalDateTime createdAt;
+
+    public static Application of(
+            User user,
+            Recruit recruit,
+            String recruit_group
+    ) {
+        return Application.builder()
+                .user(user)
+                .recruit(recruit)
+                .recruit_group(recruit_group)
+                .build();
+    }
 }
