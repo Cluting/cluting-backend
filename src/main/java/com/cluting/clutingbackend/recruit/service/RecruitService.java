@@ -47,11 +47,16 @@ public class RecruitService {
 
     @Transactional(readOnly = true)
     public RecruitsResponseDto findAll(Integer pageNum, SortType sortType, ClubType clubType, Category category) {
+        if (pageNum == null || pageNum < 1) {
+            throw new IllegalArgumentException("페이지 수가 1보다 작습니다.");
+        }
+
         int pageSize = StaticValue.PAGE_DEFAULT_SIZE;
-        int skipCount = (pageNum - 1) * pageSize;
+        int skipCount = Math.max(0, (pageNum - 1) * pageSize);
 
         List<RecruitResponseDto> recruitDtos = recruitRepository.findAll().stream()
                 .map(RecruitResponseDto::toDto)
+                .filter(dto -> dto.getDeadLine() != null && dto.getCreatedAt() != null)
                 .filter(dto -> clubType == null || dto.getClubType() == clubType)
                 .filter(dto -> category == null || dto.getCategory() == category)
                 .sorted((dto1, dto2) -> {
@@ -69,6 +74,7 @@ public class RecruitService {
 
         return new RecruitsResponseDto(recruitDtos.size(), recruitDtos);
     }
+
 
     @Transactional(readOnly = true)
     public RecruitResponseDto findById(User user, Long recruitId) {
