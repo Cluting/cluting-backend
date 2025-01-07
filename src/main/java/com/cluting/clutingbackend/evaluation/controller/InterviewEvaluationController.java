@@ -2,7 +2,10 @@ package com.cluting.clutingbackend.evaluation.controller;
 
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
+import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.InterviewResultListResponseDto;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,6 +31,25 @@ import java.util.Map;
 public class InterviewEvaluationController {
 
     private final InterviewEvaluationService interviewEvaluationService;
+
+    @Operation(summary = "[최종합격자 및 활동 안내] 6-2. 면접 합격자/불합격자 리스트 조회하기",
+            description = "입력 받는 state(PASS 또는 FAIL)에 따라 면접 합격자 또는 불합격자 리스트를 조회합니다.")
+    @GetMapping("/result/each")
+    public List<InterviewResultListResponseDto> getList(
+            @PathVariable Long recruitId,
+            @RequestParam("state") EvaluateStatus status) {
+        return interviewEvaluationService.getList(recruitId, status);
+    }
+
+    @Operation(summary = "[최종합격자 및 활동 안내] 6-2. 합불 안내 메시지 전송하기",
+            description = "입력 받는 전화번호로 입력 받은 메시지를 전송합니다.")
+    @PostMapping("/send")
+    public ResponseEntity<Void> send(
+            @PathVariable Long recruitId,
+            @RequestBody MessageSendRequestDto messageSendRequestDto) {
+        interviewEvaluationService.send(messageSendRequestDto);
+        return ResponseEntity.ok().build();
+    }
 
     @Operation(summary = "[면접 평가하기] 5-1. <평가 전> 면접 평가 준비하기",
             description = "면접 평가 준비하기(저장)")
