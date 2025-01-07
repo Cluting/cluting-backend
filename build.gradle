@@ -45,6 +45,7 @@ dependencies {
 
     // aws s3
     implementation 'io.awspring.cloud:spring-cloud-aws-s3:3.0.2'
+    implementation 'software.amazon.awssdk:s3:2.21.5'
 
     // querydsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
@@ -60,6 +61,7 @@ dependencies {
     implementation 'org.hibernate:hibernate-core:6.0.0.Final'
     implementation 'mysql:mysql-connector-java:8.0.32'
 
+    implementation 'net.nurigo:sdk:4.3.2'
 }
 
 tasks.named('test') {

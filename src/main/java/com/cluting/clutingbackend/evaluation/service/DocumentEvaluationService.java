@@ -1,11 +1,16 @@
 package com.cluting.clutingbackend.evaluation.service;
 
+import com.cluting.clutingbackend.application.domain.ApplicantInterviewTimeSlot;
 import com.cluting.clutingbackend.application.domain.Application;
+import com.cluting.clutingbackend.application.repository.ApplicantInterviewTimeSlotRepository;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentResultListResponseDto;
 import com.cluting.clutingbackend.global.enums.SortType;
+import com.cluting.clutingbackend.global.message.MessageUtil;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
@@ -27,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +41,7 @@ import java.util.stream.Collectors;
 public class DocumentEvaluationService {
 
     private final ApplicationRepository applicationRepository;
+    private final ApplicantInterviewTimeSlotRepository applicantInterviewTimeSlotRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final DocumentEvalScoreRepository documentEvalScoreRepository;
     private final DocumentCriteriaRepository documentCriteriaRepository;
@@ -45,6 +52,44 @@ public class DocumentEvaluationService {
     private final ClubUserRepository clubUserRepository;
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
+    private final MessageUtil messageUtil;
+
+    public void send(String phone) {
+        messageUtil.send(phone, "클루팅");
+    }
+
+    // 메시지 일괄 전송
+    public void send(MessageSendRequestDto messageSendRequestDto) {
+        for (MessageSendRequestDto.Content content : messageSendRequestDto.getList()) {
+            messageUtil.send(content.getPhone(), content.getMessage());
+        }
+    }
+
+    // 서류 결과 리스트
+    @Transactional(readOnly = true)
+    public List<DocumentResultListResponseDto> getList(Long recruitId, EvaluateStatus status) {
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId)
+                .stream()
+                .filter(application -> status.equals(application.getState()))
+                .toList();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM월 dd일 HH시 mm분");
+        List<DocumentResultListResponseDto> result = new ArrayList<>();
+        for (Application application : applications) {
+            List<ApplicantInterviewTimeSlot> applicationSlots = applicantInterviewTimeSlotRepository.findByApplication_Id(application.getId());
+
+            for (ApplicantInterviewTimeSlot slot : applicationSlots) {
+                if (slot.getIsAssigned()) {
+                    result.add(DocumentResultListResponseDto.toDto(
+                            application,
+                            slot.getTime().format(formatter)
+                    ));
+                }
+            }
+        }
+
+        return result;
+    }
 
     // 모집 공고 확인
     private void ensureRecruitExists(Long recruitId) {
@@ -149,6 +194,70 @@ public class DocumentEvaluationService {
                 // 비공통 그룹 처리
                 handleSpecificGroups(group.getId());
             }
+        }
+    }
+
+    // 서류 합격/불합격 조회
+    @Transactional(readOnly = true)
+    public DocumentEvaluateResultsResponseDto findDocumentPassAndFail(Long recruitId, SortType sortType) {
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+
+        Map<String, Integer> groupCountMap = new HashMap<>();
+        List<DocumentEvaluateResultResponseDto> passed = new ArrayList<>();
+        List<DocumentEvaluateResultResponseDto> failed = new ArrayList<>();
+
+        applications.forEach(application -> {
+            List<DocumentEvaluator> documentEvaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
+
+            documentEvaluators.forEach(documentEvaluator -> {
+                // 그룹별 지원자 수 계산
+                String groupName = documentEvaluator.getGroup().getName();
+                groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
+
+                DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
+                        application,
+                        documentEvaluator.getStage(),
+                        application.getState() == EvaluateStatus.PASS ? "합격" : "불합격"
+                );
+
+                // 합격/불합격 분류
+                if (application.getState() == EvaluateStatus.PASS) {
+                    passed.add(dto);
+                } else if (application.getState() == EvaluateStatus.FAIL) {
+                    failed.add(dto);
+                }
+            });
+        });
+
+        sortDocumentAndAssignRank(passed);
+        sortDocumentAndAssignRank(failed);
+
+        if (sortType == SortType.NEWEST) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt).reversed());
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt).reversed());
+        } else if (sortType == SortType.OLDEST) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt));
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt));
+        } else if (sortType == SortType.INORDER) {
+            passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getName));
+            failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getName));
+        } else {
+            throw new IllegalArgumentException("정의되지 않은 정렬 방식 입니다.");
+        }
+
+        return DocumentEvaluateResultsResponseDto.builder()
+                .passedCnt(passed.size())
+                .byGroup(groupCountMap)
+                .passed(passed)
+                .failedCnt(failed.size())
+                .failed(failed)
+                .build();
+    }
+
+    private void sortDocumentAndAssignRank(List<DocumentEvaluateResultResponseDto> list) {
+        list.sort((o1, o2) -> Integer.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
         }
     }
 
@@ -454,15 +563,15 @@ public class DocumentEvaluationService {
         String groupName = getString(evaluators);
 
         ApplicantInfo applicantInfo = ApplicantInfo.of(
-                user.getName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getLocation(),
-                user.getProfile(),
-                user.getSchool(),
-                user.getMajor(),
-                user.getDoubleMajor(),
-                String.valueOf(user.getSemester()),
+                user != null ? user.getName() : null,
+                user != null ? user.getEmail() : null,
+                user != null ? user.getPhone() : null,
+                user != null ? user.getLocation() : null,
+                user != null ? user.getProfile() : null,
+                user != null ? user.getSchool() : null,
+                user != null ? user.getMajor() : null,
+                user != null ? user.getDoubleMajor() : null,
+                user != null ? String.valueOf(user.getSemester()) : null,
                 groupName
         );
 
@@ -471,45 +580,45 @@ public class DocumentEvaluationService {
         List<QuestionAndAnswer> questionAndAnswers = new ArrayList<>();
         for (DocumentAnswer answer : answers) {
             DocumentQuestion question = documentQuestionRepository.findById(answer.getDocumentQuestion().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
+                    .orElse(null);  // 없는 경우 null 처리
 
-            List<OptionResponse> options = optionRepository.findByDocumentQuestionId(question.getId())
-                    .stream()
-                    .map(OptionResponse::of)
-                    .toList();
+            if (question != null) {
+                List<OptionResponse> options = optionRepository.findByDocumentQuestionId(question.getId())
+                        .stream()
+                        .map(OptionResponse::of)
+                        .collect(Collectors.toList());
 
-            questionAndAnswers.add(QuestionAndAnswer.of(
-                    question.getContent(),
-                    answer.getContent(),
-                    options
-            ));
+                questionAndAnswers.add(QuestionAndAnswer.of(
+                        question.getContent(),
+                        answer.getContent(),
+                        options
+                ));
+            }
         }
 
         // 3. 인재상
-        List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
+        List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup() != null ? evaluators.get(0).getGroup().getId() : null);
 
-        if (ideals.isEmpty()) {
-            throw new ResourceNotFoundException("Talent Profile not found");
-        }
-
-        // 프로필 정보를 리스트로 반환
-        List<String> idealDetails = ideals.stream()
+        List<String> idealDetails = ideals != null && !ideals.isEmpty() ? ideals.stream()
                 .map(Ideal::getContent)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()) : Collections.emptyList();
 
         // 4. 총점 평균
-        Integer averageScore = application.getScore();
+        Integer averageScore = application.getScore() != null ? application.getScore() : 0;
 
         // 5. 다른 운영진 평가 보기
         List<EvaluatorScores> evaluatorScores = evaluators.stream()
                 .map(otherEvaluator -> EvaluatorScores.of(otherEvaluator, documentEvalScoreRepository))
-                .toList();
+                .collect(Collectors.toList());
 
         // 6. 내 평가 보기
-        Long currentClubUserId = currentUser.getUser().getId();
-        ClubUser currentClubUser = clubUserRepository.findById(currentClubUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Club User not found"));
-        EvaluatorScores myEvaluation = EvaluatorScores.ofForUser(evaluators.get(0), currentClubUser, documentEvalScoreRepository);
+        Long currentClubUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
+        ClubUser currentClubUser = currentClubUserId != null ? clubUserRepository.findById(currentClubUserId).orElse(null) : null;  // 없는 경우 null 처리
+
+        EvaluatorScores myEvaluation = null;
+        if (currentClubUser != null && !evaluators.isEmpty()) {
+            myEvaluation = EvaluatorScores.ofForUser(evaluators.get(0), currentClubUser, documentEvalScoreRepository);
+        }
 
         return new DocumentEvaluation4Response(
                 applicantInfo,
@@ -520,6 +629,7 @@ public class DocumentEvaluationService {
                 myEvaluation
         );
     }
+
 
     private static String getString(List<DocumentEvaluator> evaluators) {
         String groupName = null;
@@ -561,6 +671,15 @@ public class DocumentEvaluationService {
     @Transactional(readOnly = true)
     public DocumentEvaluateResultsResponseDto findPassAndFail(Long recruitId, SortType sortType) {
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+        if (applications == null || applications.isEmpty()) {
+            return DocumentEvaluateResultsResponseDto.builder()
+                    .passedCnt(0)
+                    .byGroup(Collections.emptyMap())
+                    .passed(Collections.emptyList())
+                    .failedCnt(0)
+                    .failed(Collections.emptyList())
+                    .build();
+        }
 
         Map<String, Integer> groupCountMap = new HashMap<>();
         List<DocumentEvaluateResultResponseDto> passed = new ArrayList<>();
@@ -569,29 +688,38 @@ public class DocumentEvaluationService {
         applications.forEach(application -> {
             List<DocumentEvaluator> documentEvaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
 
-            documentEvaluators.forEach(documentEvaluator -> {
-                // 그룹별 지원자 수 계산
-                String groupName = documentEvaluator.getGroup().getName();
-                groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
+            if (documentEvaluators != null && !documentEvaluators.isEmpty()) {
+                documentEvaluators.forEach(documentEvaluator -> {
+                    // 그룹별 지원자 수 계산 (null 안전 처리)
+                    String groupName = (documentEvaluator.getGroup() != null && documentEvaluator.getGroup().getName() != null)
+                            ? documentEvaluator.getGroup().getName() : "Unknown Group";
+                    groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
 
-                DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
-                        application,
-                        documentEvaluator.getStage(),
-                        application.getState() == EvaluateStatus.PASS ? "합격" : "불합격"
-                );
+                    // 합격/불합격 결과 DTO 생성 (null 안전 처리)
+                    String evaluationStatus = (application.getState() == EvaluateStatus.PASS) ? "합격" :
+                            (application.getState() == EvaluateStatus.FAIL ? "불합격" : "미정");
 
-                // 합격/불합격 분류
-                if (application.getState() == EvaluateStatus.PASS) {
-                    passed.add(dto);
-                } else if (application.getState() == EvaluateStatus.FAIL) {
-                    failed.add(dto);
-                }
-            });
+                    DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
+                            application,
+                            documentEvaluator.getStage(),
+                            evaluationStatus
+                    );
+
+                    // 합격/불합격 분류
+                    if (application.getState() == EvaluateStatus.PASS) {
+                        passed.add(dto);
+                    } else if (application.getState() == EvaluateStatus.FAIL) {
+                        failed.add(dto);
+                    }
+                });
+            }
         });
 
+        // 랭킹 정렬
         sortAndAssignRank(passed);
         sortAndAssignRank(failed);
 
+        // 정렬 방식에 따른 정렬
         if (sortType == SortType.NEWEST) {
             passed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt).reversed());
             failed.sort(Comparator.comparing(DocumentEvaluateResultResponseDto::getCreatedAt).reversed());
@@ -615,9 +743,12 @@ public class DocumentEvaluationService {
     }
 
     private void sortAndAssignRank(List<DocumentEvaluateResultResponseDto> list) {
-        list.sort((o1, o2) -> Integer.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
-        for (int i = 0; i < list.size(); i++) {
-            list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
+        if (list != null && !list.isEmpty()) {
+            list.sort((o1, o2) -> Integer.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
+            }
         }
     }
+
 }

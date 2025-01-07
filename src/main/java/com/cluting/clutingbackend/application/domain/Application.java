@@ -1,6 +1,8 @@
 package com.cluting.clutingbackend.application.domain;
 
+
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
+import com.cluting.clutingbackend.application.dto.response.RecruitStatus;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
@@ -31,6 +33,11 @@ public class Application {
     @Column(nullable = true)
     private EvaluateStatus state;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RecruitStatus recruitStatus = RecruitStatus.Z; // 지원상태
+
     @Column(nullable = true)
     private Integer score;  //모든 운영진 평가 점수의 평균
 
@@ -45,9 +52,22 @@ public class Application {
     private String recruit_group; // 직렬화, 역직렬화 필요
 
     @Column
-    @CreatedDate
     private LocalDateTime createdAt;
+
 
     @OneToMany(mappedBy = "application")
     private List<DocumentEvaluator> documentEvaluatorList;
+
+    public static Application of(
+            User user,
+            Recruit recruit,
+            String recruit_group
+    ) {
+        return Application.builder()
+                .user(user)
+                .recruit(recruit)
+                .recruit_group(recruit_group)
+                .build();
+    }
+
 }

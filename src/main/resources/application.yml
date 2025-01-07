@@ -3,7 +3,8 @@ spring:
     hibernate:
       ddl-auto: update
   profiles:
-    include: dev
+    include: local
 
 server:
-  port: 20020
+  port: 8087
+

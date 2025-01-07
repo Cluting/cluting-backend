@@ -21,4 +21,6 @@ public interface ScrapRepository extends JpaRepository<Scrap, Long> {
             "LIMIT 3",
             nativeQuery = true)
     List<Object[]> findAllRecruiting();
+
+    List<Scrap> findAllByUserId(Long userId);
 }
