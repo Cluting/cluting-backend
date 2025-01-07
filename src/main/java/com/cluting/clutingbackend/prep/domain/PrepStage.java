@@ -25,7 +25,6 @@ public class PrepStage {
 
     @Builder.Default
     @OneToMany(mappedBy = "prepStage", cascade = CascadeType.ALL)
-    @JsonManagedReference
     private List<PrepStageClubUser> prepStageClubUser = new ArrayList<>();
 
     @Column(nullable = false)

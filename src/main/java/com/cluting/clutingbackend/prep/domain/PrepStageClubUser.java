@@ -18,7 +18,6 @@ public class PrepStageClubUser {
 
     @ManyToOne
     @JoinColumn(name = "prep_stage_id", nullable = false)
-    @JsonBackReference
     private PrepStage prepStage;
 
     @ManyToOne
