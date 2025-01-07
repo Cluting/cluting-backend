@@ -31,8 +31,7 @@ public class Recruit {
     @OneToMany(mappedBy = "recruit")
     private List<Group> groupList;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "recruit_schedule_id", nullable = true)
+    @OneToOne(mappedBy = "recruit", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private RecruitSchedule recruitSchedule;
 
     @OneToMany(mappedBy = "recruit")

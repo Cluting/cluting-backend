@@ -17,7 +17,8 @@ public class RecruitSchedule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "recruit", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "recruit_id", nullable = false)
     private Recruit recruit;
 
     @Column(name = "stage_1_end", nullable = true)
