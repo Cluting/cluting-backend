@@ -128,7 +128,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserApplicatedClubResponseDto> profileHome(User user) {
         List<UserApplicatedClubResponseDto> result = new ArrayList<>();
-        List<Application> applications = applicationRepository.findByUser_Id(user.getId());
+        List<Application> applications = applicationRepository.findByUserId(user.getId());
         LocalDate now = LocalDate.now();
 
         for (Application application : applications) {

@@ -19,14 +19,7 @@ public class Plan5ResponseDto {
     private List<Plan5RequestDto.PartQuestionDto> partQuestions; // 파트별 질문 목록
     private Boolean isPortfolioRequired;         // 포트폴리오 여부
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class QuestionDto {
-        private String content;                  // 질문 내용
-        private Boolean isRequired;              // 필수 여부
-    }
+
 
 }
 

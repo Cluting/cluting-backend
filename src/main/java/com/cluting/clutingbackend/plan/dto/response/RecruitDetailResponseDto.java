@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -14,13 +15,15 @@ public class RecruitDetailResponseDto {
     private String title;
     private Integer numDoc;
     private Integer numFinal;
-    private List<IdealResponse> ideals;
+    private List<GroupResponse> groupResponses;
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class IdealResponse {
-        private Long id;
-        private String content;
+    public static class GroupResponse {
+        private Long groupId;
+        private Map<Long,String> idealContent;
+        private Integer numDoc;
+        private Integer numFinal;
     }
 }

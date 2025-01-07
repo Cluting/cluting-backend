@@ -76,7 +76,7 @@ public class RecruitService {
     }
 
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = false)
     public RecruitResponseDto findById(User user, Long recruitId) {
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(
@@ -84,9 +84,13 @@ public class RecruitService {
                                 HttpStatus.BAD_REQUEST, "존재하지 않는 리크루팅 입니다."
                         )
                 );
+
         recentRepository.save(Recent.of(user, recruit));
+
         return RecruitResponseDto.toDto(recruit);
     }
+
+
 
     @Transactional(readOnly = true)
     public RecruitNumResponseDto findAppliedNum(Long recruitId) {

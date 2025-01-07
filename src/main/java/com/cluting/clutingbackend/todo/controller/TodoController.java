@@ -41,9 +41,11 @@ public class TodoController {
     @PostMapping
     public ResponseEntity<TodoResponse> createTodo(
             @RequestBody TodoRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
-        return ResponseEntity.ok(todoService.createTodo(userDetails.getUser(), request));
+        Long currentClubUserId = currentUser.getUser().getId();
+
+        return ResponseEntity.ok(todoService.createTodo(currentClubUserId, request));
     }
 
     // 개인(운영진) 투두 삭제하기
@@ -60,9 +62,12 @@ public class TodoController {
     @DeleteMapping("/{todoId}")
     public ResponseEntity<Void> deleteTodo(
             @PathVariable Long todoId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
-        todoService.deleteTodo(userDetails.getUser(), todoId);
+        Long currentClubUserId = currentUser.getUser().getId();
+
+        todoService.deleteTodo(currentClubUserId, todoId);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -80,9 +85,13 @@ public class TodoController {
     @PatchMapping("/status/{todoId}")
     public ResponseEntity<Void> toggleTodoStatus(
             @PathVariable Long todoId,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
-        todoService.toggleTodoStatus(userDetails.getUser(), todoId);
+
+        Long currentClubUserId = currentUser.getUser().getId();
+
+        todoService.toggleTodoStatus(currentClubUserId, todoId);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -99,18 +108,22 @@ public class TodoController {
     )
     @PatchMapping("/{todoId}")
     public ResponseEntity<Void> updateTodoContent(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal CustomUserDetails currentUser,
             @PathVariable Long todoId,
             @RequestBody TodoRequest request
     ) {
-        todoService.updateTodoContent(userDetails.getUser(), todoId, request.getContent());
+
+        Long currentClubUserId = currentUser.getUser().getId();
+
+        todoService.updateTodoContent(currentClubUserId, todoId, request.getContent());
+
         return ResponseEntity.ok().build();
     }
 
     // [리크루팅 홈] 투두 리스트 완료/미완료 상태 분리해서 가져오기
     @Operation(
-            summary = "[리크루팅 홈] 투두 리스트 불러오기",
-            description = "유저 ID를 기반으로 해당 투두 리스트를 조회합니다.",
+            summary = "[리크루팅 홈] 투두 완료/미완료 상태 분리해서 가져오기",
+            description = "완료/미완료 상태 분리해서 가져옵니다.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "투두 리스트 불러오기 성공"),
                     @ApiResponse(responseCode = "401", description = "유효하지 않은 인증 토큰"),
@@ -120,17 +133,14 @@ public class TodoController {
     )
     @GetMapping
     public ResponseEntity<Map<String, List<TodoResponse>>> getTodoList(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
-        Map<String, List<TodoResponse>> todos = todoService.getTodosByStatus(userDetails.getUser());
+        Long currentClubUserId = currentUser.getUser().getId();
+
+        Map<String, List<TodoResponse>> todos = todoService.getTodosByStatus(currentClubUserId);
+
         return ResponseEntity.ok(todos);
     }
 
-    public Long getClubUserIdFromToken(String token) {
-        // 토큰에서 이메일 추출 -> 이메일로 User 조회 -> User의 ID 반환
-        String email = jwtProvider.getUserEmail(token);
-        User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
-        return user.getId();
-    }
 
 }

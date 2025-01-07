@@ -34,5 +34,11 @@ public class DocumentQuestion {
     @Column
     private String content;
 
+    @Column
+    private Integer wordLimit;
+
+    @Column
+    private boolean multiSelect;
+
 }
 

@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
 public class PrepService {
@@ -65,7 +66,7 @@ public class PrepService {
 
         // 2. 모집 단계 및 운영진 저장
         if (!prepStageRepository.findByRecruitId(recruitId).isEmpty()) {
-            prepStageRepository.deleteByRecruitId(recruitId);
+            prepStageRepository.deleteAllByRecruitId(recruitId);
         }
 
         for (PrepStageDto stageDto : prepRequestDto.getPrepStages()) {
@@ -75,8 +76,10 @@ public class PrepService {
                     .stageOrder(stageDto.getStageOrder())
                     .build();
             prepStageRepository.save(prepStage);
-
+            System.out.println("testtests" + stageDto.getClubUserIds());
             for (Long clubUserId : stageDto.getClubUserIds()) {
+
+                System.out.println("clubUserId Test -> " + clubUserId);
                 ClubUser clubUser = clubUserRepository.findById(clubUserId)
                         .orElseThrow(() -> new IllegalArgumentException("해당 ClubUser 찾지 못함. id: " + clubUserId));
 
@@ -90,7 +93,7 @@ public class PrepService {
 
         // 3. 지원자 그룹 저장
         if (!groupRepository.findByRecruitId(recruitId).isEmpty()) {
-            groupRepository.deleteByRecruitId(recruitId);
+            groupRepository.deleteAllByRecruitId(recruitId);
         }
 
         List<String> applicantGroups = prepRequestDto.getApplicantGroups();

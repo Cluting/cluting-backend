@@ -200,29 +200,40 @@ public class InterviewEvaluationService {
     }
 
     public List<InterviewEvaluationResponse> getInterviewEvaluations(Long recruitId, CustomUserDetails currentUser, InterviewEvaluationRequest request) {
-        Long currentClubUserId = currentUser.getUser().getId();
+        Long currentClubUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
 
         // Step 1: 모집 공고 ID로 Application 조회
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+        if (applications == null || applications.isEmpty()) {
+            return Collections.emptyList(); // Application이 없으면 빈 리스트 반환
+        }
 
         // Step 2: Application ID로 Interview 조회
         List<Interview> interviews = interviewRepository.findByApplicationIdIn(
                 applications.stream().map(Application::getId).collect(Collectors.toList()));
+        if (interviews == null || interviews.isEmpty()) {
+            return Collections.emptyList(); // Interview가 없으면 빈 리스트 반환
+        }
 
         // Step 3: Interview ID로 InterviewEvaluator 조회 및 단계별 분리
         List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByInterviewIdIn(
                 interviews.stream().map(Interview::getId).collect(Collectors.toList()));
+        if (evaluators == null || evaluators.isEmpty()) {
+            return Collections.emptyList(); // Evaluators가 없으면 빈 리스트 반환
+        }
 
         return evaluators.stream()
                 .filter(evaluator -> evaluator.getClubUser() != null
+                        && evaluator.getClubUser().getUser() != null
                         && evaluator.getClubUser().getUser().getId().equals(currentClubUserId)
                         && (request.getGroupName() == null ||
-                        (evaluator.getGroup() != null &&
-                                evaluator.getGroup().getName().equals(request.getGroupName()))))
+                        (evaluator.getGroup() != null && evaluator.getGroup().getName() != null
+                                && evaluator.getGroup().getName().equals(request.getGroupName()))))
                 .map(evaluator -> mapToResponse(evaluator, request.getSortOrder()))
                 .sorted((resp1, resp2) -> sortResponses(resp1, resp2, request.getSortOrder()))
                 .collect(Collectors.toList());
     }
+
 
     private InterviewEvaluationResponse mapToResponse(InterviewEvaluator evaluator, String sortOrder) {
         Interview interview = evaluator.getInterview();
@@ -302,13 +313,22 @@ public class InterviewEvaluationService {
     public Map<String, List<InterviewEvaluationCompleteResponse>> getCompletedEvaluations(Long recruitId) {
         // 1. recruitId로 Application 목록 찾기
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+        if (applications == null || applications.isEmpty()) {
+            return new HashMap<>();  // applications가 null이거나 비어 있으면 빈 맵 반환
+        }
 
         // 2. 합격(PASS)과 불합격(FAIL) 상태로 Interview 분리
         List<Interview> interviews = interviewRepository.findByApplicationIn(applications);
+        if (interviews == null) {
+            interviews = new ArrayList<>();  // interviews가 null이면 빈 리스트로 초기화
+        }
+
         List<InterviewEvaluationCompleteResponse> passedEvaluations = new ArrayList<>();
         List<InterviewEvaluationCompleteResponse> failedEvaluations = new ArrayList<>();
 
         for (Interview interview : interviews) {
+            if (interview == null) continue;  // interview가 null이면 건너뜀
+
             // 3. Interview의 상태에 따라 처리
             if (EvaluateStatus.PASS.equals(interview.getState())) {
                 passedEvaluations.add(mapToEvaluationResponse(interview));
@@ -324,6 +344,7 @@ public class InterviewEvaluationService {
 
         return result;
     }
+
 
     private InterviewEvaluationCompleteResponse mapToEvaluationResponse(Interview interview) {
         // 지원자 정보 가져오기
@@ -445,8 +466,12 @@ public class InterviewEvaluationService {
         Application application = interview.getApplication();
         User user = application.getUser();
 
+        if (user == null) {
+            throw new DocumentEvaluationService.ResourceNotFoundException("User not found");
+        }
+
         List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByInterviewId(interviewId);
-        String groupName = evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getName();
+        String groupName = (evaluators.isEmpty() || evaluators.get(0).getGroup() == null) ? null : evaluators.get(0).getGroup().getName();
 
         ApplicantInfo applicantInfo = ApplicantInfo.of(
                 user.getName(),
@@ -457,7 +482,7 @@ public class InterviewEvaluationService {
                 user.getSchool(),
                 user.getMajor(),
                 user.getDoubleMajor(),
-                String.valueOf(user.getSemester()),
+                user.getSemester() != null ? String.valueOf(user.getSemester()) : null, // Null check for semester
                 groupName
         );
 
@@ -472,12 +497,12 @@ public class InterviewEvaluationService {
             InterviewAnswer answer = question.getInterviewAnswer();
             groupedQuestions.get(question.getType()).add(InterviewQA.of(
                     question.getContent(),
-                    answer == null ? null : answer.getContent()
+                    answer != null ? answer.getContent() : null
             ));
         }
 
         // 3. 인재상
-        List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup().getId());
+        List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() || evaluators.get(0).getGroup() == null ? null : evaluators.get(0).getGroup().getId());
         List<String> idealDetails = ideals.stream()
                 .map(Ideal::getContent)
                 .collect(Collectors.toList());
@@ -488,14 +513,19 @@ public class InterviewEvaluationService {
         // 5. 다른 운영진 평가 보기
         List<InterviewEvaluatorScores> evaluatorScores = evaluators.stream()
                 .map(evaluator -> InterviewEvaluatorScores.of(evaluator, interviewScoreRepository))
-                .toList();
+                .collect(Collectors.toList());
 
         // 6. 내 평가 보기
-        Long currentClubUserId = currentUser.getUser().getId();
+        Long currentClubUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
+        if (currentClubUserId == null) {
+            throw new DocumentEvaluationService.ResourceNotFoundException("Current Club User not found");
+        }
+
         ClubUser currentClubUser = clubUserRepository.findById(currentClubUserId)
                 .orElseThrow(() -> new DocumentEvaluationService.ResourceNotFoundException("Club User not found"));
+
         InterviewEvaluatorScores myEvaluation = evaluators.stream()
-                .filter(evaluator -> evaluator.getClubUser().getId().equals(currentClubUserId))
+                .filter(evaluator -> evaluator.getClubUser() != null && evaluator.getClubUser().getId().equals(currentClubUserId))
                 .findFirst()
                 .map(evaluator -> InterviewEvaluatorScores.of(evaluator, interviewScoreRepository))
                 .orElse(null);
@@ -564,17 +594,24 @@ public class InterviewEvaluationService {
     public List<InterviewResponseDTO> getInterviewScheduleByRecruitId(Long recruitId) {
         // Step 1: Application 엔티티 조회
         List<Application> applications = applicationRepository.findAllByRecruitId(recruitId);
-        List<Long> applicationIds = applications.stream().map(Application::getId).collect(Collectors.toList());
+        List<Long> applicationIds = applications.stream()
+                .map(Application::getId)
+                .filter(Objects::nonNull)  // Null 체크 추가
+                .collect(Collectors.toList());
 
         // Step 2: Interview 엔티티 조회
         List<Interview> interviews = interviewRepository.findAllByApplicationIdIn(applicationIds);
-        List<Long> interviewIds = interviews.stream().map(Interview::getId).collect(Collectors.toList());
+        List<Long> interviewIds = interviews.stream()
+                .map(Interview::getId)
+                .filter(Objects::nonNull)  // Null 체크 추가
+                .collect(Collectors.toList());
 
         // Step 3: InterviewEvaluator 엔티티 조회
         List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findAllByInterviewIdIn(interviewIds);
 
         // Step 4: 날짜 및 시간대 오름차순 정렬
         List<InterviewEvaluator> sortedEvaluators = evaluators.stream()
+                .filter(e -> e.getInterviewTime() != null)  // InterviewTime이 null인 경우 제외
                 .sorted(Comparator.comparing(e -> e.getInterviewTime())) // 날짜 및 시간대 기준 정렬
                 .collect(Collectors.toList());
 
@@ -600,6 +637,7 @@ public class InterviewEvaluationService {
 
                                 // 그룹별 데이터 분리
                                 Map<Long, List<InterviewEvaluator>> groupedByGroup = evaluatorsAtTime.stream()
+                                        .filter(evaluator -> evaluator.getGroup() != null)  // 그룹이 null인 경우 제외
                                         .collect(Collectors.groupingBy(evaluator -> evaluator.getGroup().getId()));
 
                                 List<InterviewResponseDTO.TimeSlotDTO.GroupDTO> groups = groupedByGroup.entrySet().stream()
@@ -609,44 +647,50 @@ public class InterviewEvaluationService {
 
                                             // 면접관 이름 리스트
                                             List<Long> clubUserIds = groupEvaluators.stream()
+                                                    .filter(evaluator -> evaluator.getClubUser() != null)  // ClubUser가 null인 경우 제외
                                                     .map(evaluator -> evaluator.getClubUser().getId())
                                                     .distinct()
                                                     .collect(Collectors.toList());
+
                                             List<String> evaluatorNames = clubUserRepository.findAllByIdIn(clubUserIds).stream()
-                                                    .map(clubUser -> clubUser.getUser().getName())
+                                                    .map(clubUser -> clubUser.getUser() != null ? clubUser.getUser().getName() : null)  // User가 null인 경우 처리
+                                                    .filter(Objects::nonNull)  // Null 제외
                                                     .collect(Collectors.toList());
 
                                             // 면접자 이름 리스트
                                             List<Long> applicantIds = groupEvaluators.stream()
+                                                    .filter(evaluator -> evaluator.getInterview() != null && evaluator.getInterview().getApplication() != null && evaluator.getInterview().getApplication().getUser() != null)
                                                     .map(e -> e.getInterview().getApplication().getUser().getId())
                                                     .distinct()
                                                     .collect(Collectors.toList());
+
                                             List<String> applicantNames = userRepository.findAllByIdIn(applicantIds).stream()
-                                                    .map(User::getName)
+                                                    .map(user -> user.getName())
                                                     .collect(Collectors.toList());
 
                                             return InterviewResponseDTO.TimeSlotDTO.GroupDTO.builder()
-                                                    .groupName(groupEvaluators.get(0).getGroup().getName()) // 그룹 이름
+                                                    .groupName(groupEvaluators.get(0).getGroup() != null ? groupEvaluators.get(0).getGroup().getName() : null) // 그룹 이름 null 처리
                                                     .interviewer(evaluatorNames)
                                                     .interviewee(applicantNames)
                                                     .build();
                                         }).collect(Collectors.toList());
 
                                 return InterviewResponseDTO.TimeSlotDTO.builder()
-                                        .time(time.toString())
+                                        .time(time != null ? time.toString() : null) // 시간대 null 처리
                                         .groups(groups)
                                         .build();
                             }).collect(Collectors.toList());
 
                     return InterviewResponseDTO.builder()
-                            .date(date.toString())
+                            .date(date != null ? date.toString() : null)  // 날짜 null 처리
                             .timeSlots(timeSlots)
                             .build();
                 }).collect(Collectors.toList());
 
         return response;
     }
-    
+
+
     // 면접 가능 일정 리스트 조회
 //    public List<InterviewAvailableResponseDto> findAvailable(Long recruitId) {
 //    }

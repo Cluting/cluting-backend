@@ -37,10 +37,12 @@ public class DocumentEvaluator {
     private Stage stage = Stage.READABLE;  // 기본 상태는 열람가능 상태(본인 담당인 경우에 BEFORE 상태가 됨.)
 
     @Column
-    private Integer score; // 평가 점수
+    @Builder.Default
+    private Integer score = 0; // 평가 점수
 
     @Column
-    private String comment; // 평가 코멘트
+    @Builder.Default
+    private String comment = ""; // 평가 코멘트
 
     public static DocumentEvaluator of(
             ClubUser clubUser,

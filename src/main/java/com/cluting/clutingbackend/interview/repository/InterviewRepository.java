@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.interview.repository;
 
 import com.cluting.clutingbackend.application.domain.Application;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.interview.domain.Interview;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,5 +26,8 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
     @Query("SELECT i FROM Interview i WHERE i.application.user.id = :userId AND i.application.recruit.id = :recruitId")
     Optional<Interview> findByUser_IdAndRecruit_Id(@Param("userId") Long userId,
                                                    @Param("recruitId") Long recruitId);
+
+    List<Interview> findByApplication_UserIdAndState(Long userId, EvaluateStatus state);
+
 
 }

@@ -1,9 +1,7 @@
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: update
   profiles:
     include: dev
 
 server:
   port: 8080
+
