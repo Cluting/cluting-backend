@@ -13,7 +13,7 @@ public interface PrepStageRepository extends JpaRepository<PrepStage, Long> {
     List<PrepStage> findByRecruitId(Long recruitId);
     // [계획하기] 수정할 때 이미 있는 컬럼을 삭제 후 새로 추가하기 위함.
     @Modifying
-    @Query("DELETE FROM PrepStage P WHERE p.recruit.id = :recruitId")
+    @Query("DELETE FROM PrepStage p WHERE p.recruit.id = :recruitId")
     void deleteAllByRecruitId(Long recruitId);
 
 }
