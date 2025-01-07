@@ -5,12 +5,15 @@ import com.cluting.clutingbackend.admininvite.dto.AdminInviteRequestDto;
 import com.cluting.clutingbackend.admininvite.dto.AdminInviteResponseDto;
 import com.cluting.clutingbackend.admininvite.service.AdminInviteService;
 import com.cluting.clutingbackend.club.domain.Club;
+import com.cluting.clutingbackend.club.dto.response.ClubResponseDto;
 import com.cluting.clutingbackend.club.repository.ClubRepository;
+import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "[리크루팅 홈] 운영진 초대", description = "운영진 초대 관련 API")
@@ -39,6 +42,21 @@ public class AdminInviteController {
         return ResponseEntity.ok(link);
     }
 
+    // [운영진 초대] 초대 링크 연결
+    @Operation(
+            summary = "초대 링크 연결",
+            description = "초대 링크를 연결하면 동아리의 정보를 반환합니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "초대 링크로 성공적으로 연결되었습니다."),
+                    @ApiResponse(responseCode = "400", description = "잘못된 요청입니다."),
+                    @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
+            }
+    )
+    @GetMapping
+    public ResponseEntity<ClubResponseDto> findClubByLink(@RequestParam("token") String token) {
+        return ResponseEntity.ok(adminInviteService.findClubByLink(token));
+    }
+
     // [운영진 초대] 초대 수락
     @Operation(
             summary = "초대 링크 수락",
@@ -49,9 +67,12 @@ public class AdminInviteController {
                     @ApiResponse(responseCode = "500", description = "서버 내부 오류입니다.")
             }
     )
-    @PostMapping("/accept")
-    public ResponseEntity<AdminInviteResponseDto> acceptInvite(@RequestBody AdminInviteAcceptRequestDto requestDto) {
-        AdminInviteResponseDto responseDto = adminInviteService.acceptInvite(requestDto);
+    @PostMapping("/accept/{clubId}")
+    public ResponseEntity<AdminInviteResponseDto> acceptInvite(
+            @PathVariable("clubId") Long clubId,
+            @RequestBody AdminInviteAcceptRequestDto requestDto,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        AdminInviteResponseDto responseDto = adminInviteService.acceptInvite(userDetails.getUser(), clubId, requestDto);
         return ResponseEntity.ok(responseDto);
     }
 }

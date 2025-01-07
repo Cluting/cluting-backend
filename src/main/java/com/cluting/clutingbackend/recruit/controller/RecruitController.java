@@ -7,7 +7,6 @@ import com.cluting.clutingbackend.global.enums.ClubType;
 import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.recruit.dto.request.RecruitDocSetRequestDto;
-import com.cluting.clutingbackend.recruit.dto.response.RecruitDocPrepSavedResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitsResponseDto;
@@ -49,7 +48,7 @@ public class RecruitController {
     @GetMapping("/list")
     @ResponseStatus(value = HttpStatus.OK)
     public RecruitsResponseDto findPosts(
-            @RequestParam(value = "pageNum", defaultValue = "0") Integer pageNum,
+            @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
             @RequestParam(value = "sortType", required = false) SortType sortType, // 마감임박순, 최신순, 오래된 순
             @RequestParam(value = "clubType", required = false) ClubType clubType, // 연합동아리, 교내동아리
             @RequestParam(value = "fieldType", required = false) Category category) { // 동아리 분류
@@ -68,8 +67,9 @@ public class RecruitController {
     @GetMapping("/{recruitId}")
     @ResponseStatus(value = HttpStatus.OK)
     public RecruitResponseDto findPosts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("recruitId") Long recruitId) {
-        return recruitService.findById(recruitId);
+        return recruitService.findById(userDetails.getUser(), recruitId);
     }
     @PostMapping("/{recruitId}")
     public ResponseEntity<Void> saveRecentRecruit(
@@ -127,10 +127,10 @@ public class RecruitController {
     )
     @PostMapping("/doc/pre/{recruitId}")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public RecruitDocPrepSavedResponseDto saveDocRecruit(
+    public ResponseEntity<Void> saveDocRecruit(
             @PathVariable("recruitId") Long recruitId,
             @RequestBody RecruitDocSetRequestDto recruitDocSetRequestDto) {
-        return recruitService.saveDocRecruit(recruitId, recruitDocSetRequestDto);
-
+        recruitService.saveDocRecruit(recruitId, recruitDocSetRequestDto);
+        return ResponseEntity.ok().build();
     }
 }

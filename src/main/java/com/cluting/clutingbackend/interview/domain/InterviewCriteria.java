@@ -4,11 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter
-@Setter
+@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_interview_criteria")
 public class InterviewCriteria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,4 +27,18 @@ public class InterviewCriteria {
 
     @Column(nullable = true)
     private Integer score;
+
+    public static InterviewCriteria of(
+            InterviewEvaluator interviewEvaluator,
+            String name,
+            String content,
+            Integer score
+    ) {
+        return InterviewCriteria.builder()
+                .interviewEvaluator(interviewEvaluator)
+                .name(name)
+                .content(content)
+                .score(score)
+                .build();
+    }
 }

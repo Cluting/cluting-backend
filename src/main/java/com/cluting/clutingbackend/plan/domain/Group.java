@@ -1,10 +1,9 @@
 package com.cluting.clutingbackend.plan.domain;
 
-
+import com.cluting.clutingbackend.global.enums.EvalType;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import jakarta.persistence.*;
 import lombok.*;
-
 
 import java.util.List;
 
@@ -26,22 +25,32 @@ public class Group {
     private Recruit recruit;
 
     @OneToMany(mappedBy = "group")
-    private List<TalentProfile> talentProfileList;
+    private List<Ideal> idealList;
 
     @Column(nullable = true)
     private String name;
 
     @Column(nullable = true)
-    private Integer numDoc;
+    @Builder.Default
+    private Integer numDoc = 0;
 
     @Column(nullable = true)
-    private Integer numFinal;
+    @Builder.Default
+    private Integer numFinal = 0;
 
     @Column(nullable = true)
-    private Integer numRecruit;
+    @Builder.Default
+    private Integer numRecruit = 0;
 
     @Column(nullable = true)
     private String warning;
+
+    @Enumerated(EnumType.STRING)
+    private EvalType evalType;
+
+    @Column(nullable = true)
+    @Builder.Default
+    private boolean isCommon = false; //공통인지 아닌지
 
     public static Group of(
             Recruit recruit,
@@ -49,7 +58,9 @@ public class Group {
             Integer numDoc,
             Integer numFinal,
             Integer numRecruit,
-            String warning
+            String warning,
+            EvalType evalType,
+            Boolean isCommon
     ) {
         return Group.builder()
                 .recruit(recruit)
@@ -58,6 +69,8 @@ public class Group {
                 .numFinal(numFinal)
                 .numRecruit(numRecruit)
                 .warning(warning)
+                .evalType(evalType)
+                .isCommon(isCommon)
                 .build();
     }
 }

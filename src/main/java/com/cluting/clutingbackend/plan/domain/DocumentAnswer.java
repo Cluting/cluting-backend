@@ -1,6 +1,5 @@
 package com.cluting.clutingbackend.plan.domain;
 
-
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.global.enums.QuestionType;
 import jakarta.persistence.*;
@@ -8,6 +7,10 @@ import lombok.*;
 
 @Entity
 @Data
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_document_answer")
 public class DocumentAnswer {
 
     @Id

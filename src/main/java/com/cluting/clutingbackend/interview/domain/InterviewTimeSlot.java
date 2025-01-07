@@ -1,17 +1,18 @@
 package com.cluting.clutingbackend.interview.domain;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.recruit.domain.Recruit;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
+@Data
 @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_interview_time_slot")
 public class InterviewTimeSlot {
 
     @Id
@@ -27,4 +28,8 @@ public class InterviewTimeSlot {
     @ManyToOne
     @JoinColumn(name="clubUser_id")
     private ClubUser clubUser;
+
+    @ManyToOne
+    @JoinColumn(name="recruit_id")
+    private Recruit recruit;
 }

@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.global.security;
 
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.user.domain.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
     private final User user;
+    private final ClubUser clubUser;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

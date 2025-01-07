@@ -8,13 +8,17 @@ import java.util.List;
 
 @Entity
 @Data
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_document_question")
 public class DocumentQuestion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany(mappedBy = "documentQuestion")
+    @OneToMany(mappedBy = "documentQuestion", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DocumentAnswer> documentAnswerList;
 
     @ManyToOne

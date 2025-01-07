@@ -8,25 +8,25 @@ import com.cluting.clutingbackend.admininvite.dto.AdminInviteResponseDto;
 import com.cluting.clutingbackend.admininvite.repository.AdminInviteRepository;
 import com.cluting.clutingbackend.admininvite.repository.TempUserRepository;
 import com.cluting.clutingbackend.club.domain.Club;
+import com.cluting.clutingbackend.club.dto.response.ClubResponseDto;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.global.enums.ClubRole;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.user.domain.User;
-import com.cluting.clutingbackend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AdminInviteService {
     private final AdminInviteRepository adminInviteRepository;
-    private final UserRepository userRepository;
     private final TempUserRepository tempUserRepository;
     private final ClubUserRepository clubUserRepository;
 
@@ -46,9 +46,16 @@ public class AdminInviteService {
         return baseUrl + "/api/v1/admin/invite?token=" + token;
     }
 
+    @Transactional
+    public ClubResponseDto findClubByLink(String token) {
+        Club club = adminInviteRepository.findByUniqueInviteToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("만료된 토큰이거나 유효하지 않은 토큰")).getClub();
+        return ClubResponseDto.toDto(club);
+    }
+
     // [운영진 초대] 초대 수락(회원/비회원에 따라 로직이 달라짐)
     @Transactional
-    public AdminInviteResponseDto acceptInvite(AdminInviteAcceptRequestDto requestDto) {
+    public AdminInviteResponseDto acceptInvite(User user, Long clubId, AdminInviteAcceptRequestDto requestDto) {
         AdminInvite adminInvite = adminInviteRepository.findByUniqueInviteToken(requestDto.getToken())
                 .orElseThrow(() -> new IllegalArgumentException("만료된 토큰이거나 유효하지 않은 토큰"));
 
@@ -56,9 +63,14 @@ public class AdminInviteService {
             throw new IllegalArgumentException("만료된 토큰이거나 이미 사용된 토큰");
         }
 
+        if (!Objects.equals(adminInvite.getClub().getId(), clubId)) {
+            throw new IllegalArgumentException("동아리가 일치하지 않음");
+        }
+
         // 회원인지, 비회원인지
-        User user = userRepository.findByEmail(requestDto.getEmail())
-                .orElseGet(() -> handleTemporaryUser(requestDto, adminInvite)); // 비회원일 때
+        if (user == null) {
+            user = handleTemporaryUser(requestDto, adminInvite); // 비회원일 때
+        }
 
         Club club = adminInvite.getClub();
         System.out.println("@@club : "+club.getName());

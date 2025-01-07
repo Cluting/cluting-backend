@@ -34,7 +34,7 @@ public class DocumentEvaluator {
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     @Builder.Default
-    private Stage stage = Stage.BEFORE;
+    private Stage stage = Stage.READABLE;  // 기본 상태는 열람가능 상태(본인 담당인 경우에 BEFORE 상태가 됨.)
 
     @Column
     private Integer score; // 평가 점수

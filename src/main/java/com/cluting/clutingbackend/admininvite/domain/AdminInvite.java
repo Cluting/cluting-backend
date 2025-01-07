@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_admininvite")
+@Table(name = "tb_admin_invite")
 public class AdminInvite {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

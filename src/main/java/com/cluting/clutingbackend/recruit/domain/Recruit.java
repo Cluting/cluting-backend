@@ -108,4 +108,11 @@ public class Recruit {
     @Column
     private Integer clubFee; // 동아리 회비
 
+    public static Recruit of(Club club, Integer generation, Boolean isInterview) {
+        return Recruit.builder()
+                .club(club)
+                .generation(generation)
+                .isInterview(isInterview)
+                .build();
+    }
 }

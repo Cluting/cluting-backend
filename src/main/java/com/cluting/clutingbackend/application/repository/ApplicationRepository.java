@@ -3,6 +3,8 @@ package com.cluting.clutingbackend.application.repository;
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.dto.response.RecruitStatus;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
+import com.cluting.clutingbackend.recruit.domain.Recruit;
+import com.cluting.clutingbackend.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -27,4 +29,5 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     // 지원한 동아리 가져오기
     Optional<Application> findByUserIdAndRecruitId(Long userId, Long recruitId);
+
 }

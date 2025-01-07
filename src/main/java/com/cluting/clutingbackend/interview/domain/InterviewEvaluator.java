@@ -1,18 +1,19 @@
 package com.cluting.clutingbackend.interview.domain;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
-import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.plan.domain.Group;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Getter
-@Setter
+@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Table(name = "tb_interview_evaluator")
 public class InterviewEvaluator {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,4 +41,22 @@ public class InterviewEvaluator {
 
     @Column(nullable = true)
     private String comment;
+  
+    @Column(nullable = true)
+    private LocalDateTime interviewTime; //운영진과 지원자의 면접 확정 시간
+
+    public static InterviewEvaluator of(
+            ClubUser clubUser,
+            Interview interview,
+            Group group
+    ) {
+        return InterviewEvaluator.builder()
+                .clubUser(clubUser)
+                .interview(interview)
+                .group(group)
+                .stage(Stage.BEFORE)
+                .score(null)
+                .comment(null)
+                .build();
+    }
 }

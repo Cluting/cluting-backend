@@ -3,14 +3,16 @@ package com.cluting.clutingbackend.plan.domain;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 
 @Entity
 @Builder
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TalentProfile {
+@Table(name="tb_ideal")
+public class Ideal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,6 +23,6 @@ public class TalentProfile {
     private Group group;
 
     @Column
-    private String profile; // 인재상 내용
+    private String content; // 인재상 내용
 
 }
