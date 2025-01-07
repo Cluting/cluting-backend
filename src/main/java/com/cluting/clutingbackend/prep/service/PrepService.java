@@ -79,7 +79,7 @@ public class PrepService {
             System.out.println("testtests" + stageDto.getClubUserIds());
             for (Long clubUserId : stageDto.getClubUserIds()) {
 
-                System.out.println("clubUserId Test" + clubUserId);
+                System.out.println("clubUserId Test -> " + clubUserId);
                 ClubUser clubUser = clubUserRepository.findById(clubUserId)
                         .orElseThrow(() -> new IllegalArgumentException("해당 ClubUser 찾지 못함. id: " + clubUserId));
 
