@@ -15,7 +15,7 @@ public interface GroupRepository extends JpaRepository<Group,Long> {
     List<Group> findByRecruitId(Long recruitId);
 
     // [계획하기] 수정할 때 이미 있는 컬럼을 삭제 후 새로 추가하기 위함.
-    void deleteByRecruitId(Long recruitId);
+    void deleteAllByRecruitId(Long recruitId);
 
     @Query("SELECT g FROM Group g WHERE g.recruit.id = :recruitId")
     List<Group> findAllByRecruitId(@Param("recruitId") Long recruitId);

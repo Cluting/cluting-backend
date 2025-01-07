@@ -65,7 +65,7 @@ public class PrepService {
 
         // 2. 모집 단계 및 운영진 저장
         if (!prepStageRepository.findByRecruitId(recruitId).isEmpty()) {
-            prepStageRepository.deleteByRecruitId(recruitId);
+            prepStageRepository.deleteAllByRecruitId(recruitId);
         }
 
         for (PrepStageDto stageDto : prepRequestDto.getPrepStages()) {
@@ -90,7 +90,7 @@ public class PrepService {
 
         // 3. 지원자 그룹 저장
         if (!groupRepository.findByRecruitId(recruitId).isEmpty()) {
-            groupRepository.deleteByRecruitId(recruitId);
+            groupRepository.deleteAllByRecruitId(recruitId);
         }
 
         List<String> applicantGroups = prepRequestDto.getApplicantGroups();
