@@ -28,24 +28,24 @@ public class PermissionAspect {
 
         System.out.println("customUserDetail 찍어보기 -> " + customUserDetails.toString());
         // CLubUser 조회
-        ClubUser clubUser = customUserDetails.getClubUser();
-        System.out.println("ClubUser 제대로 가져오는지? " + clubUser.toString());
+//        ClubUser clubUser = customUserDetails.getClubUser();
+//        System.out.println("ClubUser 제대로 가져오는지? " + clubUser.toString());
 
-        List<PermissionLevel> userPermissionLevels = clubUser.getPermissionLevels();
+//        List<PermissionLevel> userPermissionLevels = clubUser.getPermissionLevels();
         System.out.println("ClubUser의 권한 레벨 체크");
 
-        if (userPermissionLevels == null || userPermissionLevels.isEmpty()) {
-            throw new SecurityException("사용자의 권한 정보가 없습니다.");
-        }
+//        if (userPermissionLevels == null || userPermissionLevels.isEmpty()) {
+//            throw new SecurityException("사용자의 권한 정보가 없습니다.");
+//        }
 
         // 요구되는 권한 레벨
-        PermissionLevel requiredLevel = requiredPermission.value();
-        System.out.println("요구되는 권한 레벨 " +  requiredLevel);
+//        PermissionLevel requiredLevel = requiredPermission.value();
+//        System.out.println("요구되는 권한 레벨 " +  requiredLevel);
 
         // 권한 리스트에서 요구되는 레벨이 포함되어 있는지 확인
-        if (!userPermissionLevels.contains(requiredLevel)) {
-            throw new SecurityException("사용자의 권한이 부족합니다.");
-        }
+//        if (!userPermissionLevels.contains(requiredLevel)) {
+//            throw new SecurityException("사용자의 권한이 부족합니다.");
+//        }
     }
 }
 
