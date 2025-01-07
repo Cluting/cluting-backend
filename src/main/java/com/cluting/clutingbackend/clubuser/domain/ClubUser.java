@@ -44,4 +44,20 @@ public class ClubUser {
 
     @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InterviewTimeSlot> timeSlots; // ClubUser가 가진 TimeSlot 리스트
+
+    public static ClubUser of(
+            User user,
+            Club club,
+            ClubRole role,
+            Integer generation,
+            List<PermissionLevel> permissionLevels
+    ) {
+        return ClubUser.builder()
+                .user(user)
+                .club(club)
+                .role(role)
+                .permissionLevels(permissionLevels)
+                .generation(generation)
+                .build();
+    }
 }
