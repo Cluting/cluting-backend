@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.prep.domain;
 
 import com.cluting.clutingbackend.recruit.domain.Recruit;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,7 @@ public class PrepStage {
 
     @Builder.Default
     @OneToMany(mappedBy = "prepStage", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<PrepStageClubUser> prepStageClubUser = new ArrayList<>();
 
     @Column(nullable = false)

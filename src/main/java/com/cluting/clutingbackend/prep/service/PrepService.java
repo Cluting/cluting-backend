@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
 public class PrepService {
@@ -75,8 +76,9 @@ public class PrepService {
                     .stageOrder(stageDto.getStageOrder())
                     .build();
             prepStageRepository.save(prepStage);
-
+            System.out.println("testtests" + stageDto.getClubUserIds());
             for (Long clubUserId : stageDto.getClubUserIds()) {
+
                 System.out.println("clubUserId Test" + clubUserId);
                 ClubUser clubUser = clubUserRepository.findById(clubUserId)
                         .orElseThrow(() -> new IllegalArgumentException("해당 ClubUser 찾지 못함. id: " + clubUserId));
