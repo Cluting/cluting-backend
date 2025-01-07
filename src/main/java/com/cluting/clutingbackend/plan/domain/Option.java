@@ -1,15 +1,15 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 @Entity
 @Data
 @Getter
 @Table(name ="tb_option")
 @Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Option {
 
     @Id
@@ -25,6 +25,7 @@ public class Option {
 
     @Column
     private boolean isCorrect; // 정답인지/아닌지?
+
 
 }
 
