@@ -4,10 +4,7 @@ import com.cluting.clutingbackend.global.annotation.RequiredPermission;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.dto.request.*;
-import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.RecruitDetailResponseDto;
+import com.cluting.clutingbackend.plan.dto.response.*;
 import com.cluting.clutingbackend.plan.service.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -92,6 +89,13 @@ public class PlanController {
     @Operation(summary = "합격 인원 및 인재상 확인")
     public ResponseEntity<RecruitDetailResponseDto> getRecruitDetails(@PathVariable Long recruitId) {
         RecruitDetailResponseDto response = planService.getRecruitDetails(recruitId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/details-form/{recruitId}")
+    @Operation(summary = "지원서 폼 확인")
+    public ResponseEntity<Plan5ResponseDto> getApplicationFormDetails(@PathVariable Long recruitId) {
+        Plan5ResponseDto response = planService.getFormDetail(recruitId);
         return ResponseEntity.ok(response);
     }
 }

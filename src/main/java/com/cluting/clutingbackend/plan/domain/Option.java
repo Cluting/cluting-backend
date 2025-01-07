@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.plan.domain;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
@@ -8,6 +9,7 @@ import lombok.Getter;
 @Data
 @Getter
 @Table(name ="tb_option")
+@Builder
 public class Option {
 
     @Id
@@ -23,5 +25,6 @@ public class Option {
 
     @Column
     private boolean isCorrect; // 정답인지/아닌지?
+
 }
 

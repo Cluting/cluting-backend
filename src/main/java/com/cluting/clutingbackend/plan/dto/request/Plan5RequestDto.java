@@ -25,7 +25,7 @@ public class Plan5RequestDto {
     @AllArgsConstructor
     public static class QuestionDto {
         private String content;
-        private String questionType;
+        private QuestionType questionType;
         private boolean hasWordLimit; // 주관식 글자수 제한 여부
         private Integer wordLimit; // 주관식 제한 글자수
         private List<String> objects; // 객관식 1, 객관식 2
