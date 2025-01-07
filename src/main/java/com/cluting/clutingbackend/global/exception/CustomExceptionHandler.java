@@ -16,14 +16,14 @@ import static com.cluting.clutingbackend.global.exception.ErrorCode.DUPLICATE_RE
 @Slf4j
 @RestControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler(value = { ConstraintViolationException.class, DataIntegrityViolationException.class})
-    protected ResponseEntity<ErrorResponseEntity> handleDataException() {
-        log.error("handleDataException throw Exception : {}", DUPLICATE_RESOURCE);
-        return ErrorResponseEntity.toResponseEntity(DUPLICATE_RESOURCE);
-    }
+//    @ExceptionHandler(value = { ConstraintViolationException.class, DataIntegrityViolationException.class})
+//    protected ResponseEntity<ErrorResponseEntity> handleDataException() {
+//        log.error("handleDataException throw Exception : {}", DUPLICATE_RESOURCE);
+//        return ErrorResponseEntity.toResponseEntity(DUPLICATE_RESOURCE);
+//    }
 
     @ExceptionHandler(CustomException.class)
     protected ResponseEntity<ErrorResponseEntity> handleCustomException(CustomException e) {
-        return ErrorResponseEntity.toResponseEntity(e.getErrorCode());
+        return ErrorResponseEntity.toResponseEntity(e.getErrorCode() , e.getDescription());
     }
 }

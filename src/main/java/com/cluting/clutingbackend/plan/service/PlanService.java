@@ -175,7 +175,7 @@ public class PlanService {
     public Plan5ResponseDto createApplicationForm(Long recruitId, Plan5RequestDto requestDto) {
         // Recruit 엔티티 조회
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+                .orElseThrow(() ->  new CustomException(RECRUIT_NOT_FOUND,"| Request Recruit Id : " + recruitId));
 
         // Recruit 업데이트
         recruit.setApplicationTitle(requestDto.getTitle());
@@ -194,12 +194,17 @@ public class PlanService {
     public RecruitDetailResponseDto getRecruitDetails(Long recruitId) {
         // 공고 데이터 가져오기
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND,"| Request Recruit Id : " + recruitId));
 
-        // 인재상 목록 가져오기
-        List<RecruitDetailResponseDto.IdealResponse> ideals = recruit.getGroupList().stream()
-                .flatMap(group -> group.getIdealList().stream())
-                .map(ideal -> new RecruitDetailResponseDto.IdealResponse(ideal.getId(), ideal.getContent()))
+        // 그룹 응답 생성
+        List<RecruitDetailResponseDto.GroupResponse> groupResponses = recruit.getGroupList().stream()
+                .map(group -> new RecruitDetailResponseDto.GroupResponse(
+                        group.getId(),
+                        group.getIdealList().stream()
+                                .collect(Collectors.toMap(Ideal::getId, Ideal::getContent)), // Map<Long, String> 생성
+                        group.getNumDoc(),
+                        group.getNumFinal()
+                ))
                 .collect(Collectors.toList());
 
         // 응답 생성
@@ -208,8 +213,9 @@ public class PlanService {
                 recruit.getTitle(),
                 recruit.getNumDoc(),
                 recruit.getNumFinal(),
-                ideals
+                groupResponses
         );
     }
+
 
 }
