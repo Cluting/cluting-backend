@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "[리크루팅 홈]", description = "리크루팅 홈 관련 API")
@@ -36,14 +37,7 @@ public class RecruitHomeController {
     public RecruitHomeDto getRecruitHome(
             @RequestParam Long recruitId,
             @RequestParam Long clubId,
-            @RequestHeader("Authorization") String token) {
-        // 토큰에서 이메일 추출
-        String email = jwtProvider.getUserEmail(token);
-
-        // 이메일을 통해 User 객체 조회
-        User user = ((CustomUserDetails) customUserDetailsService.loadUserByUserId(email)).getUser();
-        Long clubUserId = user.getId();
-
-        return recruitService.getRecruitHome(recruitId, clubId, clubUserId);
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return recruitService.getRecruitHome(recruitId, clubId, userDetails.getUser());
     }
 }

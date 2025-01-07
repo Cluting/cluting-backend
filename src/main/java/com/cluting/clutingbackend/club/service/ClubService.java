@@ -7,6 +7,8 @@ import com.cluting.clutingbackend.club.dto.response.ClubResponseDto;
 import com.cluting.clutingbackend.club.repository.ClubRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.global.enums.ClubRole;
+import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import com.cluting.clutingbackend.global.s3.AwsS3Service;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
@@ -58,7 +60,14 @@ public class ClubService {
     // 동아리 등록
     @Transactional
     public ClubResponseDto registerClub(User user, ClubRegisterRequestDto clubRegisterRequestDto) {
-        return ClubResponseDto.toDto(clubRepository.save(clubRegisterRequestDto.toEntity()));
+        Club club = clubRepository.save(clubRegisterRequestDto.toEntity());
+        List<PermissionLevel> levels = List.of(new PermissionLevel[]{PermissionLevel.ONE, PermissionLevel.TWO, PermissionLevel.THREE, PermissionLevel.FOUR, PermissionLevel.FIVE});
+        clubUserRepository.save(
+                ClubUser.of(
+                        user, club, ClubRole.STAFF, 1, levels
+                )
+        );
+        return ClubResponseDto.toDto(clubRepository.save(club));
     }
 
     // 동아리 id로 조회
@@ -83,9 +92,8 @@ public class ClubService {
     // 로그인 한 사용자가 가입한 동아리 목록 중에 리크루팅 중인 동아리
     @Transactional(readOnly = true)
     public List<ClubResponseDto> findRecruitingByUser(User user) {
-        List<Club> clubs = clubUserRepository.findByUserId(user.getId()).stream()
+        List<Club> clubs = clubUserRepository.findAllByUserId(user.getId()).stream()
                 .map(ClubUser::getClub)
-                .filter(Club::getIsRecruiting)
                 .toList();
         return clubs.stream().map(ClubResponseDto::toDto).toList();
     }

@@ -16,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
     private final User user;
-    private final ClubUser clubUser;
+//    private final ClubUser clubUser;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
