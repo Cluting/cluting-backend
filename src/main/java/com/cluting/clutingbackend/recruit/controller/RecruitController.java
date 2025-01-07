@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.recruit.controller;
 
 
+import com.cluting.clutingbackend.application.service.CookieService;
 import com.cluting.clutingbackend.global.enums.Category;
 import com.cluting.clutingbackend.global.enums.ClubType;
 import com.cluting.clutingbackend.global.enums.SortType;
@@ -13,11 +14,19 @@ import com.cluting.clutingbackend.recruit.service.RecruitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 @Tag(name = "[리크루팅 홈]", description = "리크루팅 홈 관련 API")
 @RestController
@@ -25,7 +34,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class RecruitController {
     private final RecruitService recruitService;
-
+    private final CookieService cookieService;
 
     @Operation(
             summary = "홈화면 동아리 리스트 조회",
@@ -62,6 +71,18 @@ public class RecruitController {
             @PathVariable("recruitId") Long recruitId) {
         return recruitService.findById(userDetails.getUser(), recruitId);
     }
+    @PostMapping("/{recruitId}")
+    public ResponseEntity<Void> saveRecentRecruit(
+            @PathVariable Long recruitId,  // 경로 변수로 recruitId 받기
+            HttpServletResponse response,
+            HttpServletRequest request) throws IOException {
+
+        // 서비스 레이어 호출하여 쿠키에 저장
+        cookieService.saveRecentRecruitToCookie(recruitId, response, request);
+        return ResponseEntity.ok().build();
+    }
+
+
 
     @Operation(
             summary = "모집 공고에 지원한 지원자 수 조회",

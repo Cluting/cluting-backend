@@ -1,5 +1,7 @@
 package com.cluting.clutingbackend.user.domain;
 
+import com.cluting.clutingbackend.application.domain.Scrapped;
+import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.Role;
 import com.cluting.clutingbackend.global.enums.Semester;
@@ -84,6 +86,33 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Todo> todoList;
 
+    @OneToMany(mappedBy = "user")
+    private List<Scrapped> scrappedList;
+
+    @Column(nullable = true)
+    private String portfolioFile; // 포트폴리오 파일(pdf)
+
+    @Column(nullable = true)
+    private String portfolioUrl; // 포트폴리오 주소(notion이나 다른 링크드인 등)
+
+    public void updateUserInfo(ApplicantProfileRequestDto dto){
+        this.name= dto.getName();
+        this.phone = dto.getPhoneNum();
+        this.location = dto.getAddr();
+        this.school = dto.getUniversity();
+        this.major = dto.getMajor();
+        this.doubleMajor = dto.getDoubleMajor();
+        this.studentStatus = dto.getStudentStatus();
+        this.semester = dto.getSemester();
+    }
+
+    public void setPortfolioFile(String portfolioFile) {
+        this.portfolioFile = portfolioFile;
+    }
+
+    public void setPortfolioUrl(String portfolioUrl) {
+        this.portfolioUrl = portfolioUrl;
+
     public void update(String name, String phone, String location, String school, String major, String doubleMajor, StudentStatus studentStatus, Semester semester) {
         this.name = name;
         this.phone = phone;
@@ -97,5 +126,6 @@ public class User {
 
     public void update(String profile) {
         this.profile = profile;
+
     }
 }

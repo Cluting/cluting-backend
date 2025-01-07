@@ -84,9 +84,13 @@ public class RecruitService {
                                 HttpStatus.BAD_REQUEST, "존재하지 않는 리크루팅 입니다."
                         )
                 );
+
         recentRepository.save(Recent.of(user, recruit));
+
         return RecruitResponseDto.toDto(recruit);
     }
+
+
 
     @Transactional(readOnly = true)
     public RecruitNumResponseDto findAppliedNum(Long recruitId) {

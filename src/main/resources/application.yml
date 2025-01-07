@@ -6,4 +6,5 @@ spring:
     include: dev
 
 server:
-  port: 8080
+  port: 20020
+
