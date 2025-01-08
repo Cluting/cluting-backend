@@ -36,7 +36,7 @@ public class ClubUser {
     @Column(nullable = true)
     private ClubRole role; // 부원 혹은 운영진
 
-    @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @Builder.Default
     private List<ClubUserPermission> permissionLevels = new ArrayList<>(); // ClubUser의 권한 리스트// 모집하기 단계에서의 권한 체크를 위한 enum
 
