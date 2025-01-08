@@ -64,7 +64,7 @@ public class PlanController {
     }
 
     @PostMapping("/stage3/{recruitId}")
-    @Operation(summary = "모집하기(3) post", description = "공고 작성하기")
+    @Operation(summary = "모집하기(3) POST 요청", description = "공고 작성하기")
     public ResponseEntity<Plan3RequestDto> updateRecruitmentStage3(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name = "recruitId") Long recruitId, @RequestBody Plan3RequestDto requestDto) {
         checkPermission(currentUser, PermissionLevel.THREE);
         planService.updateRecruitmentStage3(recruitId, requestDto);
@@ -72,7 +72,7 @@ public class PlanController {
     }
 
     @GetMapping("/stage3/{recruitId}")
-    @Operation(summary = "모집하기(3) get", description = "공고 정보 가져오기")
+    @Operation(summary = "모집하기(3) GET 요청", description = "공고 정보 가져오기")
     public ResponseEntity<Plan3RequestDto> getRecruitmentStage3(@AuthenticationPrincipal CustomUserDetails currentUser,@PathVariable(name = "recruitId") Long recruitId) {
         Plan3RequestDto responseDto = planService.getRecruitmentStage3(recruitId);
         return ResponseEntity.ok(responseDto);
@@ -80,7 +80,7 @@ public class PlanController {
     
 
     @PostMapping("/stage4/{recruitId}/interview-setup")
-    @Operation(summary = "모집하기(4) POST 요청",description = "운영진 면접 일정 조정하기-면접세팅")
+    @Operation(summary = "모집하기(4) POST 요청 | 면접 세팅",description = "운영진 면접 일정 조정하기-면접세팅")
     public ResponseEntity<Void> setupInterview(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId") Long recruitId, @RequestBody InterviewSetupDto requestDto) {
         checkPermission(currentUser, PermissionLevel.FOUR);
         planService.saveInterviewSetup(recruitId, requestDto);
@@ -96,7 +96,7 @@ public class PlanController {
 
 
     @PostMapping("/stage4/interview-time-slots")
-    @Operation(summary = "모집하기(4)",description = "운영진 면접 일정 조정하기-면접가능시간 선택")
+    @Operation(summary = "모집하기(4) POST 요청 | 면접 일정 조정",description = "운영진 면접 일정 조정하기-면접가능시간 선택")
     public ResponseEntity<Void> saveInterviewTimeSlots(
             @RequestBody List<LocalDateTime> timeSlots,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
