@@ -25,42 +25,47 @@ public class PlanController {
 
     private final PlanService planService;
 
+    private void checkPermission(CustomUserDetails currentUser, PermissionLevel requiredLevel) {
+        if (!currentUser.getSelectedClubUser().getPermissionLevels().contains(requiredLevel)) {
+            throw new IllegalArgumentException("Insufficient permissions to perform this action.");
+        }
+    }
+
     @PostMapping("/stage1/{recruitId}")
-    @RequiredPermission(PermissionLevel.ONE)
     @Operation(summary = "모집하기(1)",description = "합격 인원 설정하기")
-    public ResponseEntity<Plan1ResponseDto> stage1(@PathVariable(name="recruitId")Long recruitId, @RequestBody Plan1RequestDto dto){
-            Plan1ResponseDto plan1ResponseDto = planService.createRecruitment(recruitId, dto);
+    public ResponseEntity<Plan1ResponseDto> stage1(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan1RequestDto dto){
+        checkPermission(currentUser, PermissionLevel.ONE);
+        Plan1ResponseDto plan1ResponseDto = planService.createRecruitment(recruitId, dto);
         return ResponseEntity.ok(plan1ResponseDto);
     }
 
     @PostMapping("/stage2/{recruitId}")
-    @RequiredPermission(PermissionLevel.TWO)
     @Operation(summary = "모집하기(2)",description = "인재상 구축하기")
-    public ResponseEntity<Void> stage2(@PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
+    public ResponseEntity<Void> stage2(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
+        checkPermission(currentUser, PermissionLevel.TWO);
         planService.saveIdeals(recruitId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/stage3/{recruitId}")
-    @RequiredPermission(PermissionLevel.THREE)
     @Operation(summary = "모집하기(3) post", description = "공고 작성하기")
-    public ResponseEntity<Void> updateRecruitmentStage3(@PathVariable(name = "recruitId") Long recruitId, @RequestBody Plan3RequestDto requestDto) {
+    public ResponseEntity<Void> updateRecruitmentStage3(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name = "recruitId") Long recruitId, @RequestBody Plan3RequestDto requestDto) {
+        checkPermission(currentUser, PermissionLevel.THREE);
         planService.updateRecruitmentStage3(recruitId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @GetMapping("/stage3/{recruitId}")
-    @RequiredPermission(PermissionLevel.THREE)
     @Operation(summary = "모집하기(3) get", description = "공고 스케줄 알려주기")
-    public ResponseEntity<Plan3ResponseDto> showSchedule(@PathVariable(name = "recruitId") Long recruitId) {
+    public ResponseEntity<Plan3ResponseDto> showSchedule(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name = "recruitId") Long recruitId) {
         Plan3ResponseDto dto = planService.showSchedule(recruitId);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/stage4/{recruitId}/interview-setup")
-    @RequiredPermission(PermissionLevel.FOUR)
     @Operation(summary = "모집하기(4)",description = "운영진 면접 일정 조정하기-면접세팅")
-    public ResponseEntity<Void> setupInterview(@PathVariable(name="recruitId") Long recruitId, @RequestBody InterviewSetupDto requestDto) {
+    public ResponseEntity<Void> setupInterview(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId") Long recruitId, @RequestBody InterviewSetupDto requestDto) {
+        checkPermission(currentUser, PermissionLevel.FOUR);
         planService.saveInterviewSetup(recruitId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -76,11 +81,12 @@ public class PlanController {
 
 
     @PostMapping("/stage5/{recruitId}")
-    @RequiredPermission(PermissionLevel.FIVE)
     @Operation(summary = "모집하기(5)",description = "지원서 폼 제작하기")
     public ResponseEntity<Plan5ResponseDto> createApplicationForm(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
             @PathVariable Long recruitId,
             @RequestBody Plan5RequestDto requestDto) {
+        checkPermission(currentUser, PermissionLevel.FIVE);
         Plan5ResponseDto responseDto = planService.createApplicationForm(recruitId, requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }

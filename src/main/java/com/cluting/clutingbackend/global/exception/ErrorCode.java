@@ -23,7 +23,8 @@ public enum ErrorCode {
     INVALID_PERMISSION(FORBIDDEN, "유효하지 않은 권한입니다"),
 
     /* 404 NOT_FOUND : Resource 를 찾을 수 없음 */
-    MEMBER_NOT_FOUND(NOT_FOUND, "해당 유저 정보를 찾을 수 없습니다"),
+    USER_NOT_FOUND(NOT_FOUND, "해당 유저 정보를 찾을 수 없습니다"),
+    CLUB_USER_NOT_FOUND(NOT_FOUND, "해당 클럽 유저 정보를 찾을 수 없습니다"),
     REFRESH_TOKEN_NOT_FOUND(NOT_FOUND, "로그아웃 된 사용자입니다"),
     RECRUIT_NOT_FOUND(NOT_FOUND, "해당 리크루팅 공고를 찾을 수 없습니다"),
     GROUP_NOT_FOUND(NOT_FOUND, "해당 파트(그룹)을 찾을 수 없습니다"),

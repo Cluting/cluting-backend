@@ -122,4 +122,9 @@ public class User {
     public void update(String profile) {
         this.profile = profile;
     }
+
+    @Override
+    public String toString(){
+        return String.format("[User 객체] id : %s, name : %s, email : %s, password : %s", this.id, this.name , this.email, this.password);
+    }
 }
