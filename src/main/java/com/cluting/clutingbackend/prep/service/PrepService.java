@@ -76,7 +76,7 @@ public class PrepService {
                     .stageOrder(stageDto.getStageOrder())
                     .build();
             prepStageRepository.save(prepStage);
-            System.out.println("testtests" + stageDto.getClubUserIds());
+//            System.out.println("testtests" + stageDto.getClubUserIds());
             for (Long clubUserId : stageDto.getClubUserIds()) {
 
                 System.out.println("clubUserId Test -> " + clubUserId);

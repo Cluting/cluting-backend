@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.plan.controller;
 
 import com.cluting.clutingbackend.global.annotation.RequiredPermission;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
+import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.dto.request.*;
 import com.cluting.clutingbackend.plan.dto.response.*;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.cluting.clutingbackend.global.exception.ErrorCode.PERMISSION_DENIED;
+
 @Tag(name = "모집하기(1)~(5)",description = "모집하기 관련 컨트롤러")
 @RestController
 @RequestMapping("/api/v1/plan")
@@ -27,7 +30,9 @@ public class PlanController {
 
     private void checkPermission(CustomUserDetails currentUser, PermissionLevel requiredLevel) {
         if (!currentUser.getSelectedClubUser().getPermissionLevels().contains(requiredLevel)) {
-            throw new IllegalArgumentException("Insufficient permissions to perform this action.");
+            System.out.println(currentUser.getSelectedClubUser().toString());
+            System.out.println("필요 권한: " + requiredLevel);
+            throw new CustomException(PERMISSION_DENIED,"|  [모집하기 단계/Permission Denied] " + currentUser.getId() + "님의 접근 권한이 없습니다.");
         }
     }
 
