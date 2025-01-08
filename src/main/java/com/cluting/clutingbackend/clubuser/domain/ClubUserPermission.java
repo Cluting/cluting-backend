@@ -11,7 +11,7 @@ import java.util.ArrayList;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_club_user")
+@Table(name = "tb_club_user_permission")
 public class ClubUserPermission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
