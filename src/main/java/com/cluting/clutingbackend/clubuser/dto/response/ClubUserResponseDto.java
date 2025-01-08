@@ -28,7 +28,6 @@ public class ClubUserResponseDto {
                 .name(entity.getUser().getName())
                 .email(entity.getUser().getEmail())
                 .role(entity.getRole())
-                .permissionLevel(entity.getPermissionLevels())
                 .generation(entity.getGeneration())
                 .build();
     }
