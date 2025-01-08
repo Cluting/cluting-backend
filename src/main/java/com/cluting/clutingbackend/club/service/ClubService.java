@@ -5,7 +5,9 @@ import com.cluting.clutingbackend.club.dto.request.ClubRegisterRequestDto;
 import com.cluting.clutingbackend.club.dto.request.RecruitSaveRequestDto;
 import com.cluting.clutingbackend.club.dto.response.ClubResponseDto;
 import com.cluting.clutingbackend.club.repository.ClubRepository;
+import com.cluting.clutingbackend.club.repository.ClubUserPermissionRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.clubuser.domain.ClubUserPermission;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.global.enums.ClubRole;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -32,6 +35,7 @@ public class ClubService {
     private final RecruitRepository recruitRepository;
     private final ScrapRepository scrapRepository;
     private final AwsS3Service awsS3Service;
+    private final ClubUserPermissionRepository clubUserPermissionRepository;
 
     // 가장 인기있는 동아리 조회
     @Transactional(readOnly = true)
@@ -61,12 +65,16 @@ public class ClubService {
     @Transactional
     public ClubResponseDto registerClub(User user, ClubRegisterRequestDto clubRegisterRequestDto) {
         Club club = clubRepository.save(clubRegisterRequestDto.toEntity());
-        List<PermissionLevel> levels = List.of(new PermissionLevel[]{PermissionLevel.ONE, PermissionLevel.TWO, PermissionLevel.THREE, PermissionLevel.FOUR, PermissionLevel.FIVE});
-        clubUserRepository.save(
+//        ClubUserPermission levels;
+//        levels.set
+        ClubUser clubUser = clubUserRepository.save(
                 ClubUser.of(
-                        user, club, ClubRole.STAFF, 1, levels
+                        user, club, ClubRole.STAFF, 1
                 )
         );
+
+        assignAllPermissions(clubUser); // 동아리 등록한 사람에게 모든 권한 부여
+
         return ClubResponseDto.toDto(clubRepository.save(club));
     }
 
@@ -120,5 +128,18 @@ public class ClubService {
                         )
                 );
         return RecruitResponseDto.toDto(recruitRepository.save(Recruit.of(club, recruitSaveRequestDto.getGeneration(), recruitSaveRequestDto.getIsInterview())));
+    }
+
+    @Transactional
+    public void assignAllPermissions(ClubUser clubUser) {
+        // 모든 PermissionLevel Enum 값에 대해 ClubUserPermission 생성 및 저장
+        Arrays.stream(PermissionLevel.values())
+                .forEach(permissionLevel -> {
+                    ClubUserPermission clubUserPermission = ClubUserPermission.builder()
+                            .clubUser(clubUser)
+                            .permissionLevel(permissionLevel)
+                            .build();
+                    clubUserPermissionRepository.save(clubUserPermission);
+                });
     }
 }

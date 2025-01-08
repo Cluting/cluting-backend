@@ -8,6 +8,7 @@ import com.cluting.clutingbackend.global.enums.ClubRole;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -36,7 +37,8 @@ public class ClubUser {
     private ClubRole role; // 부원 혹은 운영진
 
     @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ClubUserPermission> permissionLevels; // ClubUser의 권한 리스트// 모집하기 단계에서의 권한 체크를 위한 enum
+    @Builder.Default
+    private List<ClubUserPermission> permissionLevels = new ArrayList<>(); // ClubUser의 권한 리스트// 모집하기 단계에서의 권한 체크를 위한 enum
 
     @Column(nullable = true)
     private Integer generation;
@@ -48,14 +50,14 @@ public class ClubUser {
             User user,
             Club club,
             ClubRole role,
-            Integer generation,
-            List<ClubUserPermission> permissionLevels
+            Integer generation
+//            List<ClubUserPermission> permissionLevels
     ) {
         return ClubUser.builder()
                 .user(user)
                 .club(club)
                 .role(role)
-                .permissionLevels(permissionLevels)
+//                .permissionLevels(permissionLevels)
                 .generation(generation)
                 .build();
     }

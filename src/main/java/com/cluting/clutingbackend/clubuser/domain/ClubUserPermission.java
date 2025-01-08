@@ -4,6 +4,8 @@ import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+
 @Entity
 @Getter
 @Builder
@@ -20,7 +22,7 @@ public class ClubUserPermission {
     private ClubUser clubUser;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "permission_level", nullable = false)
+    @Column(name = "permission_level", nullable = true)
     private PermissionLevel permissionLevel; // Enum 값
 
 }

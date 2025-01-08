@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.clubuser.dto.response;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.clubuser.domain.ClubUserPermission;
 import com.cluting.clutingbackend.global.enums.ClubRole;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class ClubUserResponseDto {
     private Integer generation;
 
     public static ClubUserResponseDto toDto(ClubUser entity) {
+
         return ClubUserResponseDto.builder()
                 .id(entity.getId())
                 .userId(entity.getUser().getId())
@@ -28,7 +30,11 @@ public class ClubUserResponseDto {
                 .name(entity.getUser().getName())
                 .email(entity.getUser().getEmail())
                 .role(entity.getRole())
-                .permissionLevel(entity.getPermissionLevels())
+                .permissionLevel(
+                        entity.getPermissionLevels().stream()
+                                .map(ClubUserPermission::getPermissionLevel) // ClubUserPermission에서 PermissionLevel 추출
+                                .toList() // Java 16+ 사용 시 toList(), 그렇지 않으면 Collectors.toList()
+                )
                 .generation(entity.getGeneration())
                 .build();
     }
