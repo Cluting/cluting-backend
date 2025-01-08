@@ -28,11 +28,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
     //swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
@@ -46,6 +44,7 @@ dependencies {
 
     // aws s3
     implementation 'io.awspring.cloud:spring-cloud-aws-s3:3.0.2'
+    implementation 'software.amazon.awssdk:s3:2.21.5'
 
     // querydsl
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
@@ -61,8 +60,13 @@ dependencies {
     implementation 'org.hibernate:hibernate-core:6.0.0.Final'
     implementation 'mysql:mysql-connector-java:8.0.32'
 
+    implementation 'net.nurigo:sdk:4.3.2'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.withType(Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

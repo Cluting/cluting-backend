@@ -13,6 +13,7 @@ public class ChatConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry){
         // stomp 접속 주소 url -> ws://AWS EC2 ip주소/ws
+        // 웹소켓 연결 시 요청을 보낼 endpoint 지정
         registry.addEndpoint("/ws")
                 .setAllowedOrigins("*");
     }

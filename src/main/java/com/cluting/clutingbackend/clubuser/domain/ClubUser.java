@@ -2,14 +2,13 @@ package com.cluting.clutingbackend.clubuser.domain;
 
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
-import com.cluting.clutingbackend.global.security.PermissionLevelConverter;
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
-import com.cluting.clutingbackend.todo.domain.Todo;
 import com.cluting.clutingbackend.user.domain.User;
 import com.cluting.clutingbackend.global.enums.ClubRole;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,6 +18,8 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Table(name = "tb_club_user")
 public class ClubUser {
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,13 +36,34 @@ public class ClubUser {
     @Column(nullable = true)
     private ClubRole role; // 부원 혹은 운영진
 
-    @Convert(converter = PermissionLevelConverter.class)
-    @Column(columnDefinition = "TEXT")
-    private List<PermissionLevel> permissionLevels; // 모집하기 단계에서의 권한 체크를 위한 enum
+    @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @Builder.Default
+    private List<ClubUserPermission> permissionLevels = new ArrayList<>(); // ClubUser의 권한 리스트// 모집하기 단계에서의 권한 체크를 위한 enum
 
     @Column(nullable = true)
     private Integer generation;
 
     @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InterviewTimeSlot> timeSlots; // ClubUser가 가진 TimeSlot 리스트
+
+    public static ClubUser of(
+            User user,
+            Club club,
+            ClubRole role,
+            Integer generation
+//            List<ClubUserPermission> permissionLevels
+    ) {
+        return ClubUser.builder()
+                .user(user)
+                .club(club)
+                .role(role)
+//                .permissionLevels(permissionLevels)
+                .generation(generation)
+                .build();
+    }
+    @Override
+    public String toString() {
+        return String.format("[ClubUser 객체] id : %s, role : %s, club : %s, permissionLevels : %s", this.id, this.role, this.club, this.permissionLevels.toString());
+    }
+
 }

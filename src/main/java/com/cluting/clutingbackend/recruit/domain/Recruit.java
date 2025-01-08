@@ -3,6 +3,7 @@ package com.cluting.clutingbackend.recruit.domain;
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.plan.domain.Group;
+import com.cluting.clutingbackend.user.domain.Scrap;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -30,7 +31,13 @@ public class Recruit {
     @OneToMany(mappedBy = "recruit")
     private List<Group> groupList;
 
-    @Column(length = 100, nullable = true)
+    @OneToOne(mappedBy = "recruit", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private RecruitSchedule recruitSchedule;
+
+    @OneToMany(mappedBy = "recruit")
+    private List<Scrap> scrappedList;
+
+    @Column(length = 100, nullable = false)
     private String title; // 공고 제목
 
     @Lob
@@ -99,6 +106,9 @@ public class Recruit {
 
     @Column
     private Integer clubFee; // 동아리 회비
+
+    @Column
+    private boolean isMultiApply; // 복수 지원 여부
 
     public static Recruit of(Club club, Integer generation, Boolean isInterview) {
         return Recruit.builder()

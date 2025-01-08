@@ -2,16 +2,13 @@ package com.cluting.clutingbackend.plan.service;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.global.enums.QuestionType;
 import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
-import com.cluting.clutingbackend.plan.domain.Group;
-import com.cluting.clutingbackend.plan.domain.Ideal;
+import com.cluting.clutingbackend.plan.domain.*;
 import com.cluting.clutingbackend.plan.dto.request.*;
-import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.RecruitDetailResponseDto;
+import com.cluting.clutingbackend.plan.dto.response.*;
 import com.cluting.clutingbackend.plan.repository.*;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
@@ -40,7 +37,7 @@ public class PlanService {
     private final InterviewTimeSlotRepository interviewTimeSlotRepository;
     private final ClubUserRepository clubUserRepository;
     private final DocumentQuestionRepository documentQuestionRepository;
-    private final DocumentAnswerRepository documentAnswerRepository;
+    private final OptionRepository optionRepository;
 
     @Transactional
     public Plan1ResponseDto createRecruitment(Long recruitId, Plan1RequestDto requestDto) {
@@ -155,6 +152,18 @@ public class PlanService {
     }
 
     @Transactional
+    public InterviewSetupDto getInterviewSetup(Long recruitId) {
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+
+        return InterviewSetupDto.builder()
+                .interviewee(recruit.getIntervieweeCount())
+                .interviewer(recruit.getInterviewerCount())
+                .interviewDuration(recruit.getInterviewDuration())
+                .build();
+    }
+
+    @Transactional
     public void saveTimeSlots(List<LocalDateTime> timeSlots, @AuthenticationPrincipal CustomUserDetails currentUser) {
         // 현재 로그인한 유저의 ClubUser 조회
         ClubUser clubUser = clubUserRepository.findByUserId(currentUser.getUser().getId())
@@ -175,18 +184,54 @@ public class PlanService {
     public Plan5ResponseDto createApplicationForm(Long recruitId, Plan5RequestDto requestDto) {
         // Recruit 엔티티 조회
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+                .orElseThrow(() ->  new CustomException(RECRUIT_NOT_FOUND,"| Request Recruit Id : " + recruitId));
 
         // Recruit 업데이트
         recruit.setApplicationTitle(requestDto.getTitle());
         recruit.setIsRequiredPortfolio(requestDto.getIsPortfolioRequired());
-
+        recruit.setMultiApply(requestDto.getMultiApply());
         recruitRepository.save(recruit);
 
+        // DocumentQuestion 및 DocumentAnswer 생성 및 저장
+        for (Plan5RequestDto.PartQuestionDto partQuestion : requestDto.getPartQuestions()) {
+            // 각 질문에 대해 DocumentQuestion 생성
+            for (Plan5RequestDto.QuestionDto question : partQuestion.getQuestions()) {
+                // DocumentQuestion 생성
+                DocumentQuestion documentQuestion = DocumentQuestion.builder()
+                        .group(recruit.getGroupList().stream()
+                                .filter(group -> group.getName().equals(partQuestion.getPartName())) // 파트 이름으로 그룹 매핑
+                                .findFirst()
+                                .orElseThrow(() -> new CustomException(GROUP_NOT_FOUND, "Group not found for part: " + partQuestion.getPartName())))
+                        .content(question.getContent())
+                        .multiSelect(question.getMultiSelect())
+                        .questionType(question.getQuestionType()) // Enum 매핑
+                        .build();
+
+                documentQuestion = documentQuestionRepository.save(documentQuestion);
+
+                // 주관식 질문에 대한 추가 설정
+                if (question.isHasWordLimit()) {
+                    documentQuestion.setWordLimit(question.getWordLimit()); // 주관식 글자수 제한 설정
+                }
+
+                // 객관식 질문에 대한 답변 옵션 생성
+                if (question.getObjects() != null) {
+                    for (String option : question.getObjects()) {
+                        Option optionEntity = Option.builder()
+                                .documentQuestion(documentQuestion)
+                                .content(option)
+                                .build();
+
+                        optionRepository.save(optionEntity);
+                    }
+                }
+            }
+        }
         // DTO 변환 및 반환
         return Plan5ResponseDto.builder()
                 .title(requestDto.getTitle())
                 .partQuestions(requestDto.getPartQuestions())
+                .multiApply(requestDto.getMultiApply())
                 .isPortfolioRequired(requestDto.getIsPortfolioRequired())
                 .build();
     }
@@ -194,12 +239,17 @@ public class PlanService {
     public RecruitDetailResponseDto getRecruitDetails(Long recruitId) {
         // 공고 데이터 가져오기
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND,"| Request Recruit Id : " + recruitId));
 
-        // 인재상 목록 가져오기
-        List<RecruitDetailResponseDto.IdealResponse> ideals = recruit.getGroupList().stream()
-                .flatMap(group -> group.getIdealList().stream())
-                .map(ideal -> new RecruitDetailResponseDto.IdealResponse(ideal.getId(), ideal.getContent()))
+        // 그룹 응답 생성
+        List<RecruitDetailResponseDto.GroupResponse> groupResponses = recruit.getGroupList().stream()
+                .map(group -> new RecruitDetailResponseDto.GroupResponse(
+                        group.getId(),
+                        group.getIdealList().stream()
+                                .collect(Collectors.toMap(Ideal::getId, Ideal::getContent)), // Map<Long, String> 생성
+                        group.getNumDoc(),
+                        group.getNumFinal()
+                ))
                 .collect(Collectors.toList());
 
         // 응답 생성
@@ -208,8 +258,75 @@ public class PlanService {
                 recruit.getTitle(),
                 recruit.getNumDoc(),
                 recruit.getNumFinal(),
-                ideals
+                groupResponses
         );
     }
+
+
+    @Transactional
+    public Plan5ResponseDto getFormDetail(Long recruitId) {
+        // Recruit 엔티티 조회
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "| Request Recruit Id : " + recruitId));
+
+        // 파트별 질문 목록 생성
+        List<Plan5RequestDto.PartQuestionDto> partQuestions = recruit.getGroupList().stream()
+                .map(group -> {
+                    // 각 그룹에 속한 질문 가져오기
+                    List<Plan5RequestDto.QuestionDto> questions = documentQuestionRepository.findByGroupId(group.getId()).stream()
+                            .map(documentQuestion -> Plan5RequestDto.QuestionDto.builder()
+                                    .content(documentQuestion.getContent())
+                                    .questionType(documentQuestion.getQuestionType()) // QuestionType 변환
+                                    .hasWordLimit(documentQuestion.getWordLimit() != null)
+                                    .wordLimit(documentQuestion.getWordLimit())
+                                    .objects(optionRepository.findByDocumentQuestionId(documentQuestion.getId()).stream()
+                                            .map(Option::getContent)
+                                            .collect(Collectors.toList())) // 객관식 옵션
+                                    .multiSelect(documentQuestion.isMultiSelect()) // 중복 선택 여부
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    return Plan5RequestDto.PartQuestionDto.builder()
+                            .partName(group.getName()) // 그룹 이름
+                            .caution(group.getWarning()) // 질문 주의사항
+                            .questions(questions) // 질문 목록
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // DTO 반환
+        return Plan5ResponseDto.builder()
+                .title(recruit.getApplicationTitle())
+                .partQuestions(partQuestions)
+                .multiApply(recruit.isMultiApply())
+                .isPortfolioRequired(recruit.getIsRequiredPortfolio())
+                .build();
+    }
+
+
+    public Plan3RequestDto getRecruitmentStage3(Long recruitId) {
+        RecruitSchedule recruitSchedule = recruitScheduleRepository.findByRecruitId(recruitId)
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "Recruitment schedule not found for id: " + recruitId));
+    
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "Recruitment not found for id: " + recruitId));
+    
+        return Plan3RequestDto.builder()
+                .title(recruit.getTitle())
+                .recruitmentStartDate(recruitSchedule.getStage3Start())
+                .recruitmentEndDate(recruitSchedule.getStage3End())
+                .documentResultDate(recruitSchedule.getStage5Start())
+                .finalResultDate(recruitSchedule.getStage8Start())
+                .recruitmentNumber(recruit.getNumFinal())
+                .activityStart(recruit.getActivityStart())
+                .activityEnd(recruit.getActivityEnd())
+                .activityDay(recruit.getActivityDay())
+                .activityTime(recruit.getActivityTime())
+                .clubFee(recruit.getClubFee())
+                .content(recruit.getDescription())
+                .imageUrl(recruit.getImage())
+                .build();
+    }
+
 
 }

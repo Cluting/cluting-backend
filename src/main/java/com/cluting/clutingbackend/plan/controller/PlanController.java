@@ -1,13 +1,12 @@
 package com.cluting.clutingbackend.plan.controller;
 
+import com.cluting.clutingbackend.clubuser.domain.ClubUserPermission;
 import com.cluting.clutingbackend.global.annotation.RequiredPermission;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
+import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.dto.request.*;
-import com.cluting.clutingbackend.plan.dto.response.Plan1ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.Plan3ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.Plan5ResponseDto;
-import com.cluting.clutingbackend.plan.dto.response.RecruitDetailResponseDto;
+import com.cluting.clutingbackend.plan.dto.response.*;
 import com.cluting.clutingbackend.plan.service.PlanService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.cluting.clutingbackend.global.exception.ErrorCode.PERMISSION_DENIED;
+
 @Tag(name = "모집하기(1)~(5)",description = "모집하기 관련 컨트롤러")
 @RestController
 @RequestMapping("/api/v1/plan")
@@ -28,48 +29,74 @@ public class PlanController {
 
     private final PlanService planService;
 
+    private void checkPermission(CustomUserDetails currentUser, PermissionLevel requiredLevel) {
+        // ClubUserPermission에서 PermissionLevel 필드만 추출
+        boolean hasPermission = currentUser.getSelectedClubUser().getPermissionLevels().stream()
+                .map(ClubUserPermission::getPermissionLevel) // PermissionLevel 추출
+                .anyMatch(permission -> permission == requiredLevel); // 요구되는 권한과 비교
+
+        // 권한이 없으면 예외 발생
+        if (!hasPermission) {
+            System.out.println("[현재 ClubUser] " + currentUser.getSelectedClubUser().toString());
+            System.out.println("필요 권한: " + requiredLevel);
+            throw new CustomException(
+                    PERMISSION_DENIED,
+                    "|  [모집하기 단계/Permission Denied] " + currentUser.getId() + "님의 접근 권한이 없습니다."
+            );
+        }
+    }
+
+
     @PostMapping("/stage1/{recruitId}")
-    @RequiredPermission(PermissionLevel.ONE)
     @Operation(summary = "모집하기(1)",description = "합격 인원 설정하기")
-    public ResponseEntity<Plan1ResponseDto> stage1(@PathVariable(name="recruitId")Long recruitId, @RequestBody Plan1RequestDto dto){
-            Plan1ResponseDto plan1ResponseDto = planService.createRecruitment(recruitId, dto);
+    public ResponseEntity<Plan1ResponseDto> stage1(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan1RequestDto dto){
+        checkPermission(currentUser, PermissionLevel.ONE);
+        Plan1ResponseDto plan1ResponseDto = planService.createRecruitment(recruitId, dto);
         return ResponseEntity.ok(plan1ResponseDto);
     }
 
     @PostMapping("/stage2/{recruitId}")
-    @RequiredPermission(PermissionLevel.TWO)
     @Operation(summary = "모집하기(2)",description = "인재상 구축하기")
-    public ResponseEntity<Void> stage2(@PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
+    public ResponseEntity<Void> stage2(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
+        checkPermission(currentUser, PermissionLevel.TWO);
         planService.saveIdeals(recruitId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/stage3/{recruitId}")
-    @RequiredPermission(PermissionLevel.THREE)
-    @Operation(summary = "모집하기(3) post", description = "공고 작성하기")
-    public ResponseEntity<Void> updateRecruitmentStage3(@PathVariable(name = "recruitId") Long recruitId, @RequestBody Plan3RequestDto requestDto) {
+    @Operation(summary = "모집하기(3) POST 요청", description = "공고 작성하기")
+    public ResponseEntity<Plan3RequestDto> updateRecruitmentStage3(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name = "recruitId") Long recruitId, @RequestBody Plan3RequestDto requestDto) {
+        checkPermission(currentUser, PermissionLevel.THREE);
         planService.updateRecruitmentStage3(recruitId, requestDto);
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.ok(requestDto);
     }
 
     @GetMapping("/stage3/{recruitId}")
-    @RequiredPermission(PermissionLevel.THREE)
-    @Operation(summary = "모집하기(3) get", description = "공고 스케줄 알려주기")
-    public ResponseEntity<Plan3ResponseDto> showSchedule(@PathVariable(name = "recruitId") Long recruitId) {
-        Plan3ResponseDto dto = planService.showSchedule(recruitId);
-        return ResponseEntity.ok(dto);
+    @Operation(summary = "모집하기(3) GET 요청", description = "공고 정보 가져오기")
+    public ResponseEntity<Plan3RequestDto> getRecruitmentStage3(@AuthenticationPrincipal CustomUserDetails currentUser,@PathVariable(name = "recruitId") Long recruitId) {
+        Plan3RequestDto responseDto = planService.getRecruitmentStage3(recruitId);
+        return ResponseEntity.ok(responseDto);
     }
+    
 
     @PostMapping("/stage4/{recruitId}/interview-setup")
-    @RequiredPermission(PermissionLevel.FOUR)
-    @Operation(summary = "모집하기(4)",description = "운영진 면접 일정 조정하기-면접세팅")
-    public ResponseEntity<Void> setupInterview(@PathVariable(name="recruitId") Long recruitId, @RequestBody InterviewSetupDto requestDto) {
+    @Operation(summary = "모집하기(4) POST 요청 | 면접 세팅",description = "운영진 면접 일정 조정하기-면접세팅")
+    public ResponseEntity<Void> setupInterview(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId") Long recruitId, @RequestBody InterviewSetupDto requestDto) {
+        checkPermission(currentUser, PermissionLevel.FOUR);
         planService.saveInterviewSetup(recruitId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @GetMapping("/stage4/{recruitId}/interview-setup")
+    @Operation(summary = "모집하기(4) GET 요청",description = "운영진 면접 일정 조정하기-면접세팅")
+    public ResponseEntity<InterviewSetupDto> setupInterview(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId") Long recruitId) {
+        InterviewSetupDto response = planService.getInterviewSetup(recruitId);
+        return ResponseEntity.ok(response);
+    }
+
+
     @PostMapping("/stage4/interview-time-slots")
-    @Operation(summary = "모집하기(4)",description = "운영진 면접 일정 조정하기-면접가능시간 선택")
+    @Operation(summary = "모집하기(4) POST 요청 | 면접 일정 조정",description = "운영진 면접 일정 조정하기-면접가능시간 선택")
     public ResponseEntity<Void> saveInterviewTimeSlots(
             @RequestBody List<LocalDateTime> timeSlots,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
@@ -79,11 +106,12 @@ public class PlanController {
 
 
     @PostMapping("/stage5/{recruitId}")
-    @RequiredPermission(PermissionLevel.FIVE)
     @Operation(summary = "모집하기(5)",description = "지원서 폼 제작하기")
     public ResponseEntity<Plan5ResponseDto> createApplicationForm(
+            @AuthenticationPrincipal CustomUserDetails currentUser,
             @PathVariable Long recruitId,
             @RequestBody Plan5RequestDto requestDto) {
+        checkPermission(currentUser, PermissionLevel.FIVE);
         Plan5ResponseDto responseDto = planService.createApplicationForm(recruitId, requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
@@ -92,6 +120,13 @@ public class PlanController {
     @Operation(summary = "합격 인원 및 인재상 확인")
     public ResponseEntity<RecruitDetailResponseDto> getRecruitDetails(@PathVariable Long recruitId) {
         RecruitDetailResponseDto response = planService.getRecruitDetails(recruitId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/details-form/{recruitId}")
+    @Operation(summary = "지원서 폼 확인")
+    public ResponseEntity<Plan5ResponseDto> getApplicationFormDetails(@PathVariable Long recruitId) {
+        Plan5ResponseDto response = planService.getFormDetail(recruitId);
         return ResponseEntity.ok(response);
     }
 }

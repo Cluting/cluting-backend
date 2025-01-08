@@ -8,13 +8,13 @@ import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
-import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
+import com.cluting.clutingbackend.evaluation.dto.response.*;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.ApplicantInfo;
 import com.cluting.clutingbackend.evaluation.dto.interview.*;
 import com.cluting.clutingbackend.global.enums.*;
+import com.cluting.clutingbackend.global.message.MessageUtil;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.domain.*;
 import com.cluting.clutingbackend.interview.repository.*;
@@ -39,6 +39,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,6 +60,31 @@ public class InterviewEvaluationService {
     private final InterviewScoreRepository interviewScoreRepository;
     private final InterviewTimeSlotRepository interviewTimeSlotRepository;
     private final ApplicantInterviewTimeSlotRepository applicantInterviewTimeSlotRepository;
+    private final MessageUtil messageUtil;
+
+    // 메시지 일괄 전송
+    public void send(MessageSendRequestDto messageSendRequestDto) {
+        for (MessageSendRequestDto.Content content : messageSendRequestDto.getList()) {
+            messageUtil.send(content.getPhone(), content.getMessage());
+        }
+    }
+
+    // 면접 결과 리스트
+    @Transactional(readOnly = true)
+    public List<InterviewResultListResponseDto> getList(Long recruitId, EvaluateStatus status) {
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId)
+                .stream()
+                .filter(application -> status.equals(application.getState()))
+                .toList();
+
+        List<Interview> interviews = interviewRepository.findAllByApplication_Recruit_Id(recruitId);
+        List<InterviewResultListResponseDto> result = new ArrayList<>();
+        for (Interview interview : interviews) {
+            result.add(InterviewResultListResponseDto.toDto(interview));
+        }
+
+        return result;
+    }
 
     public InterviewClassifyResponseDto findInterviewAvailable(Long recruitId, String partName) {
         List<InterviewTimeSlot> staffTimeSlot = interviewTimeSlotRepository.findAllByRecruit_Id(recruitId); // 운영진 면접 가능 시간

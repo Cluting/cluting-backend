@@ -9,6 +9,7 @@ import com.cluting.clutingbackend.recruit.dto.response.RecruitResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+
+@Tag(name = "[Club Controller]동아리와 관련된 API 모음")
 @RestController
 @RequestMapping("/api/v1/club")
 @RequiredArgsConstructor

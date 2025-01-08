@@ -10,6 +10,7 @@ import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.recruit.repository.RecruitScheduleRepository;
 import com.cluting.clutingbackend.todo.domain.Todo;
 import com.cluting.clutingbackend.todo.repository.TodoRepository;
+import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +28,11 @@ public class RecruitHomeService {
     private final TodoRepository todoRepository;
 
     // [리크루팅 홈] 불러오기
-    public RecruitHomeDto getRecruitHome(Long recruitId, Long clubId, Long clubUserId) {
+    public RecruitHomeDto getRecruitHome(Long recruitId, Long clubId, User user) {
         RecruitClubInfoDto recruitInfo = getRecruitInfo(recruitId);
         RecruitScheduleDto recruitSchedule = getRecruitSchedule(recruitId);
         List<ClubUserInfoDto> adminList = getAdminList(clubId);
-        List<TodoDto> userTodos = getUserTodos(clubId, clubUserId);
+        List<TodoDto> userTodos = getUserTodos(clubId, user.getId());
 
         return RecruitHomeDto.builder()
                 .recruitInfo(recruitInfo != null ? recruitInfo : new RecruitClubInfoDto())

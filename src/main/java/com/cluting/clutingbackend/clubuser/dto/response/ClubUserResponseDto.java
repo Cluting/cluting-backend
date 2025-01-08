@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.clubuser.dto.response;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.clubuser.domain.ClubUserPermission;
 import com.cluting.clutingbackend.global.enums.ClubRole;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class ClubUserResponseDto {
     private Integer generation;
 
     public static ClubUserResponseDto toDto(ClubUser entity) {
+
         return ClubUserResponseDto.builder()
                 .id(entity.getId())
                 .userId(entity.getUser().getId())

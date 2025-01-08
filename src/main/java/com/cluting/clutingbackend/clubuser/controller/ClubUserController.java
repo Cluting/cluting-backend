@@ -5,12 +5,15 @@ import com.cluting.clutingbackend.clubuser.service.ClubUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
+@Tag(name = "[ClubUser Controller]동아리 사용자와 관련된 API 모음")
 @RestController
 @RequestMapping("/api/v1/clubuser")
 @RequiredArgsConstructor
@@ -28,4 +31,6 @@ public class ClubUserController {
             @PathVariable("clubId") Long clubId) {
         return clubUserService.findAll(clubId);
     }
+
+
 }

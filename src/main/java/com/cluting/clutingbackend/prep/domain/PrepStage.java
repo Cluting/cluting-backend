@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.prep.domain;
 
 import com.cluting.clutingbackend.recruit.domain.Recruit;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Table(name = "tb_perp_stage")
+@Table(name = "tb_prep_stage")
 public class PrepStage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

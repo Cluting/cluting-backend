@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.prep.domain;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 

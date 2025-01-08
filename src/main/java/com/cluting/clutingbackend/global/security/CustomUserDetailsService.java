@@ -23,29 +23,29 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
                 );
-        ClubUser clubUser = clubUserRepository.findByUserId(user.getId())
+        ClubUser clubUser = clubUserRepository.findFirstByUserId(user.getId())
                 .orElseThrow(() ->
                         new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
                 );
 
         return CustomUserDetails.builder()
-                .clubUser(clubUser)
+                .selectedClubUser(clubUser)
                 .user(user)
                 .build();
     }
 
     public UserDetails loadUserByUserId(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmail(email.trim())
                 .orElseThrow(() ->
                         new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
                 );
-        ClubUser clubUser = clubUserRepository.findByUserId(user.getId())
+        ClubUser clubUser = clubUserRepository.findFirstByUserId(user.getId())
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
+                        new UsernameNotFoundException("동아리 사용자를 찾을 수 없습니다. 이메일: " + email)
                 );
 
         return CustomUserDetails.builder()
-                .clubUser(clubUser)
+                .selectedClubUser(clubUser)
                 .user(user)
                 .build();
     }

@@ -41,5 +41,6 @@ public class RecruitHomeController {
         Long currentClubUserId = currentUser.getUser().getId();
 
         return recruitService.getRecruitHome(recruitId, clubId, currentClubUserId);
+
     }
 }

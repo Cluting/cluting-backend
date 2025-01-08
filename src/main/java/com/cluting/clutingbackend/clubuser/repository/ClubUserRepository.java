@@ -40,8 +40,13 @@ public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
 
     Optional<ClubUser> findByUserId(Long userId);
 
+    List<ClubUser> findAllByUserId(Long userId);
+
     List<ClubUser> findByClubId(Long clubId);
 
     List<ClubUser> findAllByIdIn(List<Long> ids);
+
+    Optional<ClubUser> findFirstByUserId(Long userId); // 사용자 ID 기반으로 첫 번째 ClubUser 조회
+
 
 }

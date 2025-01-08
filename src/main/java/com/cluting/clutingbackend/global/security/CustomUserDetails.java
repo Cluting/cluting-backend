@@ -16,16 +16,23 @@ import java.util.List;
 @AllArgsConstructor
 public class CustomUserDetails implements UserDetails {
     private final User user;
-    private final ClubUser clubUser;
+    private final ClubUser selectedClubUser;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        // 선택된 ClubUser의 권한을 기반으로 GrantedAuthority 반환
+        return selectedClubUser.getPermissionLevels().stream()
+                .map(permission -> (GrantedAuthority) permission.getPermissionLevel()::name)
+                .toList();
     }
 
     @Override
     public String getPassword() {
         return user.getPassword();
+    }
+
+    public Long getId() {
+        return user.getId();
     }
 
     @Override
