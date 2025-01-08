@@ -6,6 +6,7 @@ import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.global.service.CurrentStageService;
+import com.cluting.clutingbackend.recruit.dto.response.CurrentStageResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +31,9 @@ public class GlobalController {
             summary = "[리크루팅 공고 진행 단계] 현재 단계(전/중/후) 불러오기"
     )
     @GetMapping("/current-stage")
-    public CurrentStage getCurrentStage(@RequestParam Long recruitId){
-        return currentStageService.getCurrentStage(recruitId);
+    public ResponseEntity<CurrentStageResponseDto> getCurrentStage(@RequestParam Long recruitId){
+
+        return ResponseEntity.ok(currentStageService.getCurrentStage(recruitId));
     }
 
     @Operation(summary = "프로필 선택에 따라 User의 ClubUser역할이 바뀌게끔 함")
