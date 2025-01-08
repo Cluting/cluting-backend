@@ -177,6 +177,7 @@ public class PlanService {
         // Recruit 업데이트
         recruit.setApplicationTitle(requestDto.getTitle());
         recruit.setIsRequiredPortfolio(requestDto.getIsPortfolioRequired());
+        recruit.setMultiApply(requestDto.getMultiApply());
         recruitRepository.save(recruit);
 
         // DocumentQuestion 및 DocumentAnswer 생성 및 저장
@@ -218,6 +219,7 @@ public class PlanService {
         return Plan5ResponseDto.builder()
                 .title(requestDto.getTitle())
                 .partQuestions(requestDto.getPartQuestions())
+                .multiApply(requestDto.getMultiApply())
                 .isPortfolioRequired(requestDto.getIsPortfolioRequired())
                 .build();
     }
@@ -284,6 +286,7 @@ public class PlanService {
         return Plan5ResponseDto.builder()
                 .title(recruit.getApplicationTitle())
                 .partQuestions(partQuestions)
+                .multiApply(recruit.isMultiApply())
                 .isPortfolioRequired(recruit.getIsRequiredPortfolio())
                 .build();
     }

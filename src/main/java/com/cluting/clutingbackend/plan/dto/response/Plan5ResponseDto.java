@@ -18,6 +18,7 @@ public class Plan5ResponseDto {
     private String title;                         // 지원서 제목
     private List<Plan5RequestDto.PartQuestionDto> partQuestions; // 파트별 질문 목록
     private Boolean isPortfolioRequired;         // 포트폴리오 여부
+    private Boolean multiApply; // 다중 지원 가능 여부
 
 
 

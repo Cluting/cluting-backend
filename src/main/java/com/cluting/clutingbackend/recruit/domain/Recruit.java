@@ -107,6 +107,9 @@ public class Recruit {
     @Column
     private Integer clubFee; // 동아리 회비
 
+    @Column
+    private boolean isMultiApply; // 복수 지원 여부
+
     public static Recruit of(Club club, Integer generation, Boolean isInterview) {
         return Recruit.builder()
                 .club(club)
