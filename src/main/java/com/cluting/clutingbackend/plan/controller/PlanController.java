@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.plan.controller;
 
+import com.cluting.clutingbackend.clubuser.domain.ClubUserPermission;
 import com.cluting.clutingbackend.global.annotation.RequiredPermission;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
 import com.cluting.clutingbackend.global.exception.CustomException;
@@ -29,12 +30,22 @@ public class PlanController {
     private final PlanService planService;
 
     private void checkPermission(CustomUserDetails currentUser, PermissionLevel requiredLevel) {
-        if (!currentUser.getSelectedClubUser().getPermissionLevels().contains(requiredLevel)) {
+        // ClubUserPermission에서 PermissionLevel 필드만 추출
+        boolean hasPermission = currentUser.getSelectedClubUser().getPermissionLevels().stream()
+                .map(ClubUserPermission::getPermissionLevel) // PermissionLevel 추출
+                .anyMatch(permission -> permission == requiredLevel); // 요구되는 권한과 비교
+
+        // 권한이 없으면 예외 발생
+        if (!hasPermission) {
             System.out.println(currentUser.getSelectedClubUser().toString());
             System.out.println("필요 권한: " + requiredLevel);
-            throw new CustomException(PERMISSION_DENIED,"|  [모집하기 단계/Permission Denied] " + currentUser.getId() + "님의 접근 권한이 없습니다.");
+            throw new CustomException(
+                    PERMISSION_DENIED,
+                    "|  [모집하기 단계/Permission Denied] " + currentUser.getId() + "님의 접근 권한이 없습니다."
+            );
         }
     }
+
 
     @PostMapping("/stage1/{recruitId}")
     @Operation(summary = "모집하기(1)",description = "합격 인원 설정하기")
