@@ -152,6 +152,18 @@ public class PlanService {
     }
 
     @Transactional
+    public InterviewSetupDto getInterviewSetup(Long recruitId) {
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+
+        return InterviewSetupDto.builder()
+                .interviewee(recruit.getIntervieweeCount())
+                .interviewer(recruit.getInterviewerCount())
+                .interviewDuration(recruit.getInterviewDuration())
+                .build();
+    }
+
+    @Transactional
     public void saveTimeSlots(List<LocalDateTime> timeSlots, @AuthenticationPrincipal CustomUserDetails currentUser) {
         // 현재 로그인한 유저의 ClubUser 조회
         ClubUser clubUser = clubUserRepository.findByUserId(currentUser.getUser().getId())
@@ -290,5 +302,31 @@ public class PlanService {
                 .isPortfolioRequired(recruit.getIsRequiredPortfolio())
                 .build();
     }
+
+
+    public Plan3RequestDto getRecruitmentStage3(Long recruitId) {
+        RecruitSchedule recruitSchedule = recruitScheduleRepository.findByRecruitId(recruitId)
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "Recruitment schedule not found for id: " + recruitId));
+    
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "Recruitment not found for id: " + recruitId));
+    
+        return Plan3RequestDto.builder()
+                .title(recruit.getTitle())
+                .recruitmentStartDate(recruitSchedule.getStage3Start())
+                .recruitmentEndDate(recruitSchedule.getStage3End())
+                .documentResultDate(recruitSchedule.getStage5Start())
+                .finalResultDate(recruitSchedule.getStage8Start())
+                .recruitmentNumber(recruit.getNumFinal())
+                .activityStart(recruit.getActivityStart())
+                .activityEnd(recruit.getActivityEnd())
+                .activityDay(recruit.getActivityDay())
+                .activityTime(recruit.getActivityTime())
+                .clubFee(recruit.getClubFee())
+                .content(recruit.getDescription())
+                .imageUrl(recruit.getImage())
+                .build();
+    }
+
 
 }
