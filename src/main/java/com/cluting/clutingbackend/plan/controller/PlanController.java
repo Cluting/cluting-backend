@@ -37,7 +37,7 @@ public class PlanController {
 
         // 권한이 없으면 예외 발생
         if (!hasPermission) {
-            System.out.println(currentUser.getSelectedClubUser().toString());
+            System.out.println("[현재 ClubUser] " + currentUser.getSelectedClubUser().toString());
             System.out.println("필요 권한: " + requiredLevel);
             throw new CustomException(
                     PERMISSION_DENIED,
