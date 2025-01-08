@@ -99,30 +99,48 @@ public class DocumentEvaluationService {
     }
 
     // 공통 필터 및 정렬 처리
-    private List<DocumentEvaluationResponse> filterAndSort(List<Application> applications, DocumentEvaluationRequest request, String stage, CustomUserDetails currentUser, Long recruitId) {
-        Long currentClubUserId = currentUser.getUser().getId();  // 로그인한 clubUser의 ID
+    private List<DocumentEvaluationResponse> filterAndSort(
+            List<Application> applications,
+            DocumentEvaluationRequest request,
+            String stage,
+            CustomUserDetails currentUser,
+            Long recruitId
+    ) {
+        Long currentClubUserId = currentUser.getUser().getId();
+
+        // "null" 문자열을 실제 null 값으로 처리
+        String groupName = "null".equals(request.getGroupName()) ? null : request.getGroupName();
 
         return applications.stream()
                 .filter(application -> {
-                    List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());  // 여러 DocumentEvaluator 가져오기
-                    if (evaluators.isEmpty() || evaluators.stream().noneMatch(evaluator -> evaluator.getClubUser() != null && evaluator.getStage().name().equals(stage)
-                            && (request.getGroupName() == null || evaluator.getGroup() != null && evaluator.getGroup().getName().equals(request.getGroupName()))
-                            && evaluator.getClubUser().getUser().getId().equals(currentClubUserId))) {
-                        return false;  // 필터링: evaluator가 없거나 조건에 맞지 않으면 제외
+                    List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
+
+                    if (evaluators.isEmpty()) {
+                        return false;
                     }
-                    return true;
+
+                    return evaluators.stream().anyMatch(evaluator -> {
+                        boolean stageMatch = evaluator.getStage().name().equals(stage);
+                        boolean groupMatch = groupName == null ||
+                                (evaluator.getGroup() != null && evaluator.getGroup().getName().equals(groupName));
+                        boolean userMatch = evaluator.getClubUser() != null &&
+                                evaluator.getClubUser().getUser().getId().equals(currentClubUserId);
+
+                        return stageMatch && groupMatch && userMatch;
+                    });
                 })
-                .map(application -> mapToResponse(application, recruitId))  // recruitId 전달
+                .map(application -> mapToResponse(application, recruitId))
                 .sorted((response1, response2) -> {
                     if ("newest".equals(request.getSortOrder())) {
                         return response2.getCreatedAt().compareTo(response1.getCreatedAt());
                     } else if ("oldest".equals(request.getSortOrder())) {
                         return response1.getCreatedAt().compareTo(response2.getCreatedAt());
                     }
-                    return 0;  // 정렬 안 정했을 때
+                    return 0;
                 })
                 .collect(Collectors.toList());
     }
+
 
     // 평가 전 상태 리스트 반환
     public List<DocumentEvaluationResponse> getPendingEvaluations(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
