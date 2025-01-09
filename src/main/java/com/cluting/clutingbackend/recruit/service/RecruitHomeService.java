@@ -3,6 +3,8 @@ package com.cluting.clutingbackend.recruit.service;
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.global.exception.CustomException;
+import com.cluting.clutingbackend.global.exception.ErrorCode;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.dto.*;
@@ -100,8 +102,9 @@ public class RecruitHomeService {
     }
 
     // [리크루팅 홈] 운영진 투두 리스트 가져오기
-    public List<TodoDto> getUserTodos(Long clubId, Long clubUserId) {
-        ClubUser clubUser = clubUserRepository.findByClubIdAndUserId(clubId, clubUserId);  //해당 운영진
+    public List<TodoDto> getUserTodos(Long clubId, Long userId) {
+        ClubUser clubUser = clubUserRepository.findByClubIdAndUserId(clubId, userId)
+                .orElseThrow(()-> new CustomException(ErrorCode.CLUB_USER_NOT_FOUND,"[CustomException] clubId :  " + clubId + " | userId : " + userId));  //해당 운영진
         if (clubUser == null) {
             return List.of();
         }
