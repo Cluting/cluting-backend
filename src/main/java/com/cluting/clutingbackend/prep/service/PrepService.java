@@ -105,7 +105,7 @@ public class PrepService {
             Group group = new Group();
             group.setRecruit(recruit);
             group.setName(groupName);
-            if (groupName.equals("공통")){
+            if (applicantGroups.size() == 1 && groupName.equals("공통")){
                 group.setCommon(true);
             }
             groupRepository.save(group);

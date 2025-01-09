@@ -3,6 +3,8 @@ package com.cluting.clutingbackend.evaluation.controller;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
+import com.cluting.clutingbackend.evaluation.dto.request.ScheduleFormDataRequestDto;
+import com.cluting.clutingbackend.evaluation.dto.response.InterviewAvailScheduleResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewResultListResponseDto;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
@@ -32,6 +34,24 @@ public class InterviewEvaluationController {
 
     private final InterviewEvaluationService interviewEvaluationService;
 
+    @Operation(summary = "[서류 합격자 및 면접 안내] 4-2. 면접 일정 조정하기 (면접 가능 일정 조회)",
+            description = "면접관/지원자들의 면접 가능 일정을 조회합니다.")
+    @GetMapping("/avail")
+    public InterviewAvailScheduleResponseDto findSchedules(
+            @PathVariable Long recruitId) {
+        return interviewEvaluationService.findSchedules(recruitId);
+    }
+
+    @Operation(summary = "[서류 합격자 및 면접 안내] 4-2. 면접 일정 조정하기 (입력 저장)",
+            description = "면접 일정을 확정합니다.")
+    @PostMapping("/set")
+    public ResponseEntity<Void> saveInterviewSchedule(
+            @PathVariable Long recruitId,
+            @RequestBody ScheduleFormDataRequestDto scheduleFormDataRequestDto) {
+        interviewEvaluationService.saveInterviewSchedule(recruitId, scheduleFormDataRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "[최종합격자 및 활동 안내] 6-2. 면접 합격자/불합격자 리스트 조회하기",
             description = "입력 받는 state(PASS 또는 FAIL)에 따라 면접 합격자 또는 불합격자 리스트를 조회합니다.")
     @GetMapping("/result/each")
@@ -46,8 +66,9 @@ public class InterviewEvaluationController {
     @PostMapping("/send")
     public ResponseEntity<Void> send(
             @PathVariable Long recruitId,
-            @RequestBody MessageSendRequestDto messageSendRequestDto) {
-        interviewEvaluationService.send(messageSendRequestDto);
+            @RequestBody MessageSendRequestDto messageSendRequestDto,
+            @RequestParam("state") EvaluateStatus status) {
+        interviewEvaluationService.send(recruitId, messageSendRequestDto, status);
         return ResponseEntity.ok().build();
     }
 

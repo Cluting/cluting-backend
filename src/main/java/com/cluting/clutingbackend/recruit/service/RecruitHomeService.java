@@ -16,7 +16,9 @@ import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,11 +30,11 @@ public class RecruitHomeService {
     private final TodoRepository todoRepository;
 
     // [리크루팅 홈] 불러오기
-    public RecruitHomeDto getRecruitHome(Long recruitId, Long clubId, User user) {
+    public RecruitHomeDto getRecruitHome(Long recruitId, Long clubId, Long currentUserId) {
         RecruitClubInfoDto recruitInfo = getRecruitInfo(recruitId);
         RecruitScheduleDto recruitSchedule = getRecruitSchedule(recruitId);
         List<ClubUserInfoDto> adminList = getAdminList(clubId);
-        List<TodoDto> userTodos = getUserTodos(clubId, user.getId());
+        List<TodoDto> userTodos = getUserTodos(clubId, currentUserId);
 
         return RecruitHomeDto.builder()
                 .recruitInfo(recruitInfo != null ? recruitInfo : new RecruitClubInfoDto())
@@ -93,7 +95,13 @@ public class RecruitHomeService {
             return List.of();
         }
 
-        return staffList.stream()
+        // 중복된 user_id 기준으로 필터링
+        Set<Long> userIds = new HashSet<>();
+        List<ClubUser> uniqueStaffList = staffList.stream()
+                .filter(cu -> userIds.add(cu.getUser().getId()))  // user_id 중복 제거
+                .collect(Collectors.toList());
+
+        return uniqueStaffList.stream()
                 .map(cu -> ClubUserInfoDto.builder()
                         .name(cu.getUser().getName())
                         .email(cu.getUser().getEmail())
@@ -103,16 +111,28 @@ public class RecruitHomeService {
 
     // [리크루팅 홈] 운영진 투두 리스트 가져오기
     public List<TodoDto> getUserTodos(Long clubId, Long userId) {
-        ClubUser clubUser = clubUserRepository.findByClubIdAndUserId(clubId, userId)
-                .orElseThrow(()-> new CustomException(ErrorCode.CLUB_USER_NOT_FOUND,"[CustomException] clubId :  " + clubId + " | userId : " + userId));  //해당 운영진
-        if (clubUser == null) {
-            return List.of();
-        }
-        List<Todo> todos = todoRepository.findTodosByUserId(clubUser.getUser().getId());  //해당 운영진의 투두 리스트
+//        ClubUser clubUser = clubUserRepository.findByClubIdAndUserId(clubId, userId)
+//                .orElseThrow(()-> new CustomException(ErrorCode.CLUB_USER_NOT_FOUND,"[CustomException] clubId :  " + clubId + " | userId : " + userId));  //해당 운영진
+//        if (clubUser == null) {
+//            return List.of();
+//        }
+
+//        // clubUserId를 사용해 바로 ClubUser를 조회합니다.
+//        ClubUser clubUser = clubUserRepository.findById(clubUserId)
+//                .orElseThrow(() -> new IllegalStateException("ClubUser not found with id: " + clubUserId));
+//
+//        // clubId와 일치하는지 확인 (안전성 검증)
+//        if (!clubUser.getClub().getId().equals(clubId)) {
+//            throw new IllegalStateException("ClubUser does not belong to the specified clubId: " + clubId);
+//        }
+
+        // 투두 리스트 가져오기
+        List<Todo> todos = todoRepository.findTodosByUserId(userId);
         if (todos == null || todos.isEmpty()) {
             return List.of();
         }
 
+        // TodoDto로 변환
         return todos.stream()
                 .map(todo -> TodoDto.builder()
                         .todoId(todo.getId())
