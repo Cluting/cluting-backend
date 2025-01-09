@@ -28,11 +28,11 @@ public class RecruitHomeService {
     private final TodoRepository todoRepository;
 
     // [리크루팅 홈] 불러오기
-    public RecruitHomeDto getRecruitHome(Long recruitId, Long clubId, User user) {
+    public RecruitHomeDto getRecruitHome(Long recruitId, Long clubId, Long currentClubUserId) {
         RecruitClubInfoDto recruitInfo = getRecruitInfo(recruitId);
         RecruitScheduleDto recruitSchedule = getRecruitSchedule(recruitId);
         List<ClubUserInfoDto> adminList = getAdminList(clubId);
-        List<TodoDto> userTodos = getUserTodos(clubId, user.getId());
+        List<TodoDto> userTodos = getUserTodos(clubId, currentClubUserId);
 
         return RecruitHomeDto.builder()
                 .recruitInfo(recruitInfo != null ? recruitInfo : new RecruitClubInfoDto())
