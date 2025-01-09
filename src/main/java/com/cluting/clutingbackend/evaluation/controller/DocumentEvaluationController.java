@@ -44,8 +44,9 @@ public class DocumentEvaluationController {
     @PostMapping("/send")
     public ResponseEntity<Void> send(
             @PathVariable Long recruitId,
-            @RequestBody MessageSendRequestDto messageSendRequestDto) {
-        documentEvaluationService.send(messageSendRequestDto);
+            @RequestBody MessageSendRequestDto messageSendRequestDto,
+            @RequestParam("state")EvaluateStatus status) {
+        documentEvaluationService.send(recruitId, messageSendRequestDto, status);
         return ResponseEntity.ok().build();
     }
 

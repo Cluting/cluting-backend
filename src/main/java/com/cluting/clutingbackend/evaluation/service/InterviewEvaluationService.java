@@ -9,6 +9,7 @@ import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
+import com.cluting.clutingbackend.evaluation.dto.request.ScheduleFormDataRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.*;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.ApplicantInfo;
@@ -63,9 +64,13 @@ public class InterviewEvaluationService {
     private final MessageUtil messageUtil;
 
     // 메시지 일괄 전송
-    public void send(MessageSendRequestDto messageSendRequestDto) {
-        for (MessageSendRequestDto.Content content : messageSendRequestDto.getList()) {
-            messageUtil.send(content.getPhone(), content.getMessage());
+    @Transactional(readOnly = true)
+    public void send(Long recruitId, MessageSendRequestDto messageSendRequestDto, EvaluateStatus status) {
+        List<Interview> interviews = interviewRepository.findAllByApplication_Recruit_Id(recruitId);
+        for (Interview interview : interviews) {
+            String individual = messageSendRequestDto.getMessage();
+            individual = individual.replace("{{이름}}", interview.getApplication().getUser().getName()).replace("{{파트}}", interview.getApplication().getRecruit_group());
+            messageUtil.send(interview.getApplication().getUser().getPhone(), individual);
         }
     }
 
@@ -197,6 +202,107 @@ public class InterviewEvaluationService {
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
         }
+    }
+
+    @Transactional(readOnly = true)
+    public InterviewAvailScheduleResponseDto findSchedules(Long recruitId) {
+        List<InterviewTimeSlot> interviewTimeSlots = interviewTimeSlotRepository.findAllByRecruit_Id(recruitId); // 운영진 면접 가능 시간
+        List<ApplicantInterviewTimeSlot> applicantInterviewTimeSlots = applicantInterviewTimeSlotRepository.findAllByApplication_Recruit_Id(recruitId); // 지원자 면접 가능 시간
+
+        Map<String, InterviewAvailScheduleResponseDto.Schedule> schedules = new HashMap<>(); // 그룹이름 : Schedule
+        List<String> groups = groupRepository.findByRecruitId(recruitId).stream().map(Group::getName).distinct().toList(); // 그룹 이름 가져오기
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-M-d"); // 날짜 포맷
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a"); // 시간 포맷
+
+        // 모든 면접자 리스트 생성
+        List<InterviewAvailScheduleResponseDto.Participant> allInterviewers = interviewTimeSlots.stream()
+                .map(slot -> InterviewAvailScheduleResponseDto.Participant.builder()
+                        .id(slot.getClubUser().getId())
+                        .name(slot.getClubUser().getUser().getName())
+                        .groupName(null) // 그룹명 없음
+                        .build())
+                .toList();
+
+        for (String groupName : groups) {
+            Map<String, InterviewAvailScheduleResponseDto.Composed> dates = new HashMap<>();
+
+            // 지원자 리스트 생성
+            List<InterviewAvailScheduleResponseDto.Participant> applicants = applicantInterviewTimeSlots.stream()
+                    .filter(slot -> slot.getApplication().getRecruit_group().equals(groupName.trim())) // 해당 그룹 필터링
+                    .map(slot -> InterviewAvailScheduleResponseDto.Participant.builder()
+                            .id(slot.getApplication().getUser().getId())
+                            .name(slot.getApplication().getUser().getName())
+                            .groupName(groupName)
+                            .build())
+                    .toList();
+
+            // 날짜와 시간별 구성
+            for (ApplicantInterviewTimeSlot timeSlot : applicantInterviewTimeSlots) {
+                if (!timeSlot.getApplication().getRecruit_group().equals(groupName.trim())) continue;
+
+                String date = timeSlot.getTime().toLocalDate().format(dateFormatter); // 날짜를 String으로 변환
+                String time = timeSlot.getTime().toLocalTime().format(timeFormatter); // 시간을 String으로 변환
+
+                dates.computeIfAbsent(date, k -> InterviewAvailScheduleResponseDto.Composed.builder()
+                        .time(timeSlot.getTime())
+                        .interviewers(new ArrayList<>(allInterviewers)) // 모든 면접자 추가
+                        .applicants(new ArrayList<>())
+                        .build());
+
+                // 지원자 추가
+                dates.get(date).getApplicants().addAll(applicants);
+            }
+
+            // 그룹과 날짜별 스케줄 저장
+            schedules.put(groupName, InterviewAvailScheduleResponseDto.Schedule.builder()
+                    .dates(dates)
+                    .build());
+        }
+
+        return InterviewAvailScheduleResponseDto.builder()
+                .schedules(schedules)
+                .build();
+    }
+
+
+    @Transactional
+    public void saveInterviewSchedule(Long recruitId, ScheduleFormDataRequestDto scheduleFormDataRequestDto) {
+        List<ApplicantInterviewTimeSlot> applicantInterviewTimeSlots = applicantInterviewTimeSlotRepository.findAllByApplication_Recruit_Id(recruitId);
+
+        Map<Long, ScheduleFormDataRequestDto.Group> map = scheduleFormDataRequestDto.getGroups();
+        for (Long groupId : map.keySet()) {
+            Group group = findGroupById(groupId);
+            ScheduleFormDataRequestDto.Group group1 = map.get(groupId);
+            Map<String, ScheduleFormDataRequestDto.DateSchedules> dates = group1.getDates();
+            for (String date : dates.keySet()) { // 날짜 순회
+                for (ScheduleFormDataRequestDto.Schedule schedule : dates.get(date).getSchedules()) {
+                    String time = schedule.getTime();
+                    List<Long> applicants = schedule.getApplicants();
+                    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+                    LocalDate localDate = LocalDate.parse(date);
+                    LocalTime localTime = LocalTime.parse(time, timeFormatter);
+                    LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime); // localdatetime으로 변경
+                    for (Long userId : applicants) { // 지원자 순회
+                        User user = findByUserId(userId);
+                        ApplicantInterviewTimeSlot byTimeAndUserId = applicantInterviewTimeSlotRepository.findByTimeAndUserId(localDateTime, user.getId())
+                                .orElseThrow(() -> new IllegalArgumentException("시간표가 존재하지 않습니다."));
+                        byTimeAndUserId.setIsAssigned(true);
+                        applicantInterviewTimeSlotRepository.save(byTimeAndUserId); // 시간이랑 지원자 id로 검색하여 확정 여부 true로 설정
+                    }
+                }
+            }
+        }
+    }
+
+    public User findByUserId(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+    }
+
+    public Group findGroupById(Long groupId) {
+        return groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("지원 그룹이 존재하지 않습니다."));
     }
 
     public List<InterviewEvaluationResponse> getInterviewEvaluations(Long recruitId, CustomUserDetails currentUser, InterviewEvaluationRequest request) {
