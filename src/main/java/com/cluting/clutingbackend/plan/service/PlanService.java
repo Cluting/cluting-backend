@@ -2,7 +2,6 @@ package com.cluting.clutingbackend.plan.service;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
-import com.cluting.clutingbackend.global.enums.QuestionType;
 import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
@@ -307,10 +306,10 @@ public class PlanService {
     public Plan3RequestDto getRecruitmentStage3(Long recruitId) {
         RecruitSchedule recruitSchedule = recruitScheduleRepository.findByRecruitId(recruitId)
                 .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "Recruitment schedule not found for id: " + recruitId));
-    
+
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "Recruitment not found for id: " + recruitId));
-    
+
         return Plan3RequestDto.builder()
                 .title(recruit.getTitle())
                 .recruitmentStartDate(recruitSchedule.getStage3Start())

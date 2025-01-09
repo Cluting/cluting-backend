@@ -8,6 +8,7 @@ import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.dto.request.*;
 import com.cluting.clutingbackend.plan.dto.response.*;
 import com.cluting.clutingbackend.plan.service.PlanService;
+import com.cluting.clutingbackend.plan.service.PlanService2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,8 @@ import static com.cluting.clutingbackend.global.exception.ErrorCode.PERMISSION_D
 @RequiredArgsConstructor
 public class PlanController {
 
-    private final PlanService planService;
+//    private final PlanService planService;
+    private final PlanService2 planService;
 
     private void checkPermission(CustomUserDetails currentUser, PermissionLevel requiredLevel) {
         // ClubUserPermission에서 PermissionLevel 필드만 추출
@@ -48,6 +50,7 @@ public class PlanController {
 
 
     @PostMapping("/stage1/{recruitId}")
+    @PutMapping("/stage1/{recruitId}")
     @Operation(summary = "모집하기(1)",description = "합격 인원 설정하기")
     public ResponseEntity<Plan1ResponseDto> stage1(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan1RequestDto dto){
         checkPermission(currentUser, PermissionLevel.ONE);
@@ -56,6 +59,7 @@ public class PlanController {
     }
 
     @PostMapping("/stage2/{recruitId}")
+    @PutMapping("/stage2/{recruitId}")
     @Operation(summary = "모집하기(2)",description = "인재상 구축하기")
     public ResponseEntity<Void> stage2(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
         checkPermission(currentUser, PermissionLevel.TWO);
@@ -64,6 +68,7 @@ public class PlanController {
     }
 
     @PostMapping("/stage3/{recruitId}")
+    @PutMapping("/stage3/{recruitId}")
     @Operation(summary = "모집하기(3) POST 요청", description = "공고 작성하기")
     public ResponseEntity<Plan3RequestDto> updateRecruitmentStage3(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name = "recruitId") Long recruitId, @RequestBody Plan3RequestDto requestDto) {
         checkPermission(currentUser, PermissionLevel.THREE);
@@ -80,6 +85,7 @@ public class PlanController {
     
 
     @PostMapping("/stage4/{recruitId}/interview-setup")
+    @PutMapping("/stage4/{recruitId}/interview-setup")
     @Operation(summary = "모집하기(4) POST 요청 | 면접 세팅",description = "운영진 면접 일정 조정하기-면접세팅")
     public ResponseEntity<Void> setupInterview(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId") Long recruitId, @RequestBody InterviewSetupDto requestDto) {
         checkPermission(currentUser, PermissionLevel.FOUR);
@@ -96,6 +102,7 @@ public class PlanController {
 
 
     @PostMapping("/stage4/interview-time-slots")
+    @PutMapping("/stage5/{recruitId}")
     @Operation(summary = "모집하기(4) POST 요청 | 면접 일정 조정",description = "운영진 면접 일정 조정하기-면접가능시간 선택")
     public ResponseEntity<Void> saveInterviewTimeSlots(
             @RequestBody List<LocalDateTime> timeSlots,
@@ -106,6 +113,7 @@ public class PlanController {
 
 
     @PostMapping("/stage5/{recruitId}")
+    @PutMapping("/stage5/{recruitId}")
     @Operation(summary = "모집하기(5)",description = "지원서 폼 제작하기")
     public ResponseEntity<Plan5ResponseDto> createApplicationForm(
             @AuthenticationPrincipal CustomUserDetails currentUser,

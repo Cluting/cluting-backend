@@ -3,6 +3,7 @@ package com.cluting.clutingbackend.recruit.domain;
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
 import com.cluting.clutingbackend.plan.domain.Group;
+import com.cluting.clutingbackend.plan.dto.request.Plan3RequestDto;
 import com.cluting.clutingbackend.user.domain.Scrap;
 import jakarta.persistence.*;
 import lombok.*;
@@ -117,4 +118,18 @@ public class Recruit {
                 .isInterview(isInterview)
                 .build();
     }
+
+    // Recruit.java (엔티티 클래스)
+    public void updateRecruitDetails(Plan3RequestDto requestDto) {
+        this.title = requestDto.getTitle(); // 공고 제목
+        this.numFinal = requestDto.getRecruitmentNumber(); // 모집 인원
+        this.activityStart = requestDto.getActivityStart(); // 활동 시작일
+        this.activityEnd = requestDto.getActivityEnd(); // 활동 종료일
+        this.activityDay = requestDto.getActivityDay(); // 활동 요일
+        this.activityTime = requestDto.getActivityTime(); // 활동 시간대
+        this.clubFee = requestDto.getClubFee(); // 동아리 회비
+        this.description = requestDto.getContent(); // 본문(내용)
+        this.image = requestDto.getImageUrl(); // 이미지 URL
+    }
+
 }

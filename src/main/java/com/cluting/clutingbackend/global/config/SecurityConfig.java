@@ -33,49 +33,36 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(corsCustomize -> corsCustomize.configurationSource(request -> {
-                    CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowCredentials(true);
-                    config.setAllowedOriginPatterns(Collections.singletonList("*"));
-                    config.addAllowedMethod(HttpMethod.OPTIONS);
-                    config.addAllowedMethod(HttpMethod.GET);
-                    config.addAllowedMethod(HttpMethod.POST);
-                    config.addAllowedMethod(HttpMethod.PUT);
-                    config.addAllowedMethod(HttpMethod.DELETE);
-                    config.addAllowedHeader("Content-Type");
-                    config.setMaxAge(3600L);
-                    return config;
-                }))
+                .cors(Customizer.withDefaults()) // CorsConfigurationSource 빈 사용
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
                 )
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
-
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated())
                 .build();
     }
 
-
     // CORS 설정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // 모든 출처 허용
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // 허용할 HTTP 메서드
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // 특정 도메인 허용
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*")); // 모든 헤더 허용
-        configuration.setAllowCredentials(true); // 쿠키 인증 허용
+        configuration.setAllowCredentials(true); // 인증 정보 허용
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 }
