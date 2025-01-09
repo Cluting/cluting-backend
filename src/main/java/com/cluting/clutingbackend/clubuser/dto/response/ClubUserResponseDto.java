@@ -30,11 +30,6 @@ public class ClubUserResponseDto {
                 .name(entity.getUser().getName())
                 .email(entity.getUser().getEmail())
                 .role(entity.getRole())
-                .permissionLevel(
-                        entity.getPermissionLevels().stream()
-                                .map(ClubUserPermission::getPermissionLevel) // ClubUserPermission에서 PermissionLevel 추출
-                                .toList() // Java 16+ 사용 시 toList(), 그렇지 않으면 Collectors.toList()
-                )
                 .generation(entity.getGeneration())
                 .build();
     }
