@@ -824,7 +824,9 @@ public class InterviewEvaluationService {
                 }
 
                 if (applicantIds.add(evaluator.getApplication().getUser().getId())) {
-                    applicant.add(UserResponseDto.toDto(evaluator.getApplication().getUser()));
+                    if (evaluator.getApplication().getState().equals(EvaluateStatus.PASS)) {
+                        applicant.add(UserResponseDto.toDto(evaluator.getApplication().getUser()));
+                    }
                 }
             }
 
