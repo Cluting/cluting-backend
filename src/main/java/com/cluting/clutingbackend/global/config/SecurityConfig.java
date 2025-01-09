@@ -35,7 +35,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(Customizer.withDefaults())
+
 
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // OPTIONS 요청 허용
@@ -54,17 +54,5 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // CORS 설정
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // 모든 출처 허용
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // 허용할 HTTP 메서드
-        configuration.setAllowedHeaders(List.of("*")); // 모든 헤더 허용
-        configuration.setAllowCredentials(true); // 쿠키 인증 허용
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
 }
