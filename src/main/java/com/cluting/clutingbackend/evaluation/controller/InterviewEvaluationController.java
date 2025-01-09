@@ -7,6 +7,7 @@ import com.cluting.clutingbackend.evaluation.dto.request.ScheduleFormDataRequest
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewAvailScheduleResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.InterviewResultListResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.LoadDocumentSettingResponseDto;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
@@ -70,6 +71,14 @@ public class InterviewEvaluationController {
             @RequestParam("state") EvaluateStatus status) {
         interviewEvaluationService.send(recruitId, messageSendRequestDto, status);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "[면접 평가하기] 5-1. <평가 전> 그룹 조회",
+            description = "그룹 조회하기")
+    @PostMapping("/prep/group")
+    public LoadDocumentSettingResponseDto findDocSetting(
+            @PathVariable Long recruitId) {
+        return interviewEvaluationService.findDocSetting(recruitId);
     }
 
     @Operation(summary = "[면접 평가하기] 5-1. <평가 전> 면접 평가 준비하기",
