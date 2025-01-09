@@ -64,9 +64,13 @@ public class InterviewEvaluationService {
     private final MessageUtil messageUtil;
 
     // 메시지 일괄 전송
-    public void send(MessageSendRequestDto messageSendRequestDto) {
-        for (MessageSendRequestDto.Content content : messageSendRequestDto.getList()) {
-            messageUtil.send(content.getPhone(), content.getMessage());
+    @Transactional(readOnly = true)
+    public void send(Long recruitId, MessageSendRequestDto messageSendRequestDto, EvaluateStatus status) {
+        List<Interview> interviews = interviewRepository.findAllByApplication_Recruit_Id(recruitId);
+        for (Interview interview : interviews) {
+            String individual = messageSendRequestDto.getMessage();
+            individual = individual.replace("{{이름}}", interview.getApplication().getUser().getName()).replace("{{파트}}", interview.getApplication().getRecruit_group());
+            messageUtil.send(interview.getApplication().getUser().getPhone(), individual);
         }
     }
 

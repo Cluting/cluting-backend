@@ -66,8 +66,9 @@ public class InterviewEvaluationController {
     @PostMapping("/send")
     public ResponseEntity<Void> send(
             @PathVariable Long recruitId,
-            @RequestBody MessageSendRequestDto messageSendRequestDto) {
-        interviewEvaluationService.send(messageSendRequestDto);
+            @RequestBody MessageSendRequestDto messageSendRequestDto,
+            @RequestParam("state") EvaluateStatus status) {
+        interviewEvaluationService.send(recruitId, messageSendRequestDto, status);
         return ResponseEntity.ok().build();
     }
 
