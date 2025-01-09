@@ -5,6 +5,7 @@ import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicantInterviewTimeSlotRepository;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.clubuser.dto.response.ClubUserResponseDto;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
@@ -30,6 +31,7 @@ import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.user.domain.User;
+import com.cluting.clutingbackend.user.dto.response.UserResponseDto;
 import com.cluting.clutingbackend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -796,17 +798,43 @@ public class InterviewEvaluationService {
         return response;
     }
 
-
-    // 면접 가능 일정 리스트 조회
-//    public List<InterviewAvailableResponseDto> findAvailable(Long recruitId) {
-//    }
-
-    // 면접 일정 저장
-
     // 파트 존재 여부 조회
     @Transactional(readOnly = true)
     public Boolean isCommon(Long recruitId) {
         return groupRepository.findByRecruitId(recruitId).get(0).isCommon();
+    }
+
+    // 면접 평가 준비하기
+    @Transactional(readOnly = true)
+    public LoadDocumentSettingResponseDto findDocSetting(Long recruitId) {
+        Map<String, LoadDocumentSettingResponseDto.Participant> result = new HashMap<>();
+
+        List<Group> groups = groupRepository.findByRecruitId(recruitId);
+        for (Group group : groups) {
+            List<DocumentEvaluator> documentEvaluators = documentEvaluatorRepository.findAllByGroup_Id(group.getId());
+            Set<Long> staffIds = new HashSet<>();
+            Set<Long> applicantIds = new HashSet<>();
+
+            List<ClubUserResponseDto> staff = new ArrayList<>();
+            List<UserResponseDto> applicant = new ArrayList<>();
+
+            for (DocumentEvaluator evaluator : documentEvaluators) {
+                if (staffIds.add(evaluator.getClubUser().getId())) {
+                    staff.add(ClubUserResponseDto.toDto(evaluator.getClubUser()));
+                }
+
+                if (applicantIds.add(evaluator.getApplication().getUser().getId())) {
+                    if (evaluator.getApplication().getState().equals(EvaluateStatus.PASS)) {
+                        applicant.add(UserResponseDto.toDto(evaluator.getApplication().getUser()));
+                    }
+                }
+            }
+
+            LoadDocumentSettingResponseDto.Participant participant = LoadDocumentSettingResponseDto.Participant.builder().staff(staff).applicant(applicant).build();
+            result.put(group.getName(), participant);
+        }
+
+        return LoadDocumentSettingResponseDto.builder().group(result).build();
     }
 
     // 서류 합격자 수 조회
@@ -816,7 +844,7 @@ public class InterviewEvaluationService {
         List<Group> groups = groupRepository.findByRecruitId(recruitId);
         int totalNum = 0;
         for (Group group : groups) {
-            totalNum += group.getNumRecruit();
+            totalNum += group.getNumDoc();
             if (!group.isCommon()) {
                 groupMap.put(group.getName(), group.getNumDoc());
             }

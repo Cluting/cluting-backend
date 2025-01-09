@@ -37,6 +37,8 @@ public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvalu
 
     List<DocumentEvaluator> findAllByApplicationIdIn(List<Long> applicationIds);
 
+    List<DocumentEvaluator> findAllByGroup_Id(Long groupId);
+
 
 }
 
