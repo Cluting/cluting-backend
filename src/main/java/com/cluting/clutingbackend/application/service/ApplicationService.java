@@ -1,6 +1,8 @@
 package com.cluting.clutingbackend.application.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
+import com.cluting.clutingbackend.application.dto.GroupSelectRequestDto;
+import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
 import com.cluting.clutingbackend.application.dto.response.ApplicantProfileResponseDto;
 import com.cluting.clutingbackend.application.dto.response.ApplicationStatusResponseDto;
@@ -10,16 +12,23 @@ import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.repository.InterviewRepository;
+import com.cluting.clutingbackend.plan.domain.Group;
+import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
+import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.recruit.repository.RecruitScheduleRepository;
 import com.cluting.clutingbackend.user.domain.Scrap;
 import com.cluting.clutingbackend.user.domain.User;
+import com.cluting.clutingbackend.user.dto.response.UserResponseDto;
 import com.cluting.clutingbackend.user.repository.ScrapRepository;
 import com.cluting.clutingbackend.user.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,9 +40,50 @@ import java.util.stream.Collectors;
 public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
+    private final RecruitRepository recruitRepository;
     private final RecruitScheduleRepository recruitScheduleRepository;
     private final ScrapRepository scrapRepository;
     private final InterviewRepository interviewRepository;
+
+    // [지원서 작성하기] 지원자 정보 조회하기(프로필, 이름, 번호, 이메일, 거주지, 학교, 학과, 다전공)
+    @Transactional(readOnly = true)
+    public UserResponseDto findUserInfo(User user) {
+        return UserResponseDto.toDto(user);
+    }
+
+    // [지원서 작성하기] 모집 그룹 목록 조회하기
+    @Transactional(readOnly = true)
+    public List<String> findGroups(Long recruitId) {
+        List<Group> groups = groupRepository.findByRecruitId(recruitId);
+        List<String> name = new ArrayList<>();
+        for (Group group : groups) {
+            name.add(group.getName());
+        }
+        return name;
+    }
+
+    // [지원서 작성하기] 모집 그룹 선택 저장하기 - Application 생성 및 사용자,모집공고,파트 초기 저장
+    @Transactional
+    public void selectGroup(User user, Long recruitId, GroupSelectRequestDto groupSelectRequestDto) {
+        Recruit recruit = recruitRepository.findRecruitById(recruitId);
+        applicationRepository.save(
+                Application.of(user, recruit, String.join(":::", groupSelectRequestDto.getGroups()))
+        );
+    }
+
+    // [지원서 작성하기] 공통 질문 조회하기
+    @Transactional(readOnly = true)
+    public void findCommonQuestion(Long recruitId) {
+    }
+
+    // [지원서 작성하기] 공통 질문 답변 저장하기
+    // [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 조회하기
+    // [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 답변 저장하기
+    // [지원서 작성하기] 파일 제출일 경우 파일 저장
+    // [지원서 작성하기] 지원자의 포트폴리오 url 조회 및 운영진들의 면접 가능 시간 조회
+    // [지원서 작성하기] 지원자의 포트폴리오 url 입력 저장 및 운영진들의 면접 가능 시간 기반의 지원자의 면접 가능 시간 선택 저장
+    // [지원서 작성하기] 제출 확정하기 - createdAt 저장
 
     public List<ApplicationStatusResponseDto> getApplicationStatusAndCalendar(CustomUserDetails userDetails) {
         // 현재 유저가 지원한 모든 Application을 가져오기
