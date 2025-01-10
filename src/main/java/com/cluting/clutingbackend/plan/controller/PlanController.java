@@ -91,7 +91,7 @@ public class PlanController {
             @PathVariable(name="recruitId") Long recruitId,
             @RequestBody List<LocalDateTime> timeSlots,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
-        planService.saveTimeSlots(timeSlots, currentUser);
+        planService.saveTimeSlots(recruitId, timeSlots, currentUser);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
