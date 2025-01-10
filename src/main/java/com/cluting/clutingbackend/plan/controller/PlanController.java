@@ -56,7 +56,7 @@ public class PlanController {
 
     @PostMapping("/stage2/{recruitId}")
     @Operation(summary = "모집하기(2)",description = "인재상 구축하기")
-    public ResponseEntity<Plan2RequestDto> stage2(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
+    public ResponseEntity<Void> stage2(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
         checkPermission(currentUser, PermissionLevel.TWO);
         planService.saveIdeals(recruitId, dto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -85,7 +85,7 @@ public class PlanController {
         return ResponseEntity.status(HttpStatus.OK).body(requestDto);
     }
 
-    @PostMapping("/stage4/{recruitId}/interview-time-slots")
+    @PostMapping("/stage4/{recruitId}/possible-time-slots")
     @Operation(summary = "모집하기(4) POST 요청 | 면접 가능 시간 선택",description = "운영진 면접 일정 조정하기 - 면접 가능 시간 선택")
     public ResponseEntity<Void> savePossibleTimeSlots(
             @PathVariable(name="recruitId") Long recruitId,
@@ -95,7 +95,7 @@ public class PlanController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PostMapping("/stage4/{recruitId}/interview-time-slots")
+    @PostMapping("/stage4/{recruitId}/assign-time-slots")
     @Operation(summary = "모집하기(4) POST 요청 | 면접관 일정 확정하기",description = "운영진 면접 일정 조정하기 - 면접관 일정 확정하기")
     public ResponseEntity<Void> saveAssignedTimeSlots(
             @RequestBody InterviewerAssignedDto interviewerAssignedDto,
