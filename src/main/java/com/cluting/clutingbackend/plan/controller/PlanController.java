@@ -81,7 +81,7 @@ public class PlanController {
                                                @PathVariable(name="recruitId") Long recruitId,
                                                @RequestBody InterviewSetupDto requestDto) {
         checkPermission(currentUser, PermissionLevel.FOUR);
-        planService.saveInterviewSetup(recruitId, requestDto);
+        planService.saveInterviewSetup(currentUser.getSelectedClubUser().getId(),recruitId, requestDto);
         return ResponseEntity.status(HttpStatus.OK).body(requestDto);
     }
 
@@ -128,13 +128,13 @@ public class PlanController {
 
     @GetMapping("/stage4/{recruitId}/interview-setup")
     @Operation(summary = "모집하기(4) GET 요청 | 면접 세팅 정보 전달",description = "운영진 면접 일정 조정하기 - 면접 세팅 정보 전달")
-    public ResponseEntity<InterviewSetupDto> getInterviewInfo(@PathVariable(name="recruitId") Long recruitId) {
-        InterviewSetupDto response = planService.getInterviewSetup(recruitId);
+    public ResponseEntity<Plan4ResponseDto> getInterviewInfo(@PathVariable(name="recruitId") Long recruitId) {
+        Plan4ResponseDto response = planService.getInterviewSetup(recruitId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/stage4/{recruitId}/interviewer-time-slot")
-    @Operation(summary = "모집하기(4) GET 요청 | 면접 세팅 정보 전달",description = "운영진 면접 일정 조정하기 - 면접관 일정 정보")
+    @Operation(summary = "모집하기(4) GET 요청 | 면접 시간 정보 전달",description = "운영진 면접 일정 조정하기 - 면접관 일정 정보")
     public ResponseEntity<InterviewTimeSlotResponseDto> getPossibleTimeSlots(@PathVariable(name="recruitId") Long recruitId) {
         InterviewTimeSlotResponseDto response = planService.getTimeSlots(recruitId);
         return ResponseEntity.ok(response);

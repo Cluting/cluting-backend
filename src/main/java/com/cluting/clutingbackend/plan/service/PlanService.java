@@ -116,15 +116,22 @@ public class PlanService {
     }
 
     @Transactional
-    public void saveInterviewSetup(Long recruitId, InterviewSetupDto requestDto) {
+    public void saveInterviewSetup(Long clubUserId, Long recruitId, InterviewSetupDto requestDto) {
         Recruit recruit = findRecruitOrThrow(recruitId);
         recruit.setIntervieweeCount(requestDto.getInterviewee());
         recruit.setInterviewerCount(requestDto.getInterviewer());
         recruit.setInterviewDuration(requestDto.getInterviewDuration());
+
+        ClubUser clubUser = clubUserRepository.findById(clubUserId)
+                        .orElseThrow(()-> new CustomException(CLUB_USER_NOT_FOUND, clubUserId + "에 대한 clubUser 정보가 없습니다"));
+
+        clubUser.setInterviewGroup(requestDto.getGroupName());
+
+
         recruitRepository.save(recruit);
     }
 
-    public InterviewSetupDto getInterviewSetup(Long recruitId) {
+    public Plan4ResponseDto getInterviewSetup(Long recruitId) {
         Recruit recruit = findRecruitOrThrow(recruitId);
 
         // ClubUser에서 interviewGroup을 기준으로 그룹과 운영진 ID 매핑
@@ -135,7 +142,7 @@ public class PlanService {
                         Collectors.mapping(ClubUser::getId, Collectors.toList()) // 운영진 ID 리스트 추출
                 ));
 
-        return InterviewSetupDto.builder()
+        return Plan4ResponseDto.builder()
                 .interviewee(recruit.getIntervieweeCount())
                 .interviewer(recruit.getInterviewerCount())
                 .interviewDuration(recruit.getInterviewDuration())
