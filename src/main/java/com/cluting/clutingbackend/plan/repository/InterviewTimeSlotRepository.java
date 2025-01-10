@@ -1,7 +1,9 @@
 package com.cluting.clutingbackend.plan.repository;
 
 import com.cluting.clutingbackend.application.domain.ApplicantInterviewTimeSlot;
+import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
+import com.cluting.clutingbackend.recruit.domain.Recruit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +20,8 @@ public interface InterviewTimeSlotRepository extends JpaRepository<InterviewTime
     @Query("SELECT i FROM InterviewTimeSlot i " +
             "WHERE i.time = :time AND i.clubUser.id = :clubUserId")
     Optional<InterviewTimeSlot> findByTimeAndClubUserId(@Param("time") LocalDateTime time, @Param("clubUserId") Long clubUserId);
+
+    Optional<InterviewTimeSlot> findByTimeAndClubUser(LocalDateTime time, ClubUser clubUser);
+
+    List<InterviewTimeSlot> findByRecruit(Recruit recruit);
 }

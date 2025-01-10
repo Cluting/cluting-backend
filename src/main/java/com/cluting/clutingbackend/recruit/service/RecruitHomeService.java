@@ -3,6 +3,8 @@ package com.cluting.clutingbackend.recruit.service;
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.global.exception.CustomException;
+import com.cluting.clutingbackend.global.exception.ErrorCode;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.dto.*;
@@ -28,11 +30,11 @@ public class RecruitHomeService {
     private final TodoRepository todoRepository;
 
     // [리크루팅 홈] 불러오기
-    public RecruitHomeDto getRecruitHome(Long recruitId, Long clubId, Long currentClubUserId) {
+    public RecruitHomeDto getRecruitHome(Long recruitId, Long clubId, Long currentUserId) {
         RecruitClubInfoDto recruitInfo = getRecruitInfo(recruitId);
         RecruitScheduleDto recruitSchedule = getRecruitSchedule(recruitId);
         List<ClubUserInfoDto> adminList = getAdminList(clubId);
-        List<TodoDto> userTodos = getUserTodos(clubId, currentClubUserId);
+        List<TodoDto> userTodos = getUserTodos(clubId, currentUserId);
 
         return RecruitHomeDto.builder()
                 .recruitInfo(recruitInfo != null ? recruitInfo : new RecruitClubInfoDto())
@@ -108,18 +110,24 @@ public class RecruitHomeService {
     }
 
     // [리크루팅 홈] 운영진 투두 리스트 가져오기
-    public List<TodoDto> getUserTodos(Long clubId, Long clubUserId) {
-        // clubUserId를 사용해 바로 ClubUser를 조회합니다.
-        ClubUser clubUser = clubUserRepository.findById(clubUserId)
-                .orElseThrow(() -> new IllegalStateException("ClubUser not found with id: " + clubUserId));
+    public List<TodoDto> getUserTodos(Long clubId, Long userId) {
+//        ClubUser clubUser = clubUserRepository.findByClubIdAndUserId(clubId, userId)
+//                .orElseThrow(()-> new CustomException(ErrorCode.CLUB_USER_NOT_FOUND,"[CustomException] clubId :  " + clubId + " | userId : " + userId));  //해당 운영진
+//        if (clubUser == null) {
+//            return List.of();
+//        }
 
-        // clubId와 일치하는지 확인 (안전성 검증)
-        if (!clubUser.getClub().getId().equals(clubId)) {
-            throw new IllegalStateException("ClubUser does not belong to the specified clubId: " + clubId);
-        }
+//        // clubUserId를 사용해 바로 ClubUser를 조회합니다.
+//        ClubUser clubUser = clubUserRepository.findById(clubUserId)
+//                .orElseThrow(() -> new IllegalStateException("ClubUser not found with id: " + clubUserId));
+//
+//        // clubId와 일치하는지 확인 (안전성 검증)
+//        if (!clubUser.getClub().getId().equals(clubId)) {
+//            throw new IllegalStateException("ClubUser does not belong to the specified clubId: " + clubId);
+//        }
 
         // 투두 리스트 가져오기
-        List<Todo> todos = todoRepository.findTodosByUserId(clubUser.getUser().getId());
+        List<Todo> todos = todoRepository.findTodosByUserId(userId);
         if (todos == null || todos.isEmpty()) {
             return List.of();
         }
