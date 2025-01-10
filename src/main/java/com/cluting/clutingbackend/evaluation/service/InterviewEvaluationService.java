@@ -281,7 +281,8 @@ public class InterviewEvaluationService {
                 for (ScheduleFormDataRequestDto.Schedule schedule : dates.get(date).getSchedules()) {
                     String time = schedule.getTime();
                     List<Long> applicants = schedule.getApplicants();
-                    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a");
+                    List<Long> interviewers = schedule.getInterviewers();
+                    DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
                     LocalDate localDate = LocalDate.parse(date);
                     LocalTime localTime = LocalTime.parse(time, timeFormatter);
                     LocalDateTime localDateTime = LocalDateTime.of(localDate, localTime); // localdatetime으로 변경
@@ -292,6 +293,13 @@ public class InterviewEvaluationService {
                         byTimeAndUserId.setIsAssigned(true);
                         applicantInterviewTimeSlotRepository.save(byTimeAndUserId); // 시간이랑 지원자 id로 검색하여 확정 여부 true로 설정
                     }
+                    for (Long clubUserId : interviewers) {
+                        ClubUser clubUser = findByClubUserId(clubUserId);
+                        InterviewTimeSlot byTimeAndClubUserId = interviewTimeSlotRepository.findByTimeAndClubUserId(localDateTime, clubUserId)
+                                .orElseThrow(() -> new IllegalArgumentException("시간표가 존재하지 않습니다."));
+                        byTimeAndClubUserId.setIsAssigned(true);
+                        interviewTimeSlotRepository.save(byTimeAndClubUserId);
+                    }
                 }
             }
         }
@@ -300,6 +308,11 @@ public class InterviewEvaluationService {
     public User findByUserId(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+    }
+
+    public ClubUser findByClubUserId(Long clubUserId) {
+        return clubUserRepository.findById(clubUserId)
+                .orElseThrow(() -> new IllegalArgumentException("운영진이 존재하지 않습니다."));
     }
 
     public Group findGroupById(Long groupId) {
