@@ -46,6 +46,11 @@ public class ClubUser {
     @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InterviewTimeSlot> timeSlots; // ClubUser가 가진 TimeSlot 리스트
 
+    @Column(nullable = true)
+    @Builder.Default
+    private String interviewGroup = "";
+
+
     public static ClubUser of(
             User user,
             Club club,

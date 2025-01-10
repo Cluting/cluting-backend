@@ -59,7 +59,7 @@ public class PlanController {
     public ResponseEntity<Plan2RequestDto> stage2(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
         checkPermission(currentUser, PermissionLevel.TWO);
         planService.saveIdeals(recruitId, dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/stage3/{recruitId}")
@@ -85,22 +85,24 @@ public class PlanController {
         return ResponseEntity.status(HttpStatus.OK).body(requestDto);
     }
 
-    @PostMapping("/stage4/interview-time-slots")
-    @Operation(summary = "모집하기(4) POST 요청 | 면접 가능 시간 선택",description = "운영진 면접 일정 조정하기 - 면접가능시간 선택")
+    @PostMapping("/stage4/{recruitId}/interview-time-slots")
+    @Operation(summary = "모집하기(4) POST 요청 | 면접 가능 시간 선택",description = "운영진 면접 일정 조정하기 - 면접 가능 시간 선택")
     public ResponseEntity<Void> savePossibleTimeSlots(
+            @PathVariable(name="recruitId") Long recruitId,
             @RequestBody List<LocalDateTime> timeSlots,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         planService.saveTimeSlots(timeSlots, currentUser);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @PostMapping("/stage4/interview-time-slots")
+    @PostMapping("/stage4/{recruitId}/interview-time-slots")
     @Operation(summary = "모집하기(4) POST 요청 | 면접관 일정 확정하기",description = "운영진 면접 일정 조정하기 - 면접관 일정 확정하기")
     public ResponseEntity<Void> saveAssignedTimeSlots(
             @RequestBody InterviewerAssignedDto interviewerAssignedDto,
+            @PathVariable(name="recruitId") Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
 
-        planService.assginInterviewer(interviewerAssignedDto, currentUser);
+        planService.assignTimeSlots(interviewerAssignedDto, currentUser);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -125,9 +127,16 @@ public class PlanController {
     }
 
     @GetMapping("/stage4/{recruitId}/interview-setup")
-    @Operation(summary = "모집하기(4) GET 요청",description = "운영진 면접 일정 조정하기-면접세팅")
-    public ResponseEntity<InterviewSetupDto> setupInterview(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId") Long recruitId) {
+    @Operation(summary = "모집하기(4) GET 요청 | 면접 세팅 정보 전달",description = "운영진 면접 일정 조정하기 - 면접 세팅 정보 전달")
+    public ResponseEntity<InterviewSetupDto> getInterviewInfo(@PathVariable(name="recruitId") Long recruitId) {
         InterviewSetupDto response = planService.getInterviewSetup(recruitId);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/stage4/{recruitId}/interviewer-time-slot")
+    @Operation(summary = "모집하기(4) GET 요청 | 면접 세팅 정보 전달",description = "운영진 면접 일정 조정하기 - 면접관 일정 정보")
+    public ResponseEntity<InterviewTimeSlotResponseDto> getPossibleTimeSlots(@PathVariable(name="recruitId") Long recruitId) {
+        InterviewTimeSlotResponseDto response = planService.getTimeSlots(recruitId);
         return ResponseEntity.ok(response);
     }
 
@@ -181,16 +190,16 @@ public class PlanController {
         return ResponseEntity.ok(requestDto);
     }
 
-    @PatchMapping("/stage4/{recruitId}/interview-setup")
-    @Operation(summary = "모집하기(4) PATCH 요청 | 면접 세팅 부분 수정", description = "운영진 면접 일정 조정하기 - 부분 수정")
-    public ResponseEntity<Void> patchInterviewSetup(
-            @AuthenticationPrincipal CustomUserDetails currentUser,
-            @PathVariable(name = "recruitId") Long recruitId,
-            @RequestBody InterviewSetupDto dto) {
-        checkPermission(currentUser, PermissionLevel.FOUR);
-        planService.updatePartialInterviewSetup(recruitId, dto);
-        return ResponseEntity.status(HttpStatus.OK).build();
-    }
+//    @PatchMapping("/stage4/{recruitId}/interview-setup")
+//    @Operation(summary = "모집하기(4) PATCH 요청 | 면접 세팅 부분 수정", description = "운영진 면접 일정 조정하기 - 부분 수정")
+//    public ResponseEntity<Void> patchInterviewSetup(
+//            @AuthenticationPrincipal CustomUserDetails currentUser,
+//            @PathVariable(name = "recruitId") Long recruitId,
+//            @RequestBody InterviewSetupDto dto) {
+//        checkPermission(currentUser, PermissionLevel.FOUR);
+//        planService.updatePartialInterviewSetup(recruitId, dto);
+//        return ResponseEntity.status(HttpStatus.OK).build();
+//    }
 
     @PatchMapping("/stage5/{recruitId}")
     @Operation(summary = "모집하기(5) PATCH 요청", description = "지원서 폼 일부 수정")

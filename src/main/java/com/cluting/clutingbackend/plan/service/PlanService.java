@@ -18,10 +18,11 @@ import com.cluting.clutingbackend.recruit.repository.RecruitScheduleRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.cluting.clutingbackend.global.exception.ErrorCode.GROUP_NOT_FOUND;
-import static com.cluting.clutingbackend.global.exception.ErrorCode.RECRUIT_NOT_FOUND;
+import static com.cluting.clutingbackend.global.exception.ErrorCode.*;
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -80,7 +81,7 @@ public class PlanService {
                                 .documentPassCount(group.getNumDoc())
                                 .finalPassCount(group.getNumFinal())
                                 .build())
-                        .collect(Collectors.toList()) : null)
+                        .collect(toList()) : null)
                 .build();
     }
 
@@ -125,21 +126,38 @@ public class PlanService {
 
     public InterviewSetupDto getInterviewSetup(Long recruitId) {
         Recruit recruit = findRecruitOrThrow(recruitId);
+
+        // ClubUser에서 interviewGroup을 기준으로 그룹과 운영진 ID 매핑
+        Map<String, List<Long>> groupAndClubUser = recruit.getClub().getClubUsers().stream()
+                .filter(clubUser -> !clubUser.getInterviewGroup().isEmpty()) // interviewGroup이 설정된 운영진만 필터링
+                .collect(Collectors.groupingBy(
+                        ClubUser::getInterviewGroup, // interviewGroup (그룹 이름)을 키로 설정
+                        Collectors.mapping(ClubUser::getId, Collectors.toList()) // 운영진 ID 리스트 추출
+                ));
+
         return InterviewSetupDto.builder()
                 .interviewee(recruit.getIntervieweeCount())
                 .interviewer(recruit.getInterviewerCount())
                 .interviewDuration(recruit.getInterviewDuration())
+                .groupAndClubUser(groupAndClubUser)
                 .build();
     }
 
+
+
+
     @Transactional
-    public void saveTimeSlots(List<LocalDateTime> timeSlots, CustomUserDetails currentUser) {
+    public void saveTimeSlots(Long recruitId, List<LocalDateTime> timeSlots, CustomUserDetails currentUser) {
+
         ClubUser clubUser = clubUserRepository.findByUserId(currentUser.getUser().getId())
-                .orElseThrow(() -> new CustomException(GROUP_NOT_FOUND, "ClubUser not found for logged-in user"));
+                .orElseThrow(() -> new CustomException(CLUB_USER_NOT_FOUND, "ClubUser not found for logged-in user"));
+
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(()-> new CustomException(RECRUIT_NOT_FOUND, "Recruit not found with id: " + recruitId));
 
         timeSlots.forEach(time -> {
             InterviewTimeSlot timeSlot = InterviewTimeSlot.builder()
-                    .time(time).clubUser(clubUser).isAssigned(false).build();
+                    .time(time).clubUser(clubUser).isAssigned(false).recruit(recruit).build();
             interviewTimeSlotRepository.save(timeSlot);
         });
     }
@@ -188,7 +206,7 @@ public class PlanService {
                         group.getId(),
                         group.getIdealList().stream().collect(Collectors.toMap(Ideal::getId, Ideal::getContent)),
                         group.getNumDoc(), group.getNumFinal()))
-                .collect(Collectors.toList());
+                .collect(toList());
 
         return new RecruitDetailResponseDto(
                 recruit.getId(),
@@ -212,12 +230,12 @@ public class PlanService {
                                         .hasWordLimit(documentQuestion.getWordLimit() != null)
                                         .wordLimit(documentQuestion.getWordLimit())
                                         .objects(optionRepository.findByDocumentQuestionId(documentQuestion.getId())
-                                                .stream().map(Option::getContent).collect(Collectors.toList()))
+                                                .stream().map(Option::getContent).collect(toList()))
                                         .multiSelect(documentQuestion.isMultiSelect())
                                         .build())
-                                .collect(Collectors.toList()))
+                                .collect(toList()))
                         .build())
-                .collect(Collectors.toList());
+                .collect(toList());
 
         return Plan5ResponseDto.builder()
                 .title(recruit.getApplicationTitle())
@@ -297,7 +315,7 @@ public class PlanService {
                                 .documentPassCount(group.getNumDoc())
                                 .finalPassCount(group.getNumFinal())
                                 .build())
-                        .collect(Collectors.toList()) : null)
+                        .collect(toList()) : null)
                 .build();
     }
 
@@ -466,6 +484,78 @@ public class PlanService {
                 .isPortfolioRequired(recruit.getIsRequiredPortfolio())
                 .build();
     }
+
+
+    @Transactional
+    public void assignTimeSlots(InterviewerAssignedDto interviewerAssignedDto, CustomUserDetails currentUser) {
+        // 현재 사용자로 ClubUser 조회
+        ClubUser currentClubUser = clubUserRepository.findByUserId(currentUser.getUser().getId())
+                .orElseThrow(() -> new CustomException(GROUP_NOT_FOUND, "ClubUser not found for logged-in user"));
+
+        // 시간대별로 면접관 할당
+        interviewerAssignedDto.getTimeSlotAssignments().forEach(assignment -> {
+            // 시간대 조회
+            InterviewTimeSlot timeSlot = interviewTimeSlotRepository.findByTimeAndClubUser(assignment.getTimeSlot(), currentClubUser)
+                    .orElseThrow(() -> new CustomException(TIMESLOT_NOT_FOUND, "Time slot not found for this club user"));
+
+            // 면접관 리스트 조회
+            List<ClubUser> interviewers = clubUserRepository.findAllById(assignment.getInterviewerIds());
+
+            if (interviewers.isEmpty()) {
+                throw new CustomException(CLUB_USER_NOT_FOUND, "No valid interviewers found for the provided IDs.");
+            }
+
+            // 면접관 배정
+            timeSlot.setInterviewers(interviewers);
+
+            // 상태 변경: isAssigned를 true로 설정
+            timeSlot.setAssigned(true);
+
+            // 저장
+            interviewTimeSlotRepository.save(timeSlot);
+        });
+    }
+
+
+    @Transactional
+    public InterviewTimeSlotResponseDto getTimeSlots(Long recruitId) {
+        // Recruit 존재 여부 확인
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "Recruit not found for the given ID"));
+
+        // 시간대와 관련된 정보 가져오기
+        List<InterviewTimeSlot> timeSlots = interviewTimeSlotRepository.findByRecruit(recruit);
+
+        // 시간대 데이터를 DTO로 변환
+        List<InterviewTimeSlotResponseDto.TimeSlotInfo> timeSlotInfos = timeSlots.stream()
+                .map(timeSlot -> {
+                    // 면접관 정보 추출
+                    List<InterviewTimeSlotResponseDto.InterviewerInfo> interviewers = timeSlot.getInterviewers().stream()
+                            .map(interviewer -> InterviewTimeSlotResponseDto.InterviewerInfo.builder()
+                                    .id(interviewer.getId())
+                                    .name(interviewer.getUser().getName()) // ClubUser와 User 연관 매핑 가정
+                                    .groupName(interviewer.getInterviewGroup())
+                                    .build())
+                            .toList();
+
+                    // 시간대 정보 생성
+                    return InterviewTimeSlotResponseDto.TimeSlotInfo.builder()
+                            .timeSlot(timeSlot.getTime())
+                            .isAssigned(timeSlot.isAssigned())
+                            .interviewers(interviewers)
+                            .build();
+                })
+                .toList();
+
+        return InterviewTimeSlotResponseDto.builder()
+                .recruitId(recruitId)
+                .timeSlots(timeSlotInfos)
+                .build();
+    }
+
+
+
+
 
 
 
