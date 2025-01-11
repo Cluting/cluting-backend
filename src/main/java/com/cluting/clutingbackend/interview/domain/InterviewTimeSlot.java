@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,7 +21,7 @@ public class InterviewTimeSlot {
     private Long id;
 
     @Column
-    private boolean isAssigned;
+    private Boolean isAssigned;
 
     @Column
     private LocalDateTime time;
@@ -32,4 +33,12 @@ public class InterviewTimeSlot {
     @ManyToOne
     @JoinColumn(name="recruit_id")
     private Recruit recruit;
+
+    @ManyToMany
+    @JoinTable(
+            name = "tb_interview_time_slot_interviewers",
+            joinColumns = @JoinColumn(name = "time_slot_id"),
+            inverseJoinColumns = @JoinColumn(name = "interviewer_id")
+    )
+    private List<ClubUser> interviewers; // 면접관 리스트
 }

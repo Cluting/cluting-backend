@@ -24,8 +24,8 @@ public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
     List<ClubUser> findStaffByClubIdAndGeneration(Long clubId);
 
     // [리크루팅 홈] 해당 운영진 정보 가져오기
-    @Query("SELECT cu FROM ClubUser cu WHERE cu.club.id = :clubId AND cu.user.id = :clubUserId")
-    ClubUser findByClubIdAndUserId(Long clubId, Long clubUserId);
+    @Query("SELECT cu FROM ClubUser cu WHERE cu.club.id = :clubId AND cu.user.id = :userId")
+    Optional<ClubUser> findByClubIdAndUserId(Long clubId, Long userId);
 
     // [계획하기] 운영진 리스트 불러오기
     @Query("""

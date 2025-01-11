@@ -59,9 +59,17 @@ public class DocumentEvaluationService {
     }
 
     // 메시지 일괄 전송
-    public void send(MessageSendRequestDto messageSendRequestDto) {
-        for (MessageSendRequestDto.Content content : messageSendRequestDto.getList()) {
-            messageUtil.send(content.getPhone(), content.getMessage());
+    @Transactional(readOnly = true)
+    public void send(Long recruitId, MessageSendRequestDto messageSendRequestDto, EvaluateStatus status) {
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId)
+                .stream()
+                .filter(application -> status.equals(application.getState()))
+                .toList();
+
+        for (Application application : applications) {
+            String individual = messageSendRequestDto.getMessage();
+            individual = individual.replace("{{이름}}", application.getUser().getName()).replace("{{파트}}", application.getRecruit_group());
+            messageUtil.send(application.getUser().getPhone(), individual);
         }
     }
 

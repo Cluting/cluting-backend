@@ -19,7 +19,6 @@ import java.util.List;
 @Table(name = "tb_club_user")
 public class ClubUser {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -46,6 +45,11 @@ public class ClubUser {
     @OneToMany(mappedBy = "clubUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InterviewTimeSlot> timeSlots; // ClubUser가 가진 TimeSlot 리스트
 
+    @Column(nullable = true)
+    @Builder.Default
+    private String interviewGroup = "";
+
+
     public static ClubUser of(
             User user,
             Club club,
@@ -66,4 +70,7 @@ public class ClubUser {
         return String.format("[ClubUser 객체] id : %s, role : %s, club : %s, permissionLevels : %s", this.id, this.role, this.club, this.permissionLevels.toString());
     }
 
+    public void setInterviewGroup(String interviewGroup) {
+        this.interviewGroup = interviewGroup;
+    }
 }

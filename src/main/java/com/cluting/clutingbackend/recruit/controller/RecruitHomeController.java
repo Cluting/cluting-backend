@@ -38,9 +38,9 @@ public class RecruitHomeController {
             @RequestParam Long recruitId,
             @RequestParam Long clubId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
-        Long currentClubUserId = currentUser.getUser().getId();
+        Long currentUserId = currentUser.getUser().getId();
 
-        return recruitService.getRecruitHome(recruitId, clubId, currentClubUserId);
+        return recruitService.getRecruitHome(recruitId, clubId, currentUserId);
 
     }
 }

@@ -32,6 +32,8 @@ public class MessageUtil {
         message.setTo(to);
         message.setText(msg);
 
-        this.messageService.sendOne(new SingleMessageSendingRequest(message));
+        return;
+
+//        this.messageService.sendOne(new SingleMessageSendingRequest(message));
     }
 }

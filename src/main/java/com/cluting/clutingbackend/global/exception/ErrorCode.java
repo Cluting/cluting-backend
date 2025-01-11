@@ -29,6 +29,7 @@ public enum ErrorCode {
     REFRESH_TOKEN_NOT_FOUND(NOT_FOUND, "로그아웃 된 사용자입니다"),
     RECRUIT_NOT_FOUND(NOT_FOUND, "해당 리크루팅 공고를 찾을 수 없습니다"),
     GROUP_NOT_FOUND(NOT_FOUND, "해당 파트(그룹)을 찾을 수 없습니다"),
+    TIMESLOT_NOT_FOUND(NOT_FOUND, "해당 시간대엔 면접이 불가능합니다."),
 
     /* 409 CONFLICT : Resource 의 현재 상태와 충돌. 보통 중복된 데이터 존재 */
     DUPLICATE_RESOURCE(CONFLICT, "데이터가 이미 존재합니다"),
