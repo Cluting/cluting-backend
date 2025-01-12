@@ -4,12 +4,12 @@ import com.cluting.clutingbackend.application.domain.ApplicantInterviewTimeSlot;
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicantInterviewTimeSlotRepository;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
+import com.cluting.clutingbackend.evaluation.domain.Message;
 import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.*;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentResultListResponseDto;
-import com.cluting.clutingbackend.global.enums.SortType;
+import com.cluting.clutingbackend.evaluation.repository.MessageRepository;
+import com.cluting.clutingbackend.global.enums.*;
 import com.cluting.clutingbackend.global.message.MessageUtil;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
@@ -19,9 +19,6 @@ import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.*;
-import com.cluting.clutingbackend.global.enums.CurrentStage;
-import com.cluting.clutingbackend.global.enums.EvaluateStatus;
-import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.domain.*;
 import com.cluting.clutingbackend.plan.repository.*;
@@ -52,6 +49,7 @@ public class DocumentEvaluationService {
     private final ClubUserRepository clubUserRepository;
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
+    private final MessageRepository messageRepository;
     private final MessageUtil messageUtil;
 
     public void send(String phone) {
@@ -71,6 +69,25 @@ public class DocumentEvaluationService {
             individual = individual.replace("{{이름}}", application.getUser().getName()).replace("{{파트}}", application.getRecruit_group());
             messageUtil.send(application.getUser().getPhone(), individual);
         }
+
+        Optional<Message> message = messageRepository.findByRecruit_IdAndAndEvalType(recruitId, EvalType.DOCUMENT);
+        Message msg;
+        msg = message.orElseGet(() -> Message.of(EvalType.DOCUMENT, recruitRepository.findRecruitById(recruitId)));
+
+        if (status == EvaluateStatus.PASS) {
+            msg.setPass(messageSendRequestDto.getMessage());
+            messageRepository.save(msg);
+        } else if (status == EvaluateStatus.FAIL) {
+            msg.setFail(messageSendRequestDto.getMessage());
+            messageRepository.save(msg);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public MessageResponseDto findMessage(Long recruitId) {
+        Message message = messageRepository.findByRecruit_IdAndAndEvalType(recruitId, EvalType.DOCUMENT)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+        return MessageResponseDto.builder().pass(message.getPass()).fail(message.getFail()).build();
     }
 
     // 서류 결과 리스트

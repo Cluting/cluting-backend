@@ -7,6 +7,7 @@ import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.dto.response.ClubUserResponseDto;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.evaluation.domain.Message;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQuestionRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
@@ -15,6 +16,7 @@ import com.cluting.clutingbackend.evaluation.dto.response.*;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.ApplicantInfo;
 import com.cluting.clutingbackend.evaluation.dto.interview.*;
+import com.cluting.clutingbackend.evaluation.repository.MessageRepository;
 import com.cluting.clutingbackend.global.enums.*;
 import com.cluting.clutingbackend.global.message.MessageUtil;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
@@ -63,6 +65,7 @@ public class InterviewEvaluationService {
     private final InterviewScoreRepository interviewScoreRepository;
     private final InterviewTimeSlotRepository interviewTimeSlotRepository;
     private final ApplicantInterviewTimeSlotRepository applicantInterviewTimeSlotRepository;
+    private final MessageRepository messageRepository;
     private final MessageUtil messageUtil;
 
     // 메시지 일괄 전송
@@ -73,6 +76,18 @@ public class InterviewEvaluationService {
             String individual = messageSendRequestDto.getMessage();
             individual = individual.replace("{{이름}}", interview.getApplication().getUser().getName()).replace("{{파트}}", interview.getApplication().getRecruit_group());
             messageUtil.send(interview.getApplication().getUser().getPhone(), individual);
+        }
+
+        Optional<Message> message = messageRepository.findByRecruit_IdAndAndEvalType(recruitId, EvalType.INTERVIEW);
+        Message msg;
+        msg = message.orElseGet(() -> Message.of(EvalType.INTERVIEW, recruitRepository.findRecruitById(recruitId)));
+
+        if (status == EvaluateStatus.PASS) {
+            msg.setPass(messageSendRequestDto.getMessage());
+            messageRepository.save(msg);
+        } else if (status == EvaluateStatus.FAIL) {
+            msg.setFail(messageSendRequestDto.getMessage());
+            messageRepository.save(msg);
         }
     }
 
@@ -91,6 +106,13 @@ public class InterviewEvaluationService {
         }
 
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    public MessageResponseDto findMessage(Long recruitId) {
+        Message message = messageRepository.findByRecruit_IdAndAndEvalType(recruitId, EvalType.DOCUMENT)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+        return MessageResponseDto.builder().pass(message.getPass()).fail(message.getFail()).build();
     }
 
     public InterviewClassifyResponseDto findInterviewAvailable(Long recruitId, String partName) {

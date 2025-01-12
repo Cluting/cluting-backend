@@ -4,6 +4,7 @@ import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentResultListResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.MessageResponseDto;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.SortType;
@@ -48,6 +49,14 @@ public class DocumentEvaluationController {
             @RequestParam("state")EvaluateStatus status) {
         documentEvaluationService.send(recruitId, messageSendRequestDto, status);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "[서류 합격자 및 면접 안내] 4-3. 메시지 조회하기",
+            description = "저장된 메시지를 조회합니다.")
+    @GetMapping("/msg")
+    public MessageResponseDto send(
+            @PathVariable Long recruitId) {
+        return documentEvaluationService.findMessage(recruitId);
     }
 
     @Operation(summary = "문자 전송 테스트")
