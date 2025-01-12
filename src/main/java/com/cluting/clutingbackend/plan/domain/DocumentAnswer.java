@@ -26,6 +26,18 @@ public class DocumentAnswer {
     private Application application;
 
     @Column
-    private String content; // 내용
+    private String content; // 내용'
+
+    public static DocumentAnswer of(
+            DocumentQuestion documentQuestion,
+            Application application,
+            String content
+    ) {
+        return DocumentAnswer.builder()
+                .documentQuestion(documentQuestion)
+                .application(application)
+                .content(content)
+                .build();
+    }
 
 }
