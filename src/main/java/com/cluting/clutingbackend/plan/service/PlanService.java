@@ -134,9 +134,17 @@ public class PlanService {
     public Plan4ResponseDto getInterviewSetup(Long recruitId) {
         Recruit recruit = findRecruitOrThrow(recruitId);
 
+//        // ClubUser에서 interviewGroup을 기준으로 그룹과 운영진 ID 매핑
+//        Map<String, List<Long>> groupAndClubUser = recruit.getClub().getClubUsers().stream()
+//                .filter(clubUser -> !clubUser.getInterviewGroup().isEmpty()) // interviewGroup이 설정된 운영진만 필터링
+//                .collect(Collectors.groupingBy(
+//                        ClubUser::getInterviewGroup, // interviewGroup (그룹 이름)을 키로 설정
+//                        Collectors.mapping(ClubUser::getId, Collectors.toList()) // 운영진 ID 리스트 추출
+//                ));
+
         // ClubUser에서 interviewGroup을 기준으로 그룹과 운영진 ID 매핑
         Map<String, List<Long>> groupAndClubUser = recruit.getClub().getClubUsers().stream()
-                .filter(clubUser -> !clubUser.getInterviewGroup().isEmpty()) // interviewGroup이 설정된 운영진만 필터링
+                .filter(clubUser -> clubUser.getInterviewGroup() != null && !clubUser.getInterviewGroup().isEmpty()) // null 및 빈 값 필터링
                 .collect(Collectors.groupingBy(
                         ClubUser::getInterviewGroup, // interviewGroup (그룹 이름)을 키로 설정
                         Collectors.mapping(ClubUser::getId, Collectors.toList()) // 운영진 ID 리스트 추출
