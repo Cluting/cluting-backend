@@ -21,7 +21,7 @@ public class InterviewTimeSlot {
     private Long id;
 
     @Column
-    private boolean isAssigned;
+    private Boolean isAssigned;
 
     @Column
     private LocalDateTime time;

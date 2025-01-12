@@ -524,7 +524,7 @@ public class PlanService {
             timeSlot.setInterviewers(interviewers);
 
             // 상태 변경: isAssigned를 true로 설정
-            timeSlot.setAssigned(true);
+            timeSlot.setIsAssigned(true);
 
             // 저장
             interviewTimeSlotRepository.save(timeSlot);
@@ -556,7 +556,7 @@ public class PlanService {
                     // 시간대 정보 생성
                     return InterviewTimeSlotResponseDto.TimeSlotInfo.builder()
                             .timeSlot(timeSlot.getTime())
-                            .isAssigned(timeSlot.isAssigned())
+                            .isAssigned(timeSlot.getIsAssigned())
                             .interviewers(interviewers)
                             .build();
                 })
