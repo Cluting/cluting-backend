@@ -3,16 +3,18 @@ package com.cluting.clutingbackend.application.service;
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.dto.GroupSelectRequestDto;
 import com.cluting.clutingbackend.application.domain.Application;
+import com.cluting.clutingbackend.application.dto.request.AnswerSaveRequestDto;
 import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
-import com.cluting.clutingbackend.application.dto.response.ApplicantProfileResponseDto;
-import com.cluting.clutingbackend.application.dto.response.ApplicationStatusResponseDto;
-import com.cluting.clutingbackend.application.dto.response.ClubResponseDto;
-import com.cluting.clutingbackend.application.dto.response.RecruitStatus;
+import com.cluting.clutingbackend.application.dto.response.*;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.interview.repository.InterviewRepository;
+import com.cluting.clutingbackend.plan.domain.DocumentAnswer;
+import com.cluting.clutingbackend.plan.domain.DocumentQuestion;
 import com.cluting.clutingbackend.plan.domain.Group;
+import com.cluting.clutingbackend.plan.repository.DocumentAnswerRepository;
+import com.cluting.clutingbackend.plan.repository.DocumentQuestionRepository;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
@@ -26,9 +28,6 @@ import com.cluting.clutingbackend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -45,6 +44,8 @@ public class ApplicationService {
     private final RecruitScheduleRepository recruitScheduleRepository;
     private final ScrapRepository scrapRepository;
     private final InterviewRepository interviewRepository;
+    private final DocumentQuestionRepository documentQuestionRepository;
+    private final DocumentAnswerRepository documentAnswerRepository;
 
     // [지원서 작성하기] 지원자 정보 조회하기(프로필, 이름, 번호, 이메일, 거주지, 학교, 학과, 다전공)
     @Transactional(readOnly = true)
@@ -67,17 +68,49 @@ public class ApplicationService {
     @Transactional
     public void selectGroup(User user, Long recruitId, GroupSelectRequestDto groupSelectRequestDto) {
         Recruit recruit = recruitRepository.findRecruitById(recruitId);
+
+        String group;
+        if (groupSelectRequestDto.getGroups().isEmpty()) {
+            group = null;
+        } else {
+            group = String.join(":::", groupSelectRequestDto.getGroups());
+        }
+
         applicationRepository.save(
-                Application.of(user, recruit, String.join(":::", groupSelectRequestDto.getGroups()))
+                Application.of(user, recruit, group)
         );
     }
 
     // [지원서 작성하기] 공통 질문 조회하기
     @Transactional(readOnly = true)
-    public void findCommonQuestion(Long recruitId) {
+    public List<DocumentQuestionResponseDto> findCommonQuestion(Long recruitId) {
+        List<DocumentQuestionResponseDto> result = new ArrayList<>();
+
+        List<Group> groups = groupRepository.findByRecruitId(recruitId);
+        for (Group group : groups) {
+            if (group.getName().equals("공통")) {
+                List<DocumentQuestion> byGroupId = documentQuestionRepository.findByGroupId(group.getId());
+                for (DocumentQuestion question : byGroupId) {
+                    result.add(DocumentQuestionResponseDto.toDto(question));
+                }
+            }
+        }
+
+        return result;
     }
 
     // [지원서 작성하기] 공통 질문 답변 저장하기
+    @Transactional
+    public void saveCommonAnswer(User user, Long recruitId, AnswerSaveRequestDto answerSaveRequestDto) {
+        Application application = applicationRepository.findByUserIdAndRecruitId(user.getId(), recruitId)
+                .orElseThrow(()-> new RuntimeException("Application is Not Found!"));
+        DocumentQuestion documentQuestion = documentQuestionRepository.findById(answerSaveRequestDto.getQuestionId())
+                .orElseThrow(()-> new RuntimeException("Question is Not Found!"));
+        documentAnswerRepository.save(
+                DocumentAnswer.of(documentQuestion, application, answerSaveRequestDto.getContent())
+        );
+    }
+
     // [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 조회하기
     // [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 답변 저장하기
     // [지원서 작성하기] 파일 제출일 경우 파일 저장
