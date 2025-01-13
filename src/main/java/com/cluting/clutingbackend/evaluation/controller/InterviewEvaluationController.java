@@ -4,10 +4,7 @@ import com.cluting.clutingbackend.evaluation.dto.request.InterviewIndividualQues
 import com.cluting.clutingbackend.evaluation.dto.request.InterviewQuestionSaveRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.request.ScheduleFormDataRequestDto;
-import com.cluting.clutingbackend.evaluation.dto.response.InterviewAvailScheduleResponseDto;
-import com.cluting.clutingbackend.evaluation.dto.response.InterviewPrepResponseDto;
-import com.cluting.clutingbackend.evaluation.dto.response.InterviewResultListResponseDto;
-import com.cluting.clutingbackend.evaluation.dto.response.LoadDocumentSettingResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.*;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.recruit.dto.response.RecruitNumResponseDto;
@@ -35,7 +32,7 @@ public class InterviewEvaluationController {
 
     private final InterviewEvaluationService interviewEvaluationService;
 
-    @Operation(summary = "[서류 합격자 및 면접 안내] 4-2. 면접 일정 조정하기 (면접 가능 일정 조회)",
+    @Operation(summary = "[면접 합격자 및 면접 안내] 6-2. 면접 일정 조정하기 (면접 가능 일정 조회)",
             description = "면접관/지원자들의 면접 가능 일정을 조회합니다.")
     @GetMapping("/avail")
     public InterviewAvailScheduleResponseDto findSchedules(
@@ -43,7 +40,7 @@ public class InterviewEvaluationController {
         return interviewEvaluationService.findSchedules(recruitId);
     }
 
-    @Operation(summary = "[서류 합격자 및 면접 안내] 4-2. 면접 일정 조정하기 (입력 저장)",
+    @Operation(summary = "[면접 합격자 및 면접 안내] 6-2. 면접 일정 조정하기 (입력 저장)",
             description = "면접 일정을 확정합니다.")
     @PostMapping("/set")
     public ResponseEntity<Void> saveInterviewSchedule(
@@ -51,6 +48,14 @@ public class InterviewEvaluationController {
             @RequestBody ScheduleFormDataRequestDto scheduleFormDataRequestDto) {
         interviewEvaluationService.saveInterviewSchedule(recruitId, scheduleFormDataRequestDto);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "[면접 합격자 및 면접 안내] 6-3. 메시지 조회하기",
+            description = "저장된 메시지를 조회합니다.")
+    @GetMapping("/msg")
+    public MessageResponseDto send(
+            @PathVariable Long recruitId) {
+        return interviewEvaluationService.findMessage(recruitId);
     }
 
     @Operation(summary = "[최종합격자 및 활동 안내] 6-2. 면접 합격자/불합격자 리스트 조회하기",
