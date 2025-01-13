@@ -148,10 +148,8 @@ public class DocumentEvaluationService {
                         boolean stageMatch = evaluator.getStage().name().equals(stage);
                         boolean groupMatch = groupName == null ||
                                 (evaluator.getGroup() != null && evaluator.getGroup().getName().equals(groupName));
-                        boolean userMatch = evaluator.getClubUser() != null &&
-                                evaluator.getClubUser().getUser().getId().equals(currentClubUserId);
 
-                        return stageMatch && groupMatch && userMatch;
+                        return stageMatch && groupMatch;
                     });
                 })
                 .map(application -> mapToResponse(application, recruitId))

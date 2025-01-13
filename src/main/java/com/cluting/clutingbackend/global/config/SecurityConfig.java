@@ -59,7 +59,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:3000",
-                "https://*.cluting.com",
+                "https://www.cluting.com",
                 "https://210.107.205.122:20025" // Swagger UI 경로 추가
         ));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
