@@ -113,7 +113,6 @@ public class Recruit {
     private boolean isMultiApply; // 복수 지원 여부
 
     @Column
-    @Builder.Default
     private SecondStage secondStage; // 2단계에서 1~5 완료 여부 알려주기
 
     public static Recruit of(Club club, Integer generation, Boolean isInterview) {
