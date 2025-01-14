@@ -878,15 +878,16 @@ public class InterviewEvaluationService {
         Map<String, Integer> groupMap = new HashMap<>();
         List<Group> groups = groupRepository.findByRecruitId(recruitId);
         int totalNum = 0;
+
         for (Group group : groups) {
             totalNum += group.getNumDoc();
             if (!group.isCommon()) {
-                groupMap.put(group.getName(), group.getNumDoc());
+                groupMap.put(group.getName(), groupMap.getOrDefault(group.getName(), 0) + group.getNumDoc());
             }
         }
-
         return new RecruitNumResponseDto(totalNum, groupMap);
     }
+
 
     // 서류 합격자들 모두 조회하기
     @Transactional(readOnly = true)
