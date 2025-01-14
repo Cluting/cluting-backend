@@ -46,7 +46,7 @@ public class TempService {
 
                             boolean isTeamInProgress = evaluators.stream().anyMatch(evaluator ->
                                     !evaluator.getClubUser().getUser().getId().equals(currentUser.getId()) &&
-                                            evaluator.getStage() == Stage.ING);
+                                            (evaluator.getStage() == Stage.ING || evaluator.getStage() == Stage.BEFORE));
 
                             return isCurrentUserInProgress || isTeamInProgress;
 
@@ -75,7 +75,7 @@ public class TempService {
     ) {
         User user = application.getUser();
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
-
+    
         // 현재 로그인한 유저의 상태 확인
         DocumentEvaluationResponse.EvaluatorInfo currentEvaluator = evaluators.stream()
                 .filter(evaluator -> evaluator.getClubUser().getUser().getId().equals(currentUser.getId()))
@@ -85,42 +85,46 @@ public class TempService {
                 ))
                 .findFirst()
                 .orElse(null);
-
+    
         // 다른 운영진 정보 추출
         List<DocumentEvaluationResponse.EvaluatorInfo> otherEvaluators = evaluators.stream()
-                .filter(evaluator -> !evaluator.getClubUser().getId().equals(currentUser.getId()))
+                .filter(evaluator -> !evaluator.getClubUser().getUser().getId().equals(currentUser.getId()))
                 .map(evaluator -> new DocumentEvaluationResponse.EvaluatorInfo(
                         evaluator.getClubUser().getUser().getName(),
                         evaluator.getStage().name()
                 ))
                 .collect(Collectors.toList());
-
+    
         // 모든 운영진이 평가 완료 상태인지 확인
         boolean isAllEvaluatorsAfter = evaluators.stream()
                 .allMatch(evaluator -> evaluator.getStage() == Stage.AFTER);
-
+    
         // 평가 결과 결정 여부 확인
         boolean isFinalDecisionMade = application.isCompleted();
-
+    
         // 평가 상태 결정
         Stage evaluationStage;
-
+    
         if (isFinalDecisionMade) {
             // 평가 완료
-            evaluationStage = Stage.AFTER; // 이 시점에서 이미 모든 운영진이 평가를 완료한 상태임
+            evaluationStage = Stage.AFTER;
         } else if (isAllEvaluatorsAfter) {
-            // 모든 운영진이 평가 완료 상태 (하지만 최종 판단은 안 됨)
+            // 모든 운영진이 평가 완료 상태 (최종 판단은 안 됨)
             evaluationStage = Stage.EDITABLE;
         } else if (currentEvaluator != null && currentEvaluator.getState().equals("ING")) {
             // 현재 유저가 평가 중
             evaluationStage = Stage.ING;
+        } else if (currentEvaluator == null) {
+            // 현재 유저가 평가자로 지정되지 않은 경우
+            evaluationStage = Stage.READABLE;
         } else {
             // 평가 전
             evaluationStage = Stage.BEFORE;
         }
-
+    
         // 응답 생성
         return new DocumentEvaluationResponse(
+                application.getId(),
                 evaluationStage,
                 user.getName(),
                 user.getPhone(),
@@ -131,6 +135,7 @@ public class TempService {
                 otherEvaluators
         );
     }
+
 
     public void updateEvaluateStatus(Long applicationId, EvaluateStatus newStatus) {
         // Application 찾기
