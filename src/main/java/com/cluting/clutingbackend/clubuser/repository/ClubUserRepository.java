@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -29,14 +30,14 @@ public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
 
     // [계획하기] 운영진 리스트 불러오기
     @Query("""
-    SELECT u.name
+    SELECT u.id,u.name
     FROM ClubUser cu
     JOIN Recruit r ON cu.generation = r.generation
     JOIN User u ON cu.user.id = u.id
     WHERE r.id = :recruitId
       AND cu.role = 'STAFF'
     """)
-    List<String> findStaffNamesByRecruitId(@Param("recruitId") Long recruitId);
+    List<Map<Long,String>> findStaffNamesByRecruitId(@Param("recruitId") Long recruitId);
 
     Optional<ClubUser> findByUserId(Long userId);
 

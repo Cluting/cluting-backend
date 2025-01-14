@@ -128,29 +128,25 @@ public class DocumentEvaluationService {
             List<Application> applications,
             DocumentEvaluationRequest request,
             CustomUserDetails currentUser,
-            String stage,
+            String targetStage,
             Long recruitId
     ) {
-
-        // "null" 문자열을 실제 null 값으로 처리
         String groupName = "null".equals(request.getGroupName()) ? null : request.getGroupName();
 
         return applications.stream()
                 .filter(application -> {
                     List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
 
-                    if (evaluators.isEmpty()) {
-                        return false;
-                    }
+                    // 현재 유저가 평가자로 배정되었는지 확인
+                    boolean isAssignedToCurrentUser = evaluators.stream()
+                            .anyMatch(evaluator -> evaluator.getClubUser().getId().equals(currentUser.getId()));
 
-                    return evaluators.stream().anyMatch(evaluator -> {
-                        boolean stageMatch = evaluator.getStage().name().equals(stage);
-                        boolean groupMatch = groupName == null ||
-                                (evaluator.getGroup() != null && evaluator.getGroup().getName().equals(groupName));
-                        boolean userMatch = evaluator.getClubUser().getUser().getId().equals(currentUser.getId());
+                    // 그룹 필터링
+                    boolean groupMatch = groupName == null || evaluators.stream()
+                            .anyMatch(evaluator -> evaluator.getGroup() != null && evaluator.getGroup().getName().equals(groupName));
 
-                        return stageMatch && groupMatch && userMatch;
-                    });
+                    // 조건: 현재 유저가 배정되었거나 그룹이 일치
+                    return isAssignedToCurrentUser || groupMatch;
                 })
                 .map(application -> mapToResponse(application, recruitId, currentUser.getId()))
                 .sorted((response1, response2) -> {
@@ -165,6 +161,9 @@ public class DocumentEvaluationService {
     }
 
 
+
+
+
     // 평가 전 상태 리스트 반환
     public List<DocumentEvaluationResponse> getPendingEvaluations(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
         ensureRecruitExists(recruitId);
@@ -173,14 +172,18 @@ public class DocumentEvaluationService {
     }
 
     // 평가 중 상태와 편집 가능한 상태 리스트를 반환
-    public Map<String, List<DocumentEvaluationResponse>> getEvaluationsInProgressOrEditable(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
+    public Map<String, List<DocumentEvaluationResponse>> getEvaluationsInProgressOrEditable(
+            Long recruitId,
+            DocumentEvaluationRequest request,
+            CustomUserDetails currentUser
+    ) {
         ensureRecruitExists(recruitId);
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
 
-        // "ING" 상태 리스트 반환
+        // "ING" 상태 리스트
         List<DocumentEvaluationResponse> ingList = filterAndSort(applications, request, currentUser, "ING", recruitId);
 
-        // "EDITABLE" 상태 리스트 반환
+        // "EDITABLE" 상태 리스트
         List<DocumentEvaluationResponse> editableList = filterAndSort(applications, request, currentUser, "EDITABLE", recruitId);
 
         Map<String, List<DocumentEvaluationResponse>> response = new HashMap<>();
@@ -189,6 +192,7 @@ public class DocumentEvaluationService {
 
         return response;
     }
+
 
     // 평가 후 상태 리스트 반환
     public List<DocumentEvaluationResponse> getEvaluationsAfter(
@@ -420,7 +424,11 @@ public class DocumentEvaluationService {
     }
 
     // Response 변환
-    private DocumentEvaluationResponse mapToResponse(Application application, Long recruitId, Long currentUserId) {
+    private DocumentEvaluationResponse mapToResponse(
+            Application application,
+            Long recruitId,
+            Long currentUserId
+    ) {
         User user = application.getUser();
 
         // 평가할 전체 운영진 수 가져오기
@@ -429,7 +437,7 @@ public class DocumentEvaluationService {
         // 문서 평가자 정보 가져오기
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
 
-        // 현재 로그인한 유저와 다른 운영진을 분리
+        // 현재 유저와 다른 운영진 정보를 분리
         DocumentEvaluationResponse.EvaluatorInfo currentEvaluator = null;
         List<DocumentEvaluationResponse.EvaluatorInfo> otherEvaluators = new ArrayList<>();
 
@@ -439,26 +447,25 @@ public class DocumentEvaluationService {
                     evaluator.getStage().name()
             );
 
-            if (evaluator.getClubUser().getUser().getId().equals(currentUserId)) {
-                currentEvaluator = evaluatorInfo;
+            if (evaluator.getClubUser().getId().equals(currentUserId)) {
+                currentEvaluator = evaluatorInfo; // 현재 로그인한 유저의 정보
             } else {
-                otherEvaluators.add(evaluatorInfo);
+                otherEvaluators.add(evaluatorInfo); // 다른 운영진 정보
             }
         }
 
-        String groupName = getString(evaluators);
-
         return new DocumentEvaluationResponse(
-                evaluators.isEmpty() ? null : evaluators.get(0).getStage().name(),  // evaluationStage
-                user.getName(),                                                     // applicantName
-                user.getPhone(),                                                    // applicantPhone
-                groupName,                                                          // groupName
-                application.getNumClubUser() + "/" + totalEvaluableClubUsers,       // applicationNumClubUser
-                application.getCreatedAt(),                                         // createdAt
-                currentEvaluator,                                                   // 현재 로그인한 유저 정보
-                otherEvaluators                                                     // 다른 운영진 정보
+                evaluators.isEmpty() ? null : evaluators.get(0).getStage(),        // evaluationStage
+                user.getName(),                                                    // applicantName
+                user.getPhone(),                                                   // applicantPhone
+                getString(evaluators),                                             // groupName
+                application.getNumClubUser() + "/" + totalEvaluableClubUsers,      // applicationNumClubUser
+                application.getCreatedAt(),                                        // createdAt
+                currentEvaluator,                                                  // 현재 로그인한 유저의 정보
+                otherEvaluators                                                    // 다른 운영진 정보
         );
     }
+
 
 
     // 평가 완료 불러오기

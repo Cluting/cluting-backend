@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.evaluation.dto.response;
 
+import com.cluting.clutingbackend.global.enums.Stage;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class DocumentEvaluationResponse {
-    private String evaluationStage;
+    private Stage evaluationStage;
     private String applicantName;
     private String applicantPhone;
     private String groupName;

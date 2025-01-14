@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -12,5 +13,5 @@ public class PrepDetailsResponseDto {
     private RecruitScheduleDto schedule;
     private List<PrepStageResponseDto> prepStages;
     private List<String> groups;
-    private List<String> admins;
+    private List<Map<Long,String>> admins;
 }
