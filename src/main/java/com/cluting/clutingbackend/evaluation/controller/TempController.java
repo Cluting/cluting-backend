@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "[TEST] 지원서 리스트 가져오기")
+@Tag(name = "[ 평가 전/중/후/완료 ] 지원서 리스트 가져오기")
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/test/{recruitId}")
+@RequestMapping("/api/v1/app-list/{recruitId}")
 public class TempController {
 
     private final TempService tempService;
