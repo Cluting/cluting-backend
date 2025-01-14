@@ -3,6 +3,7 @@ package com.cluting.clutingbackend.evaluation.service;
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
@@ -131,6 +132,17 @@ public class TempService {
         );
     }
 
+    public void updateEvaluateStatus(Long applicationId, EvaluateStatus newStatus) {
+        // Application 찾기
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new IllegalArgumentException("Application not found with ID: " + applicationId));
+
+        // EvaluateStatus 업데이트
+        application.setState(newStatus);
+
+        // 업데이트된 Application 저장
+        applicationRepository.save(application);
+    }
 
 
 }

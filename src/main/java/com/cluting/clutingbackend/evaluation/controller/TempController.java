@@ -2,15 +2,14 @@ package com.cluting.clutingbackend.evaluation.controller;
 
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
 import com.cluting.clutingbackend.evaluation.service.TempService;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -53,4 +52,18 @@ public class TempController {
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         return tempService.getEvaluationsByStage(recruitId, currentUser, "COMPLETE");
     }
+
+    @PatchMapping("/evaluate-status/{applicationId}")
+    @Operation(
+            summary = "지원서 상태 업데이트 하기",
+            description = "지원서의 상태를 이의제기/이의반영/합격/불합격으로 변경시키는 API입니다."
+    )
+    public ResponseEntity<String> updateEvaluateStatus(
+            @PathVariable Long applicationId,
+            @RequestParam EvaluateStatus newStatus) {
+        tempService.updateEvaluateStatus(applicationId, newStatus);
+        return ResponseEntity.ok("성공적으로 지원서 상태가 변경되었습니다. ");
+    }
+
+
 }
