@@ -121,6 +121,7 @@ public class TempService {
 
         // 응답 생성
         return new DocumentEvaluationResponse(
+                application.getId(),
                 evaluationStage,
                 user.getName(),
                 user.getPhone(),

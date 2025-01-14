@@ -431,6 +431,7 @@ public class DocumentEvaluationService {
         String groupName = getString(evaluators);
 
         return new DocumentEvaluationResponse(
+                application.getId(),
                 evaluators.isEmpty() ? null : evaluators.get(0).getStage(),  // evaluationStage
                 user.getName(),                                                     // applicantName
                 user.getPhone(),                                                    // applicantPhone
