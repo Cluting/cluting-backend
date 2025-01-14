@@ -13,6 +13,8 @@ import org.springframework.data.annotation.CreatedDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.cluting.clutingbackend.global.enums.EvaluateStatus.NOT_YET;
+
 @Entity
 @Getter
 @Setter
@@ -31,7 +33,8 @@ public class Application {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    private EvaluateStatus state;
+    @Builder.Default
+    private EvaluateStatus state = NOT_YET;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

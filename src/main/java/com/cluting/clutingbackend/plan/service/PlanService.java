@@ -582,7 +582,7 @@ public class PlanService {
     // 전체 단계 상태 조회
     public List<SecondStageResponseDto> getAllStagesStatus(Long recruitId) {
         Recruit recruit = recruitRepository.findById(recruitId)
-                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND,"Recruit not found with id: " + recruitId));
 
         // 모든 SecondStage 상태를 반환
         return Arrays.stream(SecondStage.values())
@@ -593,6 +593,23 @@ public class PlanService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public void updateSecondStage(Long recruitId, SecondStage secondStage) {
+        // Recruit 조회
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new CustomException(RECRUIT_NOT_FOUND, "Recruit not found with id: " + recruitId));
+
+        // SecondStage 상태를 완료로 설정
+        secondStage.completeStage();
+
+        // Recruit 저장
+        recruit.setSecondStage(secondStage);
+        recruitRepository.save(recruit);
+
+        // 변경 사항 저장
+        recruitRepository.save(recruit);
+    }
+
 
 }
 

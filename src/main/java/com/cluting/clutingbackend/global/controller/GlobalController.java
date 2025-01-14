@@ -49,6 +49,15 @@ public class GlobalController {
         return ResponseEntity.ok(stagesStatus);
     }
 
+    @Operation(
+            summary = "[모집하기 1~5단계] 완료여부 수정하기"
+    )
+    @PatchMapping("/second-stage-state")
+    public ResponseEntity<String> updateSecondStage(@RequestParam Long recruitId, @RequestParam SecondStage secondStage){
+        planService.updateSecondStage(recruitId, secondStage);
+        return ResponseEntity.ok(secondStage + "로 수정되었습니다.");
+    }
+
     @Operation(summary = "프로필 선택에 따라 User의 ClubUser역할이 바뀌게끔 함")
     @PostMapping("/select/{clubUserId}")
     public ResponseEntity<List<Map<String,Object>>> selectClubUser(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long clubUserId) {

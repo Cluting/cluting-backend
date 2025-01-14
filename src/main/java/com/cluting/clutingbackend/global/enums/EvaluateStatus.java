@@ -10,7 +10,9 @@ public enum EvaluateStatus {
     RESOLVED("이의반영"),
 
     PASS("합격"),
-    FAIL("불합격");
+    FAIL("불합격"),
+
+    NOT_YET("미정");
 
 
     private final String description;

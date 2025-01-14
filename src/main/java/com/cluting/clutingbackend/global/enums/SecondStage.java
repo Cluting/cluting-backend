@@ -30,6 +30,9 @@ public enum SecondStage {
         }
         this.completeState = CompleteState.COMPLETED;
     }
+    public void resetStage() {
+        this.completeState = CompleteState.NOT_COMPLETED;
+    }
     @Getter
     @RequiredArgsConstructor
     public static enum CompleteState {
