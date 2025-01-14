@@ -80,7 +80,7 @@ public class InterviewEvaluationController {
 
     @Operation(summary = "[면접 평가하기] 5-1. <평가 전> 그룹 조회",
             description = "그룹 조회하기")
-    @PostMapping("/prep/group")
+    @GetMapping("/prep/group")
     public LoadDocumentSettingResponseDto findDocSetting(
             @PathVariable Long recruitId) {
         return interviewEvaluationService.findDocSetting(recruitId);
