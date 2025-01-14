@@ -38,7 +38,7 @@ public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
     WHERE r.id = :recruitId
       AND cu.role = 'STAFF'
     """)
-    List<PrepDetailsResponseDto.AdminInfoDto> findStaffNamesByRecruitId(@Param("recruitId") Long recruitId);
+    List<Object[]> findStaffNamesByRecruitId(@Param("recruitId") Long recruitId);
 
     Optional<ClubUser> findByUserId(Long userId);
 

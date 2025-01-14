@@ -264,7 +264,12 @@ public class PrepService {
                 .collect(Collectors.toList());
 
         // 운영진 리스트 가져오기
-        List<PrepDetailsResponseDto.AdminInfoDto> adminList = clubUserRepository.findStaffNamesByRecruitId(recruitId);
+        List<PrepDetailsResponseDto.AdminInfoDto> adminList = clubUserRepository.findStaffNamesByRecruitId(recruitId).stream()
+                .map(result -> new PrepDetailsResponseDto.AdminInfoDto(
+                        ((Number) result[0]).longValue(), // 첫 번째 값: Long ID
+                        (String) result[1]               // 두 번째 값: String Name
+                ))
+                .collect(Collectors.toList());
 
         return new PrepDetailsResponseDto(scheduleDto, prepStages, groups, adminList);
     }
