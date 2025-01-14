@@ -24,6 +24,12 @@ public class DocumentEvaluationResponse {
     private List<EvaluatorInfo> otherEvaluators;     // 다른 운영진 정보
 
     public DocumentEvaluationResponse(Stage evaluationStage, String name, String phone, String groupName, String applicationNumClubUser, LocalDateTime createdAt) {
+        this.evaluationStage = evaluationStage;
+        this.applicantName = name;
+        this.applicantPhone = phone;
+        this.groupName = groupName;
+        this.applicationNumClubUser = applicationNumClubUser;
+        this.createdAt = createdAt;
     }
 
     @Data
