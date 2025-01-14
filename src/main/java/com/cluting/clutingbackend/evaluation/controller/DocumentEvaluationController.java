@@ -154,7 +154,7 @@ public class DocumentEvaluationController {
                     "\n- 'newest' : 최신순 정렬 (생성일 기준 내림차순)" +
                     "\n- 'oldest' : 오래된 순 정렬 (생성일 기준 오름차순)" +
                     "\n- 정렬을 하지 않으려면 null을 보내주세요.")
-    @GetMapping("/complete")
+    @PostMapping("/complete")
     public Map<String, List<DocumentEvaluationWithStatusResponse>> getCompletedEvaluations(
             @PathVariable Long recruitId,
             @RequestBody DocumentEvaluationRequest request,
