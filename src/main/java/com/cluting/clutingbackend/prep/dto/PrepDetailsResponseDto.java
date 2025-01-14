@@ -17,10 +17,15 @@ public class PrepDetailsResponseDto {
     private List<AdminInfoDto> admins;
 
     @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class AdminInfoDto {
+        public AdminInfoDto(Long id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
         private Long id;       // 운영진 ID
         private String name;   // 운영진 이름
+
+        public AdminInfoDto() {}
     }
 }

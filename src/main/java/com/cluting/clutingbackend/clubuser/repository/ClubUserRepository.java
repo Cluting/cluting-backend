@@ -31,7 +31,7 @@ public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
 
     // [계획하기] 운영진 리스트 불러오기
     @Query("""
-    SELECT u.id,u.name
+    SELECT new com.cluting.clutingbackend.prep.dto.PrepDetailsResponseDto.AdminInfoDto(u.id, u.name)
     FROM ClubUser cu
     JOIN Recruit r ON cu.generation = r.generation
     JOIN User u ON cu.user.id = u.id
