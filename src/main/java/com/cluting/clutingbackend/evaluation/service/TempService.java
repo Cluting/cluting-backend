@@ -77,7 +77,7 @@ public class TempService {
 
         // 현재 로그인한 유저의 상태 확인
         DocumentEvaluationResponse.EvaluatorInfo currentEvaluator = evaluators.stream()
-                .filter(evaluator -> evaluator.getClubUser().getId().equals(currentUser.getId()))
+                .filter(evaluator -> evaluator.getClubUser().getUser().getId().equals(currentUser.getId()))
                 .map(evaluator -> new DocumentEvaluationResponse.EvaluatorInfo(
                         evaluator.getClubUser().getUser().getName(),
                         evaluator.getStage().name()

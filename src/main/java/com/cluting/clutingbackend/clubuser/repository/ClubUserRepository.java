@@ -1,6 +1,7 @@
 package com.cluting.clutingbackend.clubuser.repository;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
+import com.cluting.clutingbackend.prep.dto.PrepDetailsResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,7 +38,7 @@ public interface ClubUserRepository extends JpaRepository<ClubUser, Long> {
     WHERE r.id = :recruitId
       AND cu.role = 'STAFF'
     """)
-    List<Map<Long,String>> findStaffNamesByRecruitId(@Param("recruitId") Long recruitId);
+    List<PrepDetailsResponseDto.AdminInfoDto> findStaffNamesByRecruitId(@Param("recruitId") Long recruitId);
 
     Optional<ClubUser> findByUserId(Long userId);
 
