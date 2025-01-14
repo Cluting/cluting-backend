@@ -34,17 +34,17 @@ public class TempService {
                         case "BEFORE":
                             // 평가 전: 계정 주인이 평가 전 상태인 경우
                             return evaluators.stream().anyMatch(evaluator ->
-                                    evaluator.getClubUser().getId().equals(currentUser.getId()) &&
+                                    evaluator.getClubUser().getUser().getId().equals(currentUser.getId()) &&
                                             evaluator.getStage() == Stage.BEFORE);
 
                         case "ING":
                             // 평가 중:
                             boolean isCurrentUserInProgress = evaluators.stream().anyMatch(evaluator ->
-                                    evaluator.getClubUser().getId().equals(currentUser.getId()) &&
+                                    evaluator.getClubUser().getUser().getId().equals(currentUser.getId()) &&
                                             evaluator.getStage() == Stage.ING);
 
                             boolean isTeamInProgress = evaluators.stream().anyMatch(evaluator ->
-                                    !evaluator.getClubUser().getId().equals(currentUser.getId()) &&
+                                    !evaluator.getClubUser().getUser().getId().equals(currentUser.getId()) &&
                                             evaluator.getStage() == Stage.ING);
 
                             return isCurrentUserInProgress || isTeamInProgress;
