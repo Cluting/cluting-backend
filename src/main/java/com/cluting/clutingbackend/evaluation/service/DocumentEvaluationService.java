@@ -4,12 +4,12 @@ import com.cluting.clutingbackend.application.domain.ApplicantInterviewTimeSlot;
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicantInterviewTimeSlotRepository;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
-import com.cluting.clutingbackend.evaluation.domain.Message;
 import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
-import com.cluting.clutingbackend.evaluation.dto.response.*;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultResponseDto;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
-import com.cluting.clutingbackend.evaluation.repository.MessageRepository;
-import com.cluting.clutingbackend.global.enums.*;
+import com.cluting.clutingbackend.evaluation.dto.response.DocumentResultListResponseDto;
+import com.cluting.clutingbackend.global.enums.SortType;
 import com.cluting.clutingbackend.global.message.MessageUtil;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.domain.Group;
@@ -19,6 +19,9 @@ import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.evaluation.dto.GroupResponse;
 import com.cluting.clutingbackend.evaluation.dto.document.*;
+import com.cluting.clutingbackend.global.enums.CurrentStage;
+import com.cluting.clutingbackend.global.enums.EvaluateStatus;
+import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.domain.*;
 import com.cluting.clutingbackend.plan.repository.*;
@@ -49,7 +52,6 @@ public class DocumentEvaluationService {
     private final ClubUserRepository clubUserRepository;
     private final RecruitRepository recruitRepository;
     private final GroupRepository groupRepository;
-    private final MessageRepository messageRepository;
     private final MessageUtil messageUtil;
 
     public void send(String phone) {
@@ -69,25 +71,6 @@ public class DocumentEvaluationService {
             individual = individual.replace("{{이름}}", application.getUser().getName()).replace("{{파트}}", application.getRecruit_group());
             messageUtil.send(application.getUser().getPhone(), individual);
         }
-
-        Optional<Message> message = messageRepository.findByRecruit_IdAndAndEvalType(recruitId, EvalType.DOCUMENT);
-        Message msg;
-        msg = message.orElseGet(() -> Message.of(EvalType.DOCUMENT, recruitRepository.findRecruitById(recruitId)));
-
-        if (status == EvaluateStatus.PASS) {
-            msg.setPass(messageSendRequestDto.getMessage());
-            messageRepository.save(msg);
-        } else if (status == EvaluateStatus.FAIL) {
-            msg.setFail(messageSendRequestDto.getMessage());
-            messageRepository.save(msg);
-        }
-    }
-
-    @Transactional(readOnly = true)
-    public MessageResponseDto findMessage(Long recruitId) {
-        Message message = messageRepository.findByRecruit_IdAndAndEvalType(recruitId, EvalType.DOCUMENT)
-                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
-        return MessageResponseDto.builder().pass(message.getPass()).fail(message.getFail()).build();
     }
 
     // 서류 결과 리스트
@@ -127,28 +110,34 @@ public class DocumentEvaluationService {
     private List<DocumentEvaluationResponse> filterAndSort(
             List<Application> applications,
             DocumentEvaluationRequest request,
+            String stage,
             CustomUserDetails currentUser,
-            String targetStage,
             Long recruitId
     ) {
+        Long currentClubUserId = currentUser.getUser().getId();
+
+        // "null" 문자열을 실제 null 값으로 처리
         String groupName = "null".equals(request.getGroupName()) ? null : request.getGroupName();
 
         return applications.stream()
                 .filter(application -> {
                     List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
 
-                    // 현재 유저가 평가자로 배정되었는지 확인
-                    boolean isAssignedToCurrentUser = evaluators.stream()
-                            .anyMatch(evaluator -> evaluator.getClubUser().getId().equals(currentUser.getId()));
+                    if (evaluators.isEmpty()) {
+                        return false;
+                    }
 
-                    // 그룹 필터링
-                    boolean groupMatch = groupName == null || evaluators.stream()
-                            .anyMatch(evaluator -> evaluator.getGroup() != null && evaluator.getGroup().getName().equals(groupName));
+                    return evaluators.stream().anyMatch(evaluator -> {
+                        boolean stageMatch = evaluator.getStage().name().equals(stage);
+                        boolean groupMatch = groupName == null ||
+                                (evaluator.getGroup() != null && evaluator.getGroup().getName().equals(groupName));
+                        boolean userMatch = evaluator.getClubUser() != null &&
+                                evaluator.getClubUser().getUser().getId().equals(currentClubUserId);
 
-                    // 조건: 현재 유저가 배정되었거나 그룹이 일치
-                    return isAssignedToCurrentUser || groupMatch;
+                        return stageMatch && groupMatch && userMatch;
+                    });
                 })
-                .map(application -> mapToResponse(application, recruitId, currentUser.getId()))
+                .map(application -> mapToResponse(application, recruitId))
                 .sorted((response1, response2) -> {
                     if ("newest".equals(request.getSortOrder())) {
                         return response2.getCreatedAt().compareTo(response1.getCreatedAt());
@@ -161,30 +150,23 @@ public class DocumentEvaluationService {
     }
 
 
-
-
-
     // 평가 전 상태 리스트 반환
     public List<DocumentEvaluationResponse> getPendingEvaluations(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
         ensureRecruitExists(recruitId);
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
-        return filterAndSort(applications, request, currentUser, "BEFORE", recruitId);
+        return filterAndSort(applications, request, "BEFORE", currentUser, recruitId);
     }
 
     // 평가 중 상태와 편집 가능한 상태 리스트를 반환
-    public Map<String, List<DocumentEvaluationResponse>> getEvaluationsInProgressOrEditable(
-            Long recruitId,
-            DocumentEvaluationRequest request,
-            CustomUserDetails currentUser
-    ) {
+    public Map<String, List<DocumentEvaluationResponse>> getEvaluationsInProgressOrEditable(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
         ensureRecruitExists(recruitId);
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
 
-        // "ING" 상태 리스트
-        List<DocumentEvaluationResponse> ingList = filterAndSort(applications, request, currentUser, "ING", recruitId);
+        // "ING" 상태 리스트 반환
+        List<DocumentEvaluationResponse> ingList = filterAndSort(applications, request, "ING", currentUser, recruitId);
 
-        // "EDITABLE" 상태 리스트
-        List<DocumentEvaluationResponse> editableList = filterAndSort(applications, request, currentUser, "EDITABLE", recruitId);
+        // "EDITABLE" 상태 리스트 반환
+        List<DocumentEvaluationResponse> editableList = filterAndSort(applications, request, "EDITABLE", currentUser, recruitId);
 
         Map<String, List<DocumentEvaluationResponse>> response = new HashMap<>();
         response.put("ING", ingList);
@@ -192,7 +174,6 @@ public class DocumentEvaluationService {
 
         return response;
     }
-
 
     // 평가 후 상태 리스트 반환
     public List<DocumentEvaluationResponse> getEvaluationsAfter(
@@ -204,10 +185,10 @@ public class DocumentEvaluationService {
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
 
         // READABLE 상태 필터링
-        List<DocumentEvaluationResponse> readableList = filterAndSort(applications, request, currentUser,"READABLE", recruitId);
+        List<DocumentEvaluationResponse> readableList = filterAndSort(applications, request, "READABLE", currentUser, recruitId);
 
         // EDITABLE 상태 필터링
-        List<DocumentEvaluationResponse> editableList = filterAndSort(applications, request, currentUser, "EDITABLE", recruitId);
+        List<DocumentEvaluationResponse> editableList = filterAndSort(applications, request, "EDITABLE", currentUser, recruitId);
 
         // 결과 합치기
         List<DocumentEvaluationResponse> combinedList = new ArrayList<>();
@@ -307,7 +288,7 @@ public class DocumentEvaluationService {
     }
 
     // 평가 완료 불러오기
-    public Map<String, List<DocumentEvaluationWithStatusResponse>> getCompletedEvaluations(Long recruitId, DocumentEvaluationRequest request) {
+    public Map<String, List<DocumentEvaluationWithStatusResponse>> getCompletedEvaluations(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
         ensureRecruitExists(recruitId);
 
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
@@ -424,11 +405,7 @@ public class DocumentEvaluationService {
     }
 
     // Response 변환
-    private DocumentEvaluationResponse mapToResponse(
-            Application application,
-            Long recruitId,
-            Long currentUserId
-    ) {
+    private DocumentEvaluationResponse mapToResponse(Application application, Long recruitId) {
         User user = application.getUser();
 
         // 평가할 전체 운영진 수 가져오기
@@ -436,37 +413,17 @@ public class DocumentEvaluationService {
 
         // 문서 평가자 정보 가져오기
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
-
-        // 현재 유저와 다른 운영진 정보를 분리
-        DocumentEvaluationResponse.EvaluatorInfo currentEvaluator = null;
-        List<DocumentEvaluationResponse.EvaluatorInfo> otherEvaluators = new ArrayList<>();
-
-        for (DocumentEvaluator evaluator : evaluators) {
-            DocumentEvaluationResponse.EvaluatorInfo evaluatorInfo = new DocumentEvaluationResponse.EvaluatorInfo(
-                    evaluator.getClubUser().getUser().getName(),
-                    evaluator.getStage().name()
-            );
-
-            if (evaluator.getClubUser().getId().equals(currentUserId)) {
-                currentEvaluator = evaluatorInfo; // 현재 로그인한 유저의 정보
-            } else {
-                otherEvaluators.add(evaluatorInfo); // 다른 운영진 정보
-            }
-        }
+        String groupName = getString(evaluators);
 
         return new DocumentEvaluationResponse(
-                evaluators.isEmpty() ? null : evaluators.get(0).getStage(),        // evaluationStage
-                user.getName(),                                                    // applicantName
-                user.getPhone(),                                                   // applicantPhone
-                getString(evaluators),                                             // groupName
+                evaluators.isEmpty() ? null : evaluators.get(0).getStage(),  // evaluationStage
+                user.getName(),                                                     // applicantName
+                user.getPhone(),                                                    // applicantPhone
+                groupName,                           // groupName
                 application.getNumClubUser() + "/" + totalEvaluableClubUsers,      // applicationNumClubUser
-                application.getCreatedAt(),                                        // createdAt
-                currentEvaluator,                                                  // 현재 로그인한 유저의 정보
-                otherEvaluators                                                    // 다른 운영진 정보
+                application.getCreatedAt()                                           // createdAt 값 추가
         );
     }
-
-
 
     // 평가 완료 불러오기
     public void completeDocumentEvaluation(Long recruitId) {

@@ -23,6 +23,9 @@ public class DocumentEvaluationResponse {
     private EvaluatorInfo currentEvaluator;          // 현재 로그인한 유저의 정보
     private List<EvaluatorInfo> otherEvaluators;     // 다른 운영진 정보
 
+    public DocumentEvaluationResponse(Stage evaluationStage, String name, String phone, String groupName, String applicationNumClubUser, LocalDateTime createdAt) {
+    }
+
     @Data
     @AllArgsConstructor
     public static class EvaluatorInfo {

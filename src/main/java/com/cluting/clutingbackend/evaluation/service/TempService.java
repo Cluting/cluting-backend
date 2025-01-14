@@ -32,22 +32,32 @@ public class TempService {
 
                     switch (stage) {
                         case "BEFORE":
+                            // 평가 전: 계정 주인이 평가 전 상태인 경우
                             return evaluators.stream().anyMatch(evaluator ->
                                     evaluator.getClubUser().getId().equals(currentUser.getId()) &&
-                                            evaluator.getStage().name().equals("BEFORE"));
+                                            evaluator.getStage() == Stage.BEFORE);
+
                         case "ING":
+                            // 평가 중:
                             boolean isCurrentUserInProgress = evaluators.stream().anyMatch(evaluator ->
                                     evaluator.getClubUser().getId().equals(currentUser.getId()) &&
-                                            evaluator.getStage().name().equals("ING"));
+                                            evaluator.getStage() == Stage.ING);
+
                             boolean isTeamInProgress = evaluators.stream().anyMatch(evaluator ->
                                     !evaluator.getClubUser().getId().equals(currentUser.getId()) &&
-                                            evaluator.getStage().name().equals("ING"));
+                                            evaluator.getStage() == Stage.ING);
+
                             return isCurrentUserInProgress || isTeamInProgress;
+
                         case "AFTER":
+                            // 평가 후: 모든 운영진이 평가를 완료한 경우
                             return evaluators.stream().allMatch(evaluator ->
-                                    evaluator.getStage().name().equals("AFTER"));
+                                    evaluator.getStage() == Stage.AFTER);
+
                         case "COMPLETE":
-                            return application.isFinalDecisionMade(); // 합격/불합격 여부 판단 필드
+                            // 평가 완료: 평가 후에 합격/불합격 결정이 내려진 경우
+                            return application.isCompleted();
+
                         default:
                             return false;
                     }
@@ -56,11 +66,11 @@ public class TempService {
                 .collect(Collectors.toList());
     }
 
+
     private DocumentEvaluationResponse mapToResponse(
             Application application,
             Long recruitId,
-            CustomUserDetails currentUser,
-            String targetStage
+            CustomUserDetails currentUser
     ) {
         User user = application.getUser();
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
@@ -84,23 +94,28 @@ public class TempService {
                 ))
                 .collect(Collectors.toList());
 
-        // 전체 운영진이 평가 완료인지 확인
-        boolean isAllEvaluatorsCompleted = evaluators.stream()
-                .allMatch(evaluator -> evaluator.getStage().name().equals("AFTER"));
+        // 모든 운영진이 평가 완료 상태인지 확인
+        boolean isAllEvaluatorsAfter = evaluators.stream()
+                .allMatch(evaluator -> evaluator.getStage() == Stage.AFTER);
 
         // 평가 결과 결정 여부 확인
-        boolean isEvaluationDecided = application.isResultDecided();
+        boolean isFinalDecisionMade = application.isCompleted();
 
         // 평가 상태 결정
         Stage evaluationStage;
-        if (isAllEvaluatorsCompleted && isEvaluationDecided) {
-            evaluationStage = Stage.AFTER;
-        } else if (isAllEvaluatorsCompleted) {
-            evaluationStage = DocumentEvaluationResponse.Stage.AFTER;
+
+        if (isFinalDecisionMade) {
+            // 평가 완료
+            evaluationStage = Stage.AFTER; // 이 시점에서 이미 모든 운영진이 평가를 완료한 상태임
+        } else if (isAllEvaluatorsAfter) {
+            // 모든 운영진이 평가 완료 상태 (하지만 최종 판단은 안 됨)
+            evaluationStage = Stage.EDITABLE;
         } else if (currentEvaluator != null && currentEvaluator.getState().equals("ING")) {
-            evaluationStage = DocumentEvaluationResponse.Stage.ING;
+            // 현재 유저가 평가 중
+            evaluationStage = Stage.ING;
         } else {
-            evaluationStage = DocumentEvaluationResponse.Stage.BEFORE;
+            // 평가 전
+            evaluationStage = Stage.BEFORE;
         }
 
         // 응답 생성
@@ -115,6 +130,8 @@ public class TempService {
                 otherEvaluators
         );
     }
+
+
 
 }
 

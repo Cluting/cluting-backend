@@ -12,5 +12,6 @@ public enum EvaluateStatus {
     PASS("합격"),
     FAIL("불합격");
 
+
     private final String description;
 }

@@ -54,6 +54,10 @@ public class Application {
     @Column
     private LocalDateTime createdAt;
 
+    @Column
+    @Builder.Default
+    private boolean isCompleted = false; // 서류 평가 완료했는지 확인하기..!
+
 
     @OneToMany(mappedBy = "application")
     private List<DocumentEvaluator> documentEvaluatorList;
