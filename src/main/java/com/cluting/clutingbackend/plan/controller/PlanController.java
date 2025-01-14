@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.plan.controller;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUserPermission;
 import com.cluting.clutingbackend.global.enums.PermissionLevel;
+import com.cluting.clutingbackend.global.enums.SecondStage;
 import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.dto.request.*;
@@ -51,6 +52,7 @@ public class PlanController {
     public ResponseEntity<Plan1ResponseDto> stage1(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan1RequestDto dto){
         checkPermission(currentUser, PermissionLevel.ONE);
         Plan1ResponseDto plan1ResponseDto = planService.createRecruitment(recruitId, dto);
+        planService.completeSecondStage(SecondStage.STAGE1);
         return ResponseEntity.status(HttpStatus.CREATED).body(plan1ResponseDto);
     }
 
@@ -59,6 +61,7 @@ public class PlanController {
     public ResponseEntity<Void> stage2(@AuthenticationPrincipal CustomUserDetails currentUser, @PathVariable(name="recruitId")Long recruitId, @RequestBody Plan2RequestDto dto) {
         checkPermission(currentUser, PermissionLevel.TWO);
         planService.saveIdeals(recruitId, dto);
+        planService.completeSecondStage(SecondStage.STAGE2);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -71,6 +74,7 @@ public class PlanController {
 
         checkPermission(currentUser, PermissionLevel.THREE);
         planService.saveRecruitmentStage3(recruitId, requestDto);
+        planService.completeSecondStage(SecondStage.STAGE3);
         return ResponseEntity.ok(requestDto);
     }
 
@@ -103,6 +107,7 @@ public class PlanController {
             @AuthenticationPrincipal CustomUserDetails currentUser) {
 
         planService.assignTimeSlots(interviewerAssignedDto, currentUser);
+        planService.completeSecondStage(SecondStage.STAGE4);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -114,6 +119,7 @@ public class PlanController {
             @RequestBody Plan5RequestDto requestDto) {
         checkPermission(currentUser, PermissionLevel.FIVE);
         Plan5ResponseDto responseDto = planService.createApplicationForm(recruitId, requestDto);
+        planService.completeSecondStage(SecondStage.STAGE5);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 

@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.recruit.domain;
 
 import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
+import com.cluting.clutingbackend.global.enums.SecondStage;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.dto.request.Plan3RequestDto;
 import com.cluting.clutingbackend.user.domain.Scrap;
@@ -111,6 +112,10 @@ public class Recruit {
     @Column
     private boolean isMultiApply; // 복수 지원 여부
 
+    @Column
+    @Builder.Default
+    private SecondStage secondStage; // 2단계에서 1~5 완료 여부 알려주기
+
     public static Recruit of(Club club, Integer generation, Boolean isInterview) {
         return Recruit.builder()
                 .club(club)
@@ -118,6 +123,7 @@ public class Recruit {
                 .isInterview(isInterview)
                 .build();
     }
+
 
     // Recruit.java (엔티티 클래스)
     public void updateRecruitDetails(Plan3RequestDto requestDto) {

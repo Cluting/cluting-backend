@@ -3,9 +3,12 @@ package com.cluting.clutingbackend.global.controller;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.service.ClubUserService;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
+import com.cluting.clutingbackend.global.enums.SecondStage;
 import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.global.service.CurrentStageService;
+import com.cluting.clutingbackend.plan.dto.response.SecondStageResponseDto;
+import com.cluting.clutingbackend.plan.service.PlanService;
 import com.cluting.clutingbackend.recruit.dto.response.CurrentStageResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +29,7 @@ public class GlobalController {
 
     private final CurrentStageService currentStageService;
     private final ClubUserService clubUserService;
+    private final PlanService planService;
 
     @Operation(
             summary = "[리크루팅 공고 진행 단계] 현재 단계(전/중/후) 불러오기"
@@ -34,6 +38,15 @@ public class GlobalController {
     public ResponseEntity<CurrentStageResponseDto> getCurrentStage(@RequestParam Long recruitId){
 
         return ResponseEntity.ok(currentStageService.getCurrentStage(recruitId));
+    }
+
+    @Operation(
+            summary = "[모집하기 1~5단계] 완료여부 불러오기"
+    )
+    @GetMapping("/second-stage-state")
+    public ResponseEntity<List<SecondStageResponseDto>> getSecondStage(@RequestParam Long recruitId){
+        List<SecondStageResponseDto> stagesStatus = planService.getAllStagesStatus(recruitId);
+        return ResponseEntity.ok(stagesStatus);
     }
 
     @Operation(summary = "프로필 선택에 따라 User의 ClubUser역할이 바뀌게끔 함")

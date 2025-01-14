@@ -2,6 +2,7 @@ package com.cluting.clutingbackend.plan.service;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
+import com.cluting.clutingbackend.global.enums.SecondStage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.cluting.clutingbackend.global.exception.CustomException;
@@ -17,6 +18,7 @@ import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
 import com.cluting.clutingbackend.recruit.repository.RecruitScheduleRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -568,11 +570,29 @@ public class PlanService {
                 .build();
     }
 
+    // 스테이지 상태 변경
+    public void completeSecondStage(SecondStage stage) {
+        if (stage == null) {
+            throw new CustomException(CANNOT_NULL_INPUT,"SecondStage must not be null");
+        }
+        stage.completeStage(); // 상태 변경
+    }
 
 
+    // 전체 단계 상태 조회
+    public List<SecondStageResponseDto> getAllStagesStatus(Long recruitId) {
+        Recruit recruit = recruitRepository.findById(recruitId)
+                .orElseThrow(() -> new IllegalArgumentException("Recruit not found with id: " + recruitId));
 
-
-
+        // 모든 SecondStage 상태를 반환
+        return Arrays.stream(SecondStage.values())
+                .map(stage -> new SecondStageResponseDto(
+                        stage.name(),
+                        stage.getDescription(),
+                        recruit.getSecondStage() == stage ? stage.getCompleteState() : SecondStage.CompleteState.NOT_COMPLETED
+                ))
+                .collect(Collectors.toList());
+    }
 
 }
 
