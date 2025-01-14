@@ -157,9 +157,10 @@ public class DocumentEvaluationController {
     @GetMapping("/complete")
     public Map<String, List<DocumentEvaluationWithStatusResponse>> getCompletedEvaluations(
             @PathVariable Long recruitId,
-            @RequestBody DocumentEvaluationRequest request) {
+            @RequestBody DocumentEvaluationRequest request,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
 
-        return documentEvaluationService.getCompletedEvaluations(recruitId, request);
+        return documentEvaluationService.getCompletedEvaluations(recruitId, request, currentUser);
     }
 
     @Operation(summary = "[서류 평가하기] 4-1. <평가 완료> 전송",

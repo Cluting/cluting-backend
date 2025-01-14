@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "지원서 리스트 테스트용", description = "서류 평가 관련 API")
+@Tag(name = "[TEST] 지원서 리스트 가져오기")
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/test/{recruitId}")
