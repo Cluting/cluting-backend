@@ -639,11 +639,27 @@ public class DocumentEvaluationService {
         }
 
         // 3. 인재상
-        List<Ideal> ideals = idealRepository.findByGroupId(evaluators.isEmpty() ? null : evaluators.get(0).getGroup() != null ? evaluators.get(0).getGroup().getId() : null);
+        // 3-1. recruitId를 통해 관련 그룹의 모든 id 가져오기
+        List<Group> groups = groupRepository.findByRecruitId(recruitId);
+        List<Long> groupIds = groups.stream()
+                .map(Group::getId)
+                .collect(Collectors.toList());
 
-        List<String> idealDetails = ideals != null && !ideals.isEmpty() ? ideals.stream()
-                .map(Ideal::getContent)
-                .collect(Collectors.toList()) : Collections.emptyList();
+        // 3-2. groupIds에 해당하는 Ideal 리스트 조회
+        List<Ideal> ideals = idealRepository.findByGroupIdIn(groupIds);
+
+        // 3-3. 그룹별로 인재상을 그룹화하여 GroupIdeal로 변환
+        Map<Group, List<Ideal>> idealsByGroup = ideals.stream()
+                .collect(Collectors.groupingBy(Ideal::getGroup));
+
+        List<GroupIdeal> groupIdeals = idealsByGroup.entrySet().stream()
+                .map(entry -> GroupIdeal.of(
+                        entry.getKey().getName(), // 그룹 이름
+                        entry.getValue().stream()
+                                .map(Ideal::getContent) // 인재상 내용
+                                .collect(Collectors.toList())
+                ))
+                .collect(Collectors.toList());
 
         // 4. 총점 평균
         Integer averageScore = application.getScore() != null ? application.getScore() : 0;
@@ -665,7 +681,7 @@ public class DocumentEvaluationService {
         return new DocumentEvaluation4Response(
                 applicantInfo,
                 questionAndAnswers,
-                idealDetails,
+                groupIdeals,
                 averageScore,
                 evaluatorScores,
                 myEvaluation

@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface IdealRepository extends JpaRepository<Ideal,Long> {
     List<Ideal> findByGroupId(Long groupId);
+    List<Ideal> findByGroupIdIn(List<Long> groupIds);
+
 }
