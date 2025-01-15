@@ -40,5 +40,8 @@ public interface DocumentEvaluatorRepository extends JpaRepository<DocumentEvalu
     List<DocumentEvaluator> findAllByGroup_Id(Long groupId);
 
 
+    // applicationId와 clubUserId로 DocumentEvaluator를 찾는 메서드
+    Optional<DocumentEvaluator> findByApplicationIdAndClubUserId(Long applicationId, Long clubUserId);
+
 }
 

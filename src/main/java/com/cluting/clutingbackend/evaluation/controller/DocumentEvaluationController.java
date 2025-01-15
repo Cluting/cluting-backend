@@ -234,9 +234,10 @@ public class DocumentEvaluationController {
     public ResponseEntity<DocumentEvaluation3Response> evaluateDocument(
             @PathVariable Long recruitId,
             @PathVariable Long applicationId,
-            @Valid @RequestBody DocumentEvaluation3Request request) {
+            @Valid @RequestBody DocumentEvaluation3Request request,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
 
-        DocumentEvaluation3Response response = documentEvaluationService.evaluateDocument(recruitId, applicationId, request);
+        DocumentEvaluation3Response response = documentEvaluationService.evaluateDocument(recruitId, applicationId, request, currentUser);
         return ResponseEntity.ok(response);
     }
 

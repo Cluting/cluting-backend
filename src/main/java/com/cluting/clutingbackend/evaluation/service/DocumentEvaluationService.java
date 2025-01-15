@@ -548,24 +548,26 @@ public class DocumentEvaluationService {
 
     // 서류 평가 보내기
     @Transactional
-    public DocumentEvaluation3Response evaluateDocument(Long recruitId, Long applicationId, DocumentEvaluation3Request request) {
+    public DocumentEvaluation3Response evaluateDocument(
+            Long recruitId, Long applicationId,
+            DocumentEvaluation3Request request,
+            CustomUserDetails currentUser) {
+
+        // Application 조회
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid application ID"));
 
-        List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(applicationId);
-        DocumentEvaluator evaluator = evaluators.isEmpty() ? null : evaluators.get(0); // 첫 번째 평가자 선택
+        // currentUser의 user_id를 기준으로 ClubUser 조회
+        ClubUser clubUser = clubUserRepository.findByUserId(currentUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not part of this club"));
 
-        if (evaluator == null) {
-            evaluator = DocumentEvaluator.builder()
-                    .application(application)
-                    .stage(Stage.EDITABLE)
-                    .score(0)
-                    .comment(null)
-                    .build();
-            documentEvaluatorRepository.save(evaluator);
-        }
+        // ClubUser의 ID로 DocumentEvaluator 조회
+        DocumentEvaluator evaluator = documentEvaluatorRepository.findByApplicationIdAndClubUserId(applicationId, clubUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Evaluator not found for current user"));
 
         int totalScore = 0;
+
+        // 각 평가 기준에 대한 점수 저장
         for (DocumentEvaluation3Request.CriteriaEvaluation criteriaEvaluation : request.getCriteriaEvaluations()) {
             DocumentCriteria criteria = documentCriteriaRepository.findById(criteriaEvaluation.getCriteriaId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid criteria ID"));
@@ -579,13 +581,18 @@ public class DocumentEvaluationService {
             documentEvalScoreRepository.save(evalScore);
         }
 
+        // 평가자의 총점 및 코멘트 저장
         evaluator.setScore(totalScore);
         evaluator.setComment(request.getComment());
         documentEvaluatorRepository.save(evaluator);
 
-        application.setNumClubUser((application.getNumClubUser() == null ? 0 : application.getNumClubUser()) + 1);
-        int newAverageScore = (application.getScore() == null ? totalScore :
-                (application.getScore() * (application.getNumClubUser() - 1) + totalScore) / application.getNumClubUser());
+        // application의 numClubUser 업데이트 (null이면 1로 초기화)
+        application.setNumClubUser((application.getNumClubUser() == null ? 1 : application.getNumClubUser() + 1));
+
+        // 새로운 평균 점수 계산 및 저장
+        int newAverageScore = (application.getScore() == null
+                ? totalScore
+                : (application.getScore() * (application.getNumClubUser() - 1) + totalScore) / application.getNumClubUser());
         application.setScore(newAverageScore);
 
         applicationRepository.save(application);
@@ -671,7 +678,7 @@ public class DocumentEvaluationService {
 
         // 6. 내 평가 보기
         Long currentClubUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
-        ClubUser currentClubUser = currentClubUserId != null ? clubUserRepository.findById(currentClubUserId).orElse(null) : null;  // 없는 경우 null 처리
+        ClubUser currentClubUser = currentClubUserId != null ? clubUserRepository.findByUserId(currentClubUserId).orElse(null) : null;  // 없는 경우 null 처리
 
         EvaluatorScores myEvaluation = null;
         if (currentClubUser != null && !evaluators.isEmpty()) {

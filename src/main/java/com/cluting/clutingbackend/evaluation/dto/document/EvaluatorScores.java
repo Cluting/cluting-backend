@@ -21,6 +21,7 @@ public class EvaluatorScores {
         List<DocumentEvalScore> scores = evalScoreRepository.findByDocumentEvaluatorId(evaluator.getId());
         List<CriteriaScore> criteriaScores = scores.stream()
                 .map(score -> CriteriaScore.of(
+                        score.getId(),
                         score.getDocumentCriteria().getName(),
                         score.getScore(),
                         score.getDocumentCriteria().getScore()
@@ -43,6 +44,7 @@ public class EvaluatorScores {
         List<DocumentEvalScore> scores = evalScoreRepository.findByEvaluatorIdAndClubUserId(evaluator.getId(), user.getId());
         List<CriteriaScore> criteriaScores = scores.stream()
                 .map(score -> CriteriaScore.of(
+                        score.getId(),
                         score.getDocumentCriteria().getName(),
                         score.getScore(),
                         score.getDocumentCriteria().getScore()
