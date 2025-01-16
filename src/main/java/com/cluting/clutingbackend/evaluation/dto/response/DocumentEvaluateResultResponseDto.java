@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class DocumentEvaluateResultResponseDto {
-    private Stage state;
+
     private String name;
     private String phone;
     private String part;
@@ -19,9 +19,8 @@ public class DocumentEvaluateResultResponseDto {
     private LocalDateTime createdAt;
     private String result;
 
-    public static DocumentEvaluateResultResponseDto toDto(Application entity, Stage stage, String result) {
+    public static DocumentEvaluateResultResponseDto toDto(Application entity,String result) {
         return DocumentEvaluateResultResponseDto.builder()
-                .state(stage)
                 .name(entity.getUser().getName())
                 .phone(entity.getUser().getPhone())
                 .part(entity.getRecruit_group().replaceAll(":::", "/"))

@@ -248,26 +248,20 @@ public class DocumentEvaluationService {
         List<DocumentEvaluateResultResponseDto> failed = new ArrayList<>();
 
         applications.forEach(application -> {
-            List<DocumentEvaluator> documentEvaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
+            // 그룹별 지원자 수 계산
+            String groupName = application.getRecruit_group();
+            groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
 
-            documentEvaluators.forEach(documentEvaluator -> {
-                // 그룹별 지원자 수 계산
-                String groupName = documentEvaluator.getGroup().getName();
-                groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
-
-                DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
-                        application,
-                        documentEvaluator.getStage(),
-                        application.getState() == EvaluateStatus.PASS ? "합격" : "불합격"
-                );
-
-                // 합격/불합격 분류
-                if (application.getState() == EvaluateStatus.PASS) {
-                    passed.add(dto);
-                } else if (application.getState() == EvaluateStatus.FAIL) {
-                    failed.add(dto);
-                }
-            });
+            DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
+                    application,
+                    application.getState() == EvaluateStatus.PASS ? "합격" : "불합격"
+            );
+            // 합격/불합격 분류
+            if (application.getState() == EvaluateStatus.PASS) {
+                passed.add(dto);
+            } else if (application.getState() == EvaluateStatus.FAIL) {
+                failed.add(dto);
+            }
         });
 
         sortDocumentAndAssignRank(passed);
@@ -766,7 +760,6 @@ public class DocumentEvaluationService {
 
                     DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
                             application,
-                            documentEvaluator.getStage(),
                             evaluationStatus
                     );
 

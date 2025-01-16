@@ -196,7 +196,7 @@ public class DocumentEvaluationController {
     }
 
     @Operation(
-            summary = "[서류 합격자 및 면접 안내] 4-1. <지원자 합불 경과>",
+            summary = "[서류 합격자 및 면접 안내] 4-1. <지원자 합불 결과>",
             description = "서류 합격자, 불합격자 리스트를 반환합니다. sort: NEWEST(최신순) OLDEST(오래된순) INORDER(가나다순)",
             responses = {
                     @ApiResponse(responseCode = "200", description = "서류 합격자, 불합격자 리스트 반환 성공"),
