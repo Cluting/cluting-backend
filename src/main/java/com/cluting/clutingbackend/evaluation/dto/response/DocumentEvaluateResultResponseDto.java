@@ -14,7 +14,7 @@ public class DocumentEvaluateResultResponseDto {
     private String name;
     private String phone;
     private String part;
-    private Integer score;
+    private Double score;
     private Integer rank;
     private LocalDateTime createdAt;
     private String result;

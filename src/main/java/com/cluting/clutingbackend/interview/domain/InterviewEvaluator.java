@@ -37,7 +37,7 @@ public class InterviewEvaluator {
     private Stage stage = Stage.BEFORE;
 
     @Column(nullable = true)
-    private Integer score;
+    private Double score;
 
     @Column(nullable = true)
     private String comment;

@@ -42,7 +42,7 @@ public class Application {
     private RecruitStatus recruitStatus = RecruitStatus.Z; // 지원상태
 
     @Column(nullable = true)
-    private Integer score;  //모든 운영진 평가 점수의 평균
+    private Double score;  //모든 운영진 평가 점수의 평균
 
     @Column(nullable = true)
     private Integer numClubUser;  //평가한 운영진의 수
