@@ -290,7 +290,7 @@ public class DocumentEvaluationService {
     }
 
     private void sortDocumentAndAssignRank(List<DocumentEvaluateResultResponseDto> list) {
-        list.sort((o1, o2) -> Integer.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
+        list.sort((o1, o2) -> Double.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
         }
@@ -369,8 +369,9 @@ public class DocumentEvaluationService {
         // Evaluator로부터 Application 조회 및 점수 순 정렬
         List<Application> applications = evaluators.stream()
                 .map(DocumentEvaluator::getApplication)
-                .sorted(Comparator.comparingInt(Application::getScore).reversed())
+                .sorted(Comparator.comparingDouble(Application::getScore).reversed())  // 변경된 부분
                 .toList();
+
 
         int numDoc = group.getNumDoc(); // PASS로 설정할 개수
         for (int i = 0; i < applications.size(); i++) {
@@ -398,7 +399,7 @@ public class DocumentEvaluationService {
         // Evaluator로부터 Application 조회 및 점수 순 정렬
         List<Application> applications = evaluators.stream()
                 .map(DocumentEvaluator::getApplication)
-                .sorted(Comparator.comparingInt(Application::getScore).reversed())
+                .sorted(Comparator.comparingDouble(Application::getScore).reversed())  // comparingDouble으로 수정
                 .toList();
 
         int numDoc = group.getNumDoc(); // PASS로 설정할 개수
@@ -575,8 +576,11 @@ public class DocumentEvaluationService {
             documentEvalScoreRepository.save(evalScore);
         }
 
-        // 평가자의 총점 및 코멘트 저장
-        evaluator.setScore(totalScore);
+        // 평가자의 평균 점수 계산 (전체 점수 합 / 평가 기준 수)
+        double averageScore = (double) totalScore / request.getCriteriaEvaluations().size();
+
+        // 평가자의 평균 점수 및 코멘트 저장
+        evaluator.setScore((int) Math.round(averageScore));  // 평균 점수를 반올림하여 저장
         evaluator.setComment(request.getComment());
         documentEvaluatorRepository.save(evaluator);
 
@@ -584,15 +588,16 @@ public class DocumentEvaluationService {
         application.setNumClubUser((application.getNumClubUser() == null ? 1 : application.getNumClubUser() + 1));
 
         // 새로운 평균 점수 계산 및 저장
-        int newAverageScore = (application.getScore() == null
-                ? totalScore
-                : (application.getScore() * (application.getNumClubUser() - 1) + totalScore) / application.getNumClubUser());
+        double newAverageScore = (application.getScore() == null
+                ? averageScore
+                : (application.getScore() * (application.getNumClubUser() - 1) + averageScore) / application.getNumClubUser());
         application.setScore(newAverageScore);
 
         applicationRepository.save(application);
 
-        return new DocumentEvaluation3Response(applicationId, totalScore, request.getComment(), "UPDATED");
+        return new DocumentEvaluation3Response(applicationId, (int) Math.round(averageScore), request.getComment(), "UPDATED");
     }
+
 
 
     // 서류평가 가져오기
@@ -663,7 +668,7 @@ public class DocumentEvaluationService {
                 .collect(Collectors.toList());
 
         // 4. 총점 평균
-        Integer averageScore = application.getScore() != null ? application.getScore() : 0;
+        Double averageScore = application.getScore() != null ? application.getScore() : 0.0;  // Double 타입으로 변경
 
         // 5. 다른 운영진 평가 보기
         List<EvaluatorScores> evaluatorScores = evaluators.stream()
@@ -802,7 +807,7 @@ public class DocumentEvaluationService {
 
     private void sortAndAssignRank(List<DocumentEvaluateResultResponseDto> list) {
         if (list != null && !list.isEmpty()) {
-            list.sort((o1, o2) -> Integer.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
+            list.sort((o1, o2) -> Double.compare(o2.getScore(), o1.getScore())); // 내림차순 정렬
             for (int i = 0; i < list.size(); i++) {
                 list.get(i).setRank(i + 1); // 1부터 시작하는 순위 설정
             }

@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class InterviewEvaluationResponseDto {
     private Long interviewId;
-    private Integer totalScore;
+    private Double totalScore;
     private String comment;
     private String status;
 }

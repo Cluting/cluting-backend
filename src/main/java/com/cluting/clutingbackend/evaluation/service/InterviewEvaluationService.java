@@ -801,6 +801,8 @@ public class InterviewEvaluationService {
 
         // 평가 기준 처리
         int totalScore = 0;
+        int criteriaCount = request.getCriteriaEvaluations().size();
+
         for (InterviewEvaluationRequestDto.CriteriaEvaluation criteriaEvaluation : request.getCriteriaEvaluations()) {
             InterviewCriteria criteria = interviewCriteriaRepository.findById(criteriaEvaluation.getCriteriaId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid criteria ID"));
@@ -826,8 +828,11 @@ public class InterviewEvaluationService {
             totalScore += criteriaEvaluation.getScore();
         }
 
-        // 평가자의 총 점수 업데이트
-        evaluator.setScore(totalScore);
+        // 평가자의 평균 점수 계산
+        double averageScore = (criteriaCount > 0) ? (double) totalScore / criteriaCount : 0;
+
+        // 평가자의 총점(평균 점수) 업데이트
+        evaluator.setScore(averageScore);
         evaluator.setComment(request.getComment());
         interviewEvaluatorRepository.save(evaluator);
 
@@ -836,7 +841,7 @@ public class InterviewEvaluationService {
         interviewEvaluatorRepository.save(evaluator);
 
         // 응답 생성
-        return new InterviewEvaluationResponseDto(interviewId, totalScore, request.getComment(), "UPDATED");
+        return new InterviewEvaluationResponseDto(interviewId, averageScore, request.getComment(), "UPDATED");
     }
 
     @Transactional
@@ -855,6 +860,8 @@ public class InterviewEvaluationService {
 
         // 기존 평가 기준 처리
         int totalScore = 0;
+        int criteriaCount = request.getCriteriaEvaluations().size();
+
         for (InterviewEvaluationRequestDto.CriteriaEvaluation criteriaEvaluation : request.getCriteriaEvaluations()) {
             InterviewCriteria criteria = interviewCriteriaRepository.findById(criteriaEvaluation.getCriteriaId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid criteria ID"));
@@ -872,8 +879,11 @@ public class InterviewEvaluationService {
             totalScore += criteriaEvaluation.getScore();
         }
 
-        // 평가자의 총 점수 업데이트 및 코멘트 수정
-        evaluator.setScore(totalScore);
+        // 평가자의 평균 점수 계산
+        double averageScore = (criteriaCount > 0) ? (double) totalScore / criteriaCount : 0;
+
+        // 평가자의 총점(평균 점수) 업데이트 및 코멘트 수정
+        evaluator.setScore(averageScore);
         evaluator.setComment(request.getComment());
         interviewEvaluatorRepository.save(evaluator);
 
@@ -882,7 +892,7 @@ public class InterviewEvaluationService {
         interviewEvaluatorRepository.save(evaluator);
 
         // 응답 생성
-        return new InterviewEvaluationResponseDto(interviewId, totalScore, request.getComment(), "UPDATED");
+        return new InterviewEvaluationResponseDto(interviewId, averageScore, request.getComment(), "UPDATED");
     }
 
 
