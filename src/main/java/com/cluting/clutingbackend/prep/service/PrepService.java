@@ -66,7 +66,7 @@ public class PrepService {
                     .build();
             prepStageRepository.save(prepStage);
 
-            for (Long clubUserId : stageDto.getClubUserIds()) {
+            for (Long clubUserId : stageDto.getAdmins().stream().map(PrepStageDto.AdminInfoDto::getId).collect(Collectors.toList())) {
                 ClubUser clubUser = clubUserRepository.findById(clubUserId)
                         .orElseThrow(() -> new IllegalArgumentException("해당 ClubUser 찾지 못함. id: " + clubUserId));
 
