@@ -69,7 +69,7 @@ public class TempController {
 ///////////////////////////////////////////////////////////////////////////////////////////
 @Operation(summary = "[면접] 평가 전 지원자 정보 불러오기",
         description = "평가 전 단계의 지원자 정보를 가져옵니다. 정렬: newest = 최신순, oldest = 지원순")
-@GetMapping("/before")
+@GetMapping("/interview/before")
 public List<EvaluationResponse> getBeforeEvaluations(
         @PathVariable Long recruitId,
         @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -81,7 +81,7 @@ public List<EvaluationResponse> getBeforeEvaluations(
 
     @Operation(summary = "[면접] 평가 중 지원자 정보 불러오기",
             description = "평가 중 단계의 지원자 정보를 가져옵니다. 정렬: newest = 최신순, oldest = 지원순")
-    @GetMapping("/in-progress")
+    @GetMapping("/interview/ing")
     public List<EvaluationResponse> getInProgressEvaluations(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser,
@@ -93,7 +93,7 @@ public List<EvaluationResponse> getBeforeEvaluations(
 
     @Operation(summary = "[면접] 평가 후 지원자 정보 불러오기",
             description = "평가 후 단계의 지원자 정보를 가져옵니다. 정렬: newest = 최신순, oldest = 지원순")
-    @GetMapping("/after")
+    @GetMapping("/interview/after")
     public List<EvaluationResponse> getAfterEvaluations(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser,
