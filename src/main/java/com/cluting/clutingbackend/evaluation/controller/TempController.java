@@ -1,6 +1,6 @@
 package com.cluting.clutingbackend.evaluation.controller;
 
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.EvaluationResponse;
 import com.cluting.clutingbackend.evaluation.service.TempService;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
@@ -23,7 +23,7 @@ public class TempController {
 
     @Operation(summary = "평가 전 지원서 리스트", description = "현재 로그인한 유저가 평가 전인 서류들을 반환합니다.")
     @GetMapping("/before")
-    public List<DocumentEvaluationResponse> getBeforeEvaluations(
+    public List<EvaluationResponse> getBeforeEvaluations(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         return tempService.getEvaluationsByStage(recruitId, currentUser, "BEFORE");
@@ -31,7 +31,7 @@ public class TempController {
 
     @Operation(summary = "평가 중 지원서 리스트", description = "현재 로그인한 유저가 평가 중인 서류와 본인은 평가 완료했지만 팀원들이 평가 중인 서류를 반환합니다.")
     @GetMapping("/ing")
-    public List<DocumentEvaluationResponse> getInProgressEvaluations(
+    public List<EvaluationResponse> getInProgressEvaluations(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         return tempService.getEvaluationsByStage(recruitId, currentUser, "ING");
@@ -39,7 +39,7 @@ public class TempController {
 
     @Operation(summary = "평가 후 지원서 리스트", description = "모든 운영진이 평가를 완료한 서류를 반환합니다.")
     @GetMapping("/after")
-    public List<DocumentEvaluationResponse> getAfterEvaluations(
+    public List<EvaluationResponse> getAfterEvaluations(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         return tempService.getEvaluationsByStage(recruitId, currentUser, "AFTER");
@@ -47,7 +47,7 @@ public class TempController {
 
     @Operation(summary = "평가 완료 지원서 리스트", description = "합격/불합격이 결정된 서류를 반환합니다.")
     @GetMapping("/complete")
-    public List<DocumentEvaluationResponse> getCompleteEvaluations(
+    public List<EvaluationResponse> getCompleteEvaluations(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser) {
         return tempService.getEvaluationsByStage(recruitId, currentUser, "COMPLETE");

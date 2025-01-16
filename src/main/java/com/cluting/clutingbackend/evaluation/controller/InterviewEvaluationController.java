@@ -143,7 +143,7 @@ public class InterviewEvaluationController {
             description = "면접 평가 단계의 지원자 정보를 단계별로 분리하여 가져옵니다.+" +
                     "정렬 : newest = 최신순, oldest = 지원순")
     @GetMapping
-    public List<InterviewEvaluationResponse> getInterviewEvaluations(
+    public List<EvaluationResponse> getInterviewEvaluations(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @RequestParam(required = false) String groupName,

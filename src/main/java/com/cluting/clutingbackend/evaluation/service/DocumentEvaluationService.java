@@ -7,7 +7,7 @@ import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.evaluation.domain.Message;
 import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.*;
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.EvaluationResponse;
 import com.cluting.clutingbackend.evaluation.repository.MessageRepository;
 import com.cluting.clutingbackend.global.enums.*;
 import com.cluting.clutingbackend.global.message.MessageUtil;
@@ -124,7 +124,7 @@ public class DocumentEvaluationService {
     }
 
     // 공통 필터 및 정렬 처리
-    private List<DocumentEvaluationResponse> filterAndSort(
+    private List<EvaluationResponse> filterAndSort(
             List<Application> applications,
             DocumentEvaluationRequest request,
             String stage,
@@ -166,24 +166,24 @@ public class DocumentEvaluationService {
 
 
     // 평가 전 상태 리스트 반환
-    public List<DocumentEvaluationResponse> getPendingEvaluations(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
+    public List<EvaluationResponse> getPendingEvaluations(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
         ensureRecruitExists(recruitId);
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
         return filterAndSort(applications, request, "BEFORE", currentUser, recruitId);
     }
 
     // 평가 중 상태와 편집 가능한 상태 리스트를 반환
-    public Map<String, List<DocumentEvaluationResponse>> getEvaluationsInProgressOrEditable(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
+    public Map<String, List<EvaluationResponse>> getEvaluationsInProgressOrEditable(Long recruitId, DocumentEvaluationRequest request, CustomUserDetails currentUser) {
         ensureRecruitExists(recruitId);
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
 
         // "ING" 상태 리스트 반환
-        List<DocumentEvaluationResponse> ingList = filterAndSort(applications, request, "ING", currentUser, recruitId);
+        List<EvaluationResponse> ingList = filterAndSort(applications, request, "ING", currentUser, recruitId);
 
         // "EDITABLE" 상태 리스트 반환
-        List<DocumentEvaluationResponse> editableList = filterAndSort(applications, request, "EDITABLE", currentUser, recruitId);
+        List<EvaluationResponse> editableList = filterAndSort(applications, request, "EDITABLE", currentUser, recruitId);
 
-        Map<String, List<DocumentEvaluationResponse>> response = new HashMap<>();
+        Map<String, List<EvaluationResponse>> response = new HashMap<>();
         response.put("ING", ingList);
         response.put("EDITABLE", editableList);
 
@@ -191,7 +191,7 @@ public class DocumentEvaluationService {
     }
 
     // 평가 후 상태 리스트 반환
-    public List<DocumentEvaluationResponse> getEvaluationsAfter(
+    public List<EvaluationResponse> getEvaluationsAfter(
             Long recruitId,
             DocumentEvaluationRequest request,
             CustomUserDetails currentUser) {
@@ -200,13 +200,13 @@ public class DocumentEvaluationService {
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
 
         // READABLE 상태 필터링
-        List<DocumentEvaluationResponse> readableList = filterAndSort(applications, request, "READABLE", currentUser, recruitId);
+        List<EvaluationResponse> readableList = filterAndSort(applications, request, "READABLE", currentUser, recruitId);
 
         // EDITABLE 상태 필터링
-        List<DocumentEvaluationResponse> editableList = filterAndSort(applications, request, "EDITABLE", currentUser, recruitId);
+        List<EvaluationResponse> editableList = filterAndSort(applications, request, "EDITABLE", currentUser, recruitId);
 
         // 결과 합치기
-        List<DocumentEvaluationResponse> combinedList = new ArrayList<>();
+        List<EvaluationResponse> combinedList = new ArrayList<>();
         combinedList.addAll(readableList);
         combinedList.addAll(editableList);
 
@@ -420,7 +420,7 @@ public class DocumentEvaluationService {
     }
 
     // Response 변환
-    private DocumentEvaluationResponse mapToResponse(Application application, Long recruitId) {
+    private EvaluationResponse mapToResponse(Application application, Long recruitId) {
         User user = application.getUser();
 
         // 평가할 전체 운영진 수 가져오기
@@ -430,7 +430,7 @@ public class DocumentEvaluationService {
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
         String groupName = getString(evaluators);
 
-        return new DocumentEvaluationResponse(
+        return new EvaluationResponse(
                 application.getId(),
                 evaluators.isEmpty() ? null : evaluators.get(0).getStage(),  // evaluationStage
                 user.getName(),                                                     // applicantName

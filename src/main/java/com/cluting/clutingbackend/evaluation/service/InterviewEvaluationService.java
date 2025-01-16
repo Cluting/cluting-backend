@@ -342,7 +342,7 @@ public class InterviewEvaluationService {
                 .orElseThrow(() -> new IllegalArgumentException("지원 그룹이 존재하지 않습니다."));
     }
 
-    public List<InterviewEvaluationResponse> getInterviewEvaluations(Long recruitId, CustomUserDetails currentUser, InterviewEvaluationRequest request) {
+    public List<EvaluationResponse> getInterviewEvaluations(Long recruitId, CustomUserDetails currentUser, InterviewEvaluationRequest request) {
         Long currentClubUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
 
         // Step 1: 모집 공고 ID로 Application 조회
@@ -372,36 +372,138 @@ public class InterviewEvaluationService {
                         && (request.getGroupName() == null ||
                         (evaluator.getGroup() != null && evaluator.getGroup().getName() != null
                                 && evaluator.getGroup().getName().equals(request.getGroupName()))))
-                .map(evaluator -> mapToResponse(evaluator, request.getSortOrder()))
+                .map(evaluator -> mapToDocumentResponse(evaluator, recruitId, currentUser))
                 .sorted((resp1, resp2) -> sortResponses(resp1, resp2, request.getSortOrder()))
                 .collect(Collectors.toList());
     }
 
+    private EvaluationResponse mapToDocumentResponse(
+            InterviewEvaluator evaluator,
+            Long recruitId,
+            CustomUserDetails currentUser
+    ) {
+        Application application = evaluator.getInterview().getApplication();
+        User user = application.getUser();
+        List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByInterviewId(evaluator.getInterview().getId());
 
-    private InterviewEvaluationResponse mapToResponse(InterviewEvaluator evaluator, String sortOrder) {
-        Interview interview = evaluator.getInterview();
-        Application application = interview.getApplication();
-        User applicant = application.getUser();
+        // 현재 로그인한 유저의 상태 확인
+        EvaluationResponse.EvaluatorInfo currentEvaluator = evaluators.stream()
+                .filter(e -> e.getClubUser().getUser().getId().equals(currentUser.getUser().getId()))
+                .map(e -> new EvaluationResponse.EvaluatorInfo(
+                        e.getClubUser().getUser().getName(),
+                        e.getStage()
+                ))
+                .findFirst()
+                .orElse(null);
 
-        int totalEvaluators = interviewEvaluatorRepository.countDistinctByInterviewId(interview.getId());
-        int currentEvaluators = interview.getNumClubUser() != null ? interview.getNumClubUser() : 0;
+        // 다른 운영진 정보 추출
+        List<EvaluationResponse.EvaluatorInfo> otherEvaluators = evaluators.stream()
+                .filter(e -> !e.getClubUser().getUser().getId().equals(currentUser.getUser().getId()))
+                .map(e -> new EvaluationResponse.EvaluatorInfo(
+                        e.getClubUser().getUser().getName(),
+                        e.getStage()
+                ))
+                .collect(Collectors.toList());
 
+        // 모든 운영진이 평가 완료 상태인지 확인
+        boolean isAllEvaluatorsAfter = evaluators.stream()
+                .allMatch(e -> e.getStage().equals(Stage.AFTER));
 
+        // 평가 결과 결정 여부 확인
+        boolean isFinalDecisionMade = application.isCompleted();
 
-        return InterviewEvaluationResponse.builder()
-                .stage(evaluator.getStage().name())
-                .applicantName(applicant.getName())
-                .applicantPhone(applicant.getPhone())
-                .groupName(evaluator.getGroup() != null ? evaluator.getGroup().getName() : "N/A")
-                .evaluationStatus(currentEvaluators + "/" + totalEvaluators)
-                .build();
+        // 평가 상태 결정
+        Stage evaluationStage;
+
+        if (isFinalDecisionMade) {
+            evaluationStage = Stage.AFTER;
+        } else if (isAllEvaluatorsAfter) {
+            evaluationStage = Stage.EDITABLE;
+        } else if (currentEvaluator != null && currentEvaluator.getStage().equals(Stage.ING)) {
+            evaluationStage = Stage.ING;
+        } else if (currentEvaluator == null) {
+            evaluationStage = Stage.READABLE;
+        } else {
+            evaluationStage = Stage.BEFORE;
+        }
+
+        // 응답 생성
+        return new EvaluationResponse(
+                application.getId(),
+                evaluationStage,
+                user.getName(),
+                user.getPhone(),
+                application.getRecruit_group(),
+                evaluators.size() + "/" + evaluators.size(),
+                application.getCreatedAt(),
+                currentEvaluator,
+                otherEvaluators
+        );
     }
 
-    private int sortResponses(InterviewEvaluationResponse resp1, InterviewEvaluationResponse resp2, String sortOrder) {
+
+
+
+//    public List<InterviewEvaluationResponse> getInterviewEvaluations(Long recruitId, CustomUserDetails currentUser, InterviewEvaluationRequest request) {
+//        Long currentClubUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
+//
+//        // Step 1: 모집 공고 ID로 Application 조회
+//        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+//        if (applications == null || applications.isEmpty()) {
+//            return Collections.emptyList(); // Application이 없으면 빈 리스트 반환
+//        }
+//
+//        // Step 2: Application ID로 Interview 조회
+//        List<Interview> interviews = interviewRepository.findByApplicationIdIn(
+//                applications.stream().map(Application::getId).collect(Collectors.toList()));
+//        if (interviews == null || interviews.isEmpty()) {
+//            return Collections.emptyList(); // Interview가 없으면 빈 리스트 반환
+//        }
+//
+//        // Step 3: Interview ID로 InterviewEvaluator 조회 및 단계별 분리
+//        List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByInterviewIdIn(
+//                interviews.stream().map(Interview::getId).collect(Collectors.toList()));
+//        if (evaluators == null || evaluators.isEmpty()) {
+//            return Collections.emptyList(); // Evaluators가 없으면 빈 리스트 반환
+//        }
+//
+//        return evaluators.stream()
+//                .filter(evaluator -> evaluator.getClubUser() != null
+//                        && evaluator.getClubUser().getUser() != null
+//                        && evaluator.getClubUser().getUser().getId().equals(currentClubUserId)
+//                        && (request.getGroupName() == null ||
+//                        (evaluator.getGroup() != null && evaluator.getGroup().getName() != null
+//                                && evaluator.getGroup().getName().equals(request.getGroupName()))))
+//                .map(evaluator -> mapToResponse(evaluator, request.getSortOrder()))
+//                .sorted((resp1, resp2) -> sortResponses(resp1, resp2, request.getSortOrder()))
+//                .collect(Collectors.toList());
+//    }
+
+
+//    private InterviewEvaluationResponse mapToResponse(InterviewEvaluator evaluator, String sortOrder) {
+//        Interview interview = evaluator.getInterview();
+//        Application application = interview.getApplication();
+//        User applicant = application.getUser();
+//
+//        int totalEvaluators = interviewEvaluatorRepository.countDistinctByInterviewId(interview.getId());
+//        int currentEvaluators = interview.getNumClubUser() != null ? interview.getNumClubUser() : 0;
+//
+//
+//
+//        return InterviewEvaluationResponse.builder()
+//                .stage(evaluator.getStage().name())
+//                .applicantName(applicant.getName())
+//                .applicantPhone(applicant.getPhone())
+//                .groupName(evaluator.getGroup() != null ? evaluator.getGroup().getName() : "N/A")
+//                .evaluationStatus(currentEvaluators + "/" + totalEvaluators)
+//                .build();
+//    }
+
+    private int sortResponses(EvaluationResponse resp1, EvaluationResponse resp2, String sortOrder) {
         if ("newest".equals(sortOrder)) {
-            return resp2.getStage().compareTo(resp1.getStage());
+            return resp2.getEvaluationStage().compareTo(resp1.getEvaluationStage());
         } else if ("oldest".equals(sortOrder)) {
-            return resp1.getStage().compareTo(resp2.getStage());
+            return resp1.getEvaluationStage().compareTo(resp2.getEvaluationStage());
         }
         return 0;
     }

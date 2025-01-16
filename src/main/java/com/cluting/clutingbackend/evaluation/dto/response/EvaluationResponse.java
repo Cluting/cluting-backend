@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-public class DocumentEvaluationResponse {
+public class EvaluationResponse {
     private Long applicationId;
     private Stage evaluationStage;
     private String applicantName;
@@ -24,7 +24,7 @@ public class DocumentEvaluationResponse {
     private EvaluatorInfo currentEvaluator;          // 현재 로그인한 유저의 정보
     private List<EvaluatorInfo> otherEvaluators;     // 다른 운영진 정보
 
-    public DocumentEvaluationResponse(Long id, Stage evaluationStage, String name, String phone, String groupName, String applicationNumClubUser, LocalDateTime createdAt) {
+    public EvaluationResponse(Long id, Stage evaluationStage, String name, String phone, String groupName, String applicationNumClubUser, LocalDateTime createdAt) {
         this.applicationId = id;
         this.evaluationStage = evaluationStage;
         this.applicantName = name;
@@ -38,7 +38,7 @@ public class DocumentEvaluationResponse {
     @AllArgsConstructor
     public static class EvaluatorInfo {
         private String name;   // 운영진 이름
-        private String state;  // 평가 상태
+        private Stage stage;  // 평가 상태
     }
 }
 

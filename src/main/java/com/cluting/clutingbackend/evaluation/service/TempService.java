@@ -2,9 +2,10 @@ package com.cluting.clutingbackend.evaluation.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.EvaluationResponse;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
+import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.cluting.clutingbackend.global.exception.ErrorCode.APP_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class TempService {
@@ -22,7 +25,7 @@ public class TempService {
     private final ApplicationRepository applicationRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
 
-    public List<DocumentEvaluationResponse> getEvaluationsByStage(
+    public List<EvaluationResponse> getEvaluationsByStage(
             Long recruitId, CustomUserDetails currentUser, String stage) {
 
         List<Application> applications = applicationRepository.findByRecruitId(recruitId);
@@ -68,7 +71,7 @@ public class TempService {
     }
 
 
-    private DocumentEvaluationResponse mapToResponse(
+    private EvaluationResponse mapToResponse(
             Application application,
             Long recruitId,
             CustomUserDetails currentUser
@@ -77,21 +80,21 @@ public class TempService {
         List<DocumentEvaluator> evaluators = documentEvaluatorRepository.findByApplicationId(application.getId());
     
         // 현재 로그인한 유저의 상태 확인
-        DocumentEvaluationResponse.EvaluatorInfo currentEvaluator = evaluators.stream()
+        EvaluationResponse.EvaluatorInfo currentEvaluator = evaluators.stream()
                 .filter(evaluator -> evaluator.getClubUser().getUser().getId().equals(currentUser.getId()))
-                .map(evaluator -> new DocumentEvaluationResponse.EvaluatorInfo(
+                .map(evaluator -> new EvaluationResponse.EvaluatorInfo(
                         evaluator.getClubUser().getUser().getName(),
-                        evaluator.getStage().name()
+                        evaluator.getStage()
                 ))
                 .findFirst()
                 .orElse(null);
     
         // 다른 운영진 정보 추출
-        List<DocumentEvaluationResponse.EvaluatorInfo> otherEvaluators = evaluators.stream()
+        List<EvaluationResponse.EvaluatorInfo> otherEvaluators = evaluators.stream()
                 .filter(evaluator -> !evaluator.getClubUser().getUser().getId().equals(currentUser.getId()))
-                .map(evaluator -> new DocumentEvaluationResponse.EvaluatorInfo(
+                .map(evaluator -> new EvaluationResponse.EvaluatorInfo(
                         evaluator.getClubUser().getUser().getName(),
-                        evaluator.getStage().name()
+                        evaluator.getStage()
                 ))
                 .collect(Collectors.toList());
     
@@ -111,7 +114,7 @@ public class TempService {
         } else if (isAllEvaluatorsAfter) {
             // 모든 운영진이 평가 완료 상태 (최종 판단은 안 됨)
             evaluationStage = Stage.EDITABLE;
-        } else if (currentEvaluator != null && currentEvaluator.getState().equals("ING")) {
+        } else if (currentEvaluator != null && currentEvaluator.getStage().equals("ING")) {
             // 현재 유저가 평가 중
             evaluationStage = Stage.ING;
         } else if (currentEvaluator == null) {
@@ -123,7 +126,7 @@ public class TempService {
         }
     
         // 응답 생성
-        return new DocumentEvaluationResponse(
+        return new EvaluationResponse(
                 application.getId(),
                 evaluationStage,
                 user.getName(),
@@ -140,7 +143,7 @@ public class TempService {
     public void updateEvaluateStatus(Long applicationId, EvaluateStatus newStatus) {
         // Application 찾기
         Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new IllegalArgumentException("Application not found with ID: " + applicationId));
+                .orElseThrow(() -> new CustomException(APP_NOT_FOUND,"Application not found with ID: " + applicationId));
 
         // EvaluateStatus 업데이트
         application.setState(newStatus);

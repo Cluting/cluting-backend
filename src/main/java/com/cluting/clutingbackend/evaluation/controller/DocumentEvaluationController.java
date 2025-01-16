@@ -2,7 +2,7 @@ package com.cluting.clutingbackend.evaluation.controller;
 
 import com.cluting.clutingbackend.evaluation.dto.request.MessageSendRequestDto;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluateResultsResponseDto;
-import com.cluting.clutingbackend.evaluation.dto.response.DocumentEvaluationResponse;
+import com.cluting.clutingbackend.evaluation.dto.response.EvaluationResponse;
 import com.cluting.clutingbackend.evaluation.dto.response.DocumentResultListResponseDto;
 import com.cluting.clutingbackend.evaluation.dto.response.MessageResponseDto;
 import com.cluting.clutingbackend.evaluation.service.DocumentEvaluationService;
@@ -80,7 +80,7 @@ public class DocumentEvaluationController {
             "\n- 'oldest' : 오래된 순 정렬 (생성일 기준 오름차순)" +
             "\n- 정렬을 하지 않으려면 null을 보내주세요.")
     @PostMapping("/before")
-    public List<DocumentEvaluationResponse> getPendingEvaluations(
+    public List<EvaluationResponse> getPendingEvaluations(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @RequestBody DocumentEvaluationRequest request) {
@@ -99,13 +99,13 @@ public class DocumentEvaluationController {
             "\n- 'oldest' : 오래된 순 정렬 (생성일 기준 오름차순)" +
             "\n- 정렬을 하지 않으려면 null을 보내주세요.")
     @PostMapping("/ing")
-    public Map<String, List<DocumentEvaluationResponse>> getEvaluationsInProgressOrEditable(
+    public Map<String, List<EvaluationResponse>> getEvaluationsInProgressOrEditable(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @RequestBody DocumentEvaluationRequest request) {
 
         // "ING"와 "EDITABLE" 상태의 리스트를 반환하는 Map
-        Map<String, List<DocumentEvaluationResponse>> evaluations = documentEvaluationService.getEvaluationsInProgressOrEditable(recruitId, request, currentUser);
+        Map<String, List<EvaluationResponse>> evaluations = documentEvaluationService.getEvaluationsInProgressOrEditable(recruitId, request, currentUser);
 
         // 반환값을 구분하여 "ING"와 "EDITABLE" 상태의 리스트를 구분
         return evaluations;
@@ -123,7 +123,7 @@ public class DocumentEvaluationController {
                     "\n- 'oldest' : 오래된 순 정렬 (생성일 기준 오름차순)" +
                     "\n- 정렬을 하지 않으려면 null을 보내주세요.")
     @PostMapping("/after")
-    public List<DocumentEvaluationResponse> getEvaluationsAfter(
+    public List<EvaluationResponse> getEvaluationsAfter(
             @PathVariable Long recruitId,
             @AuthenticationPrincipal CustomUserDetails currentUser,
             @RequestBody DocumentEvaluationRequest request) {
