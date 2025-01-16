@@ -757,22 +757,23 @@ public class InterviewEvaluationService {
 
         // 5. 다른 운영진 평가 보기
         List<InterviewEvaluatorScores> evaluatorScores = evaluators.stream()
-                .map(evaluator -> InterviewEvaluatorScores.of(evaluator, interviewScoreRepository))
+                .map(evaluator -> InterviewEvaluatorScores.of(evaluator, interviewCriteriaRepository))
                 .collect(Collectors.toList());
 
         // 6. 내 평가 보기
-        Long currentClubUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
-        if (currentClubUserId == null) {
-            throw new DocumentEvaluationService.ResourceNotFoundException("Current Club User not found");
+        Long currentUserId = currentUser.getUser() != null ? currentUser.getUser().getId() : null;
+
+        if (currentUserId == null) {
+            throw new DocumentEvaluationService.ResourceNotFoundException("Current User not found");
         }
 
-        ClubUser currentClubUser = clubUserRepository.findById(currentClubUserId)
-                .orElseThrow(() -> new DocumentEvaluationService.ResourceNotFoundException("Club User not found"));
+        ClubUser clubUser = clubUserRepository.findByUserId(currentUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not part of this club"));
 
         InterviewEvaluatorScores myEvaluation = evaluators.stream()
-                .filter(evaluator -> evaluator.getClubUser() != null && evaluator.getClubUser().getId().equals(currentClubUserId))
+                .filter(evaluator -> evaluator.getClubUser() != null && evaluator.getClubUser().getId().equals(clubUser.getId()))
                 .findFirst()
-                .map(evaluator -> InterviewEvaluatorScores.of(evaluator, interviewScoreRepository))
+                .map(evaluator -> InterviewEvaluatorScores.of(evaluator, interviewCriteriaRepository))
                 .orElse(null);
 
         return new EachInterviewEvaluationResponse(
@@ -791,8 +792,11 @@ public class InterviewEvaluationService {
         Interview interview = interviewRepository.findById(interviewId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid interview ID"));
 
+        ClubUser clubUser = clubUserRepository.findByUserId(clubUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not part of this club"));
+
         // 면접 평가자(InterviewEvaluator) 찾기
-        InterviewEvaluator evaluator = interviewEvaluatorRepository.findByInterviewIdAndClubUserId(interviewId, clubUserId)
+        InterviewEvaluator evaluator = interviewEvaluatorRepository.findByInterviewIdAndClubUserId(interviewId, clubUser.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Evaluator not found"));
 
         // 평가 기준 처리
@@ -801,13 +805,25 @@ public class InterviewEvaluationService {
             InterviewCriteria criteria = interviewCriteriaRepository.findById(criteriaEvaluation.getCriteriaId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid criteria ID"));
 
-            InterviewScore score = new InterviewScore();
-            score.setInterviewCriteria(criteria);
-            score.setInterviewEvaluator(evaluator);
-            score.setScore(criteriaEvaluation.getScore());
-            totalScore += criteriaEvaluation.getScore();
+            // 기존 점수 확인
+            Optional<InterviewScore> optionalScore = interviewScoreRepository.findByInterviewEvaluatorIdAndInterviewCriteriaId(
+                    evaluator.getId(), criteria.getId());
 
-            interviewScoreRepository.save(score);
+            if (optionalScore.isPresent()) {
+                // 기존 점수 업데이트
+                InterviewScore existingScore = optionalScore.get();
+                existingScore.setScore(criteriaEvaluation.getScore()); // 새 점수로 변경
+                interviewScoreRepository.save(existingScore);
+            } else {
+                // 새 점수 생성
+                InterviewScore score = new InterviewScore();
+                score.setInterviewCriteria(criteria);
+                score.setInterviewEvaluator(evaluator);
+                score.setScore(criteriaEvaluation.getScore());
+                interviewScoreRepository.save(score);
+            }
+
+            totalScore += criteriaEvaluation.getScore();
         }
 
         // 평가자의 총 점수 업데이트
@@ -815,26 +831,15 @@ public class InterviewEvaluationService {
         evaluator.setComment(request.getComment());
         interviewEvaluatorRepository.save(evaluator);
 
-        // 면접 엔티티의 numClubUser 업데이트 (null이면 1로 설정, 아니면 증가)
-        if (interview.getNumClubUser() == null) {
-            interview.setNumClubUser(1);  // 처음 평가하는 경우 numClubUser가 null일 수 있으므로 1로 설정
-        } else {
-            interview.setNumClubUser(interview.getNumClubUser() + 1);  // 기존 값에 1을 더함
-        }
-
-        // 새로운 평균 점수 계산
-        int newAverageScore = interview.getScore() == null ?
-                totalScore : (interview.getScore() * (interview.getNumClubUser() - 1) + totalScore) / interview.getNumClubUser();
-        interview.setScore(newAverageScore);
-
         // 면접 상태를 'EDITABLE'로 업데이트
         evaluator.setStage(Stage.EDITABLE);
         interviewEvaluatorRepository.save(evaluator);
-        interviewRepository.save(interview);
 
         // 응답 생성
         return new InterviewEvaluationResponseDto(interviewId, totalScore, request.getComment(), "UPDATED");
     }
+
+
 
     public List<InterviewResponseDTO> getInterviewScheduleByRecruitId(Long recruitId) {
         // Step 1: Application 엔티티 조회

@@ -22,6 +22,6 @@ public class InterviewScore {
     @JoinColumn(name = "interview_evaluator_id", nullable = false)
     private InterviewEvaluator interviewEvaluator;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer score;
 }
