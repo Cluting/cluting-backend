@@ -34,6 +34,7 @@ public class EvaluationResponse {
         this.createdAt = createdAt;
     }
 
+
     @Data
     @AllArgsConstructor
     public static class EvaluatorInfo {

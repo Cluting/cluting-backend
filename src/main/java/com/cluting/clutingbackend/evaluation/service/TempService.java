@@ -7,12 +7,15 @@ import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
+import com.cluting.clutingbackend.interview.domain.InterviewEvaluator;
+import com.cluting.clutingbackend.interview.repository.InterviewEvaluatorRepository;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +27,8 @@ public class TempService {
 
     private final ApplicationRepository applicationRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
+    private final InterviewEvaluatorRepository interviewEvaluatorRepository;
+
 
     public List<EvaluationResponse> getEvaluationsByStage(
             Long recruitId, CustomUserDetails currentUser, String stage) {
@@ -150,6 +155,101 @@ public class TempService {
 
         // 업데이트된 Application 저장
         applicationRepository.save(application);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public List<EvaluationResponse> getEvaluationsByStage(
+            Long recruitId,
+            CustomUserDetails currentUser,
+            String groupName,
+            String sortOrder,
+            Stage stage) {
+
+        // InterviewEvaluator에서 recruitId와 stage에 맞는 데이터 조회
+        List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByRecruitIdAndStage(recruitId, stage);
+
+        if (groupName != null) {
+            evaluators = evaluators.stream()
+                    .filter(evaluator -> evaluator.getGroup() != null
+                            && evaluator.getGroup().getName().equals(groupName))
+                    .collect(Collectors.toList());
+        }
+
+        // 정렬 로직
+        if ("newest".equals(sortOrder)) {
+            evaluators.sort(Comparator.comparing(InterviewEvaluator::getInterviewTime).reversed());
+        } else if ("oldest".equals(sortOrder)) {
+            evaluators.sort(Comparator.comparing(InterviewEvaluator::getInterviewTime));
+        }
+
+        // EvaluationResponse로 매핑 (evaluators 리스트를 mapToResponse에 전달)
+        List<InterviewEvaluator> finalEvaluators = evaluators;
+
+        return evaluators.stream()
+                .map(evaluator -> mapToResponse(evaluator, finalEvaluators))
+                .collect(Collectors.toList());
+    }
+
+
+    private EvaluationResponse mapToResponse(InterviewEvaluator evaluator, List<InterviewEvaluator> evaluators) {
+        Application application = evaluator.getInterview().getApplication();
+        User applicant = application.getUser();
+
+        // 현재 로그인한 평가자 정보 추출
+        EvaluationResponse.EvaluatorInfo currentEvaluator = evaluators.stream()
+                .filter(e -> e.getClubUser() != null && e.getClubUser().getUser() != null
+                        && e.getClubUser().getUser().getId().equals(evaluator.getClubUser().getUser().getId()))
+                .map(e -> new EvaluationResponse.EvaluatorInfo(
+                        e.getClubUser().getUser().getName(),
+                        e.getStage()
+                ))
+                .findFirst()
+                .orElse(null);
+
+        // 다른 운영진 정보 추출
+        List<EvaluationResponse.EvaluatorInfo> otherEvaluators = evaluators.stream()
+                .filter(e -> e.getClubUser() != null && e.getClubUser().getUser() != null
+                        && !e.getClubUser().getUser().getId().equals(evaluator.getClubUser().getUser().getId()))
+                .map(e -> new EvaluationResponse.EvaluatorInfo(
+                        e.getClubUser().getUser().getName(),
+                        e.getStage()
+                ))
+                .toList();
+
+        // 모든 운영진이 평가 완료 상태인지 확인
+        boolean isAllEvaluatorsAfter = evaluators.stream()
+                .allMatch(e -> e.getStage().equals(Stage.AFTER));
+
+        // 평가 결과 결정 여부 확인
+        boolean isFinalDecisionMade = application.isCompleted();
+
+        // 평가 상태 결정
+        Stage evaluationStage;
+        if (isFinalDecisionMade) {
+            evaluationStage = Stage.AFTER;
+        } else if (isAllEvaluatorsAfter) {
+            evaluationStage = Stage.EDITABLE;
+        } else if (currentEvaluator != null && currentEvaluator.getStage().equals(Stage.ING)) {
+            evaluationStage = Stage.ING;
+        } else if (currentEvaluator == null) {
+            evaluationStage = Stage.READABLE;
+        } else {
+            evaluationStage = Stage.BEFORE;
+        }
+
+        // 응답 객체 생성
+        return new EvaluationResponse(
+                application.getId(),
+                evaluationStage,
+                applicant.getName(),
+                applicant.getPhone(),
+                evaluator.getGroup() != null ? evaluator.getGroup().getName() : null,
+                evaluators.size() + "/" + evaluators.size(),
+                application.getCreatedAt(),
+                currentEvaluator,
+                otherEvaluators
+        );
     }
 
 
