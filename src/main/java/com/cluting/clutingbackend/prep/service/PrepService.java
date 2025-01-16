@@ -270,10 +270,10 @@ public class PrepService {
         List<PrepStageDto> prepStages = prepStageRepository.findByRecruitId(recruitId).stream()
                 .map(prepStage -> {
                     // 해당 PrepStage와 관련된 AdminInfoDto 목록 필터링
-                    List<PrepStageDto.AdminInfoDto> relatedAdmins = clubUserRepository.findStaffNamesByRecruitId(recruitId).stream()
-                            .map(result -> new PrepStageDto.AdminInfoDto(
-                                    ((Number) result[0]).longValue(), // 첫 번째 값: Long ID
-                                    (String) result[1]               // 두 번째 값: String Name
+                    List<PrepStageDto.AdminInfoDto> relatedAdmins = prepStageClubUserRepository.findByPrepStageId(prepStage.getId()).stream()
+                            .map(prepStageClubUser -> new PrepStageDto.AdminInfoDto(
+                                    prepStageClubUser.getClubUser().getId(),
+                                    prepStageClubUser.getClubUser().getUser().getName()
                             ))
                             .collect(Collectors.toList());
 
