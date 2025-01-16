@@ -7,12 +7,14 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.util.CustomObjectInputStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
@@ -56,10 +58,19 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String token) {
         String email = getUserEmail(token);
-        UserDetails userDetails = userDetailsService.loadUserByUserId(email);
+        UserDetails userDetails;
+        try {
+            userDetails = userDetailsService.loadUserByUserId(email);
+        } catch (UsernameNotFoundException e) {
+            log.warn("User not found for email: {}", email);
+            throw e; // 예외를 재던지거나 상황에 맞게 처리
+        }
+
         log.debug("Authentication created for user: {}", email);
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
+
+
 
     public String getUserEmail(String token) {
         return Jwts.parserBuilder()

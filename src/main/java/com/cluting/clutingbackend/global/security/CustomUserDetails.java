@@ -20,11 +20,15 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 선택된 ClubUser의 권한을 기반으로 GrantedAuthority 반환
+        if (selectedClubUser == null || selectedClubUser.getPermissionLevels() == null) {
+            return List.of(); // 기본 권한 없음
+        }
         return selectedClubUser.getPermissionLevels().stream()
                 .map(permission -> (GrantedAuthority) permission.getPermissionLevel()::name)
                 .toList();
     }
+
+
 
     @Override
     public String getPassword() {
