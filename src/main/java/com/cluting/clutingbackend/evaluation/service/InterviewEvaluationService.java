@@ -839,6 +839,51 @@ public class InterviewEvaluationService {
         return new InterviewEvaluationResponseDto(interviewId, totalScore, request.getComment(), "UPDATED");
     }
 
+    @Transactional
+    public InterviewEvaluationResponseDto updateInterviewEvaluation(Long interviewId, Long clubUserId, InterviewEvaluationRequestDto request) {
+        // 면접 정보 찾기
+        Interview interview = interviewRepository.findById(interviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid interview ID"));
+
+        // 클럽 사용자 정보 찾기
+        ClubUser clubUser = clubUserRepository.findByUserId(clubUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not part of this club"));
+
+        // 면접 평가자 찾기
+        InterviewEvaluator evaluator = interviewEvaluatorRepository.findByInterviewIdAndClubUserId(interviewId, clubUser.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Evaluator not found"));
+
+        // 기존 평가 기준 처리
+        int totalScore = 0;
+        for (InterviewEvaluationRequestDto.CriteriaEvaluation criteriaEvaluation : request.getCriteriaEvaluations()) {
+            InterviewCriteria criteria = interviewCriteriaRepository.findById(criteriaEvaluation.getCriteriaId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid criteria ID"));
+
+            // 기존 점수 확인
+            InterviewScore existingScore = interviewScoreRepository.findByInterviewEvaluatorIdAndInterviewCriteriaId(
+                            evaluator.getId(), criteria.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Score not found for the given criteria"));
+
+            // 점수 수정
+            existingScore.setScore(criteriaEvaluation.getScore());
+            interviewScoreRepository.save(existingScore);
+
+            // 총 점수 계산
+            totalScore += criteriaEvaluation.getScore();
+        }
+
+        // 평가자의 총 점수 업데이트 및 코멘트 수정
+        evaluator.setScore(totalScore);
+        evaluator.setComment(request.getComment());
+        interviewEvaluatorRepository.save(evaluator);
+
+        // 면접 상태를 'EDITABLE'로 업데이트
+        evaluator.setStage(Stage.EDITABLE);
+        interviewEvaluatorRepository.save(evaluator);
+
+        // 응답 생성
+        return new InterviewEvaluationResponseDto(interviewId, totalScore, request.getComment(), "UPDATED");
+    }
 
 
     public List<InterviewResponseDTO> getInterviewScheduleByRecruitId(Long recruitId) {
