@@ -2,13 +2,15 @@ package com.cluting.clutingbackend.application.service;
 
 import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.dto.GroupSelectRequestDto;
-import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.dto.request.AnswerSaveRequestDto;
 import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
+import com.cluting.clutingbackend.application.dto.request.SaveAnswerRequestDto;
 import com.cluting.clutingbackend.application.dto.response.*;
 import com.cluting.clutingbackend.application.repository.ApplicationRepository;
 import com.cluting.clutingbackend.global.enums.EvaluateStatus;
+import com.cluting.clutingbackend.global.s3.AwsS3Service;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
+import com.cluting.clutingbackend.interview.domain.InterviewTimeSlot;
 import com.cluting.clutingbackend.interview.repository.InterviewRepository;
 import com.cluting.clutingbackend.plan.domain.DocumentAnswer;
 import com.cluting.clutingbackend.plan.domain.DocumentQuestion;
@@ -16,6 +18,7 @@ import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.DocumentAnswerRepository;
 import com.cluting.clutingbackend.plan.repository.DocumentQuestionRepository;
 import com.cluting.clutingbackend.plan.repository.GroupRepository;
+import com.cluting.clutingbackend.plan.repository.InterviewTimeSlotRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.repository.RecruitRepository;
@@ -28,10 +31,12 @@ import com.cluting.clutingbackend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +51,8 @@ public class ApplicationService {
     private final InterviewRepository interviewRepository;
     private final DocumentQuestionRepository documentQuestionRepository;
     private final DocumentAnswerRepository documentAnswerRepository;
+    private final InterviewTimeSlotRepository interviewTimeSlotRepository;
+    private final AwsS3Service awsS3Service;
 
     // [지원서 작성하기] 지원자 정보 조회하기(프로필, 이름, 번호, 이메일, 거주지, 학교, 학과, 다전공)
     @Transactional(readOnly = true)
@@ -111,16 +118,90 @@ public class ApplicationService {
         );
     }
 
-    // [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 조회하기
-    // [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 답변 저장하기
-    // [지원서 작성하기] 파일 제출일 경우 파일 저장
-    // [지원서 작성하기] 지원자의 포트폴리오 url 조회 및 운영진들의 면접 가능 시간 조회
-    // [지원서 작성하기] 지원자의 포트폴리오 url 입력 저장 및 운영진들의 면접 가능 시간 기반의 지원자의 면접 가능 시간 선택 저장
-    // [지원서 작성하기] 제출 확정하기 - createdAt 저장
+    //TODO [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 조회하기
+    @Transactional(readOnly = true)
+    public GroupQuestionResponseDto findGroupQuestions(User user, Long recruitId) {
+        Application application = applicationRepository.findByUserIdAndRecruitId(user.getId(), recruitId)
+                .orElseThrow(()-> new RuntimeException("Application is Not Found!"));
+        List<String> groups = List.of(application.getRecruit_group().split(":::"));
+        Map<String, List<DocumentQuestionResponseDto>> result = new HashMap<>();
+        for (String group : groups) {
+            Group g = groupRepository.findByRecruit_IdAndAndName(recruitId, group);
+            List<DocumentQuestion> questions = documentQuestionRepository.findByGroupId(g.getId());
+            List<DocumentQuestionResponseDto> dtos = new ArrayList<>();
+            for (DocumentQuestion question : questions) {
+                dtos.add(DocumentQuestionResponseDto.toDto(question));
+            }
+
+            result.put(group, dtos);
+        }
+
+        return GroupQuestionResponseDto.builder().questions(result).build();
+    }
+
+    //TODO [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 답변 저장하기
+    @Transactional
+    public void saveAnswers(User user, Long recruitId, SaveAnswerRequestDto saveAnswerRequestDto) {
+        for (SaveAnswerRequestDto.Answer answer : saveAnswerRequestDto.getAnswers()) {
+            DocumentQuestion documentQuestion = documentQuestionRepository.findById(answer.getQuestionId())
+                    .orElseThrow(()-> new RuntimeException("Question is Not Found!"));
+            Application application = applicationRepository.findByUserIdAndRecruitId(user.getId(), recruitId)
+                    .orElseThrow(()-> new RuntimeException("Application is Not Found!"));
+
+            documentAnswerRepository.save(DocumentAnswer.of(documentQuestion, application, answer.getContent()));
+        }
+    }
+
+    //TODO [지원서 작성하기] 파일 제출일 경우 파일 저장
+    @Transactional
+    public void savePortfolioFile(User user, MultipartFile file) {
+        String fileUrl = awsS3Service.uploadFile(file);
+        user.setPortfolioFile(fileUrl);
+        userRepository.save(user);
+    }
+
+    //TODO [지원서 작성하기] 지원자의 포트폴리오 url 조회 및 운영진들의 면접 가능 시간 조회
+    @Transactional(readOnly = true)
+    public DocumentPrepResponseDto prepDocument(User user, Long recruitId) {
+        String url = user.getPortfolioUrl();
+        List<InterviewTimeSlot> timeSlots = interviewTimeSlotRepository.findAllByRecruit_Id(recruitId);
+
+        List<InterviewTimeSlot> sortedTimeSlots = timeSlots.stream()
+                .sorted(Comparator.comparing(InterviewTimeSlot::getTime))
+                .toList();
+
+        // 2. 날짜와 시간 분리 및 Map 생성
+        Map<String, List<String>> timeMap = new LinkedHashMap<>();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("M월 d일 E요일", Locale.KOREAN);
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+        for (InterviewTimeSlot slot : sortedTimeSlots) {
+            LocalDateTime dateTime = slot.getTime();
+            String dateKey = dateFormatter.format(dateTime);
+            String timeValue = timeFormatter.format(dateTime);
+            timeMap.computeIfAbsent(dateKey, k -> new ArrayList<>()).add(timeValue);
+        }
+
+        return DocumentPrepResponseDto.builder()
+                .portfolio(url)
+                .time(timeMap)
+                .build();
+    }
+
+    //TODO [지원서 작성하기] 지원자의 포트폴리오 url 입력 저장 및 운영진들의 면접 가능 시간 기반의 지원자의 면접 가능 시간 선택 저장
+
+    //TODO [지원서 작성하기] 제출 확정하기 - createdAt 저장
+    @Transactional
+    public void applyComplete(User user, Long recruitId) {
+        Application application = applicationRepository.findByUserIdAndRecruitId(user.getId(), recruitId)
+                .orElseThrow(()-> new RuntimeException("Application is Not Found!"));
+        application.setCreatedAt(LocalDateTime.now());
+        applicationRepository.save(application);
+    }
 
     public List<ApplicationStatusResponseDto> getApplicationStatusAndCalendar(CustomUserDetails userDetails) {
         // 현재 유저가 지원한 모든 Application을 가져오기
-        List<Application> applicationList = applicationRepository.findByUserId(userDetails.getId());
+        List<Application> applicationList = applicationRepository.findAllByUserId(userDetails.getId());
 
         // DTO로 변환
         return applicationList.stream()

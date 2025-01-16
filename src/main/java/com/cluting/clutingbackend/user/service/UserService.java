@@ -33,7 +33,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -128,7 +127,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserApplicatedClubResponseDto> profileHome(User user) {
         List<UserApplicatedClubResponseDto> result = new ArrayList<>();
-        List<Application> applications = applicationRepository.findByUserId(user.getId());
+        List<Application> applications = applicationRepository.findAllByUserId(user.getId());
         LocalDate now = LocalDate.now();
 
         for (Application application : applications) {
