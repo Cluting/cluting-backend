@@ -4,6 +4,7 @@ import com.cluting.clutingbackend.application.domain.Application;
 import com.cluting.clutingbackend.application.dto.GroupSelectRequestDto;
 import com.cluting.clutingbackend.application.dto.request.AnswerSaveRequestDto;
 import com.cluting.clutingbackend.application.dto.request.ApplicantProfileRequestDto;
+import com.cluting.clutingbackend.application.dto.request.SaveAnswerRequestDto;
 import com.cluting.clutingbackend.application.dto.response.*;
 import com.cluting.clutingbackend.application.service.ApplicationDetailService;
 import com.cluting.clutingbackend.application.service.ApplicationService;
@@ -22,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,11 +83,55 @@ public class ApplicationController {
     }
 
     // [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 조회하기
+    @Operation(summary = "[지원서 작성하기] 파트별 질문 조회하기", description = "파트별 질문을 조회합니다.")
+    @GetMapping("/{recruitId}/group-questions")
+    public GroupQuestionResponseDto findGroupQuestions(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("recruitId") Long recruitId){
+        return applicationService.findGroupQuestions(userDetails.getUser(), recruitId);
+    }
+
     // [지원서 작성하기] 파트별(파트가 2개 이상일 때에는 모든 질문) 질문 답변 저장하기
+    @Operation(summary = "[지원서 작성하기] 파트별 질문 답변 저장하기", description = "파트별 질문 답변을 저장합니다.")
+    @PostMapping("/{recruitId}/group-answers")
+    public ResponseEntity<Void> saveGroupAnswers(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("recruitId") Long recruitId,
+            @RequestBody SaveAnswerRequestDto saveAnswerRequestDto){
+        applicationService.saveAnswers(userDetails.getUser(), recruitId, saveAnswerRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
     // [지원서 작성하기] 파일 제출일 경우 파일 저장
+    @Operation(summary = "[지원서 작성하기] 파일 제출 저장", description = "포트폴리오 파일을 저장합니다.")
+    @PostMapping("/portfolio")
+    public ResponseEntity<Void> savePortfolioFile(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestPart("profile") MultipartFile file){
+        applicationService.savePortfolioFile(userDetails.getUser(), file);
+        return ResponseEntity.ok().build();
+    }
+
     // [지원서 작성하기] 지원자의 포트폴리오 url 조회 및 운영진들의 면접 가능 시간 조회
-    // [지원서 작성하기] 지원자의 포트폴리오 url 입력 저장 및 운영진들의 면접 가능 시간 기반의 지원자의 면접 가능 시간 선택 저장
+    @Operation(summary = "[지원서 작성하기] 포트폴리오 URL 및 면접 가능 시간 조회", description = "지원자의 포트폴리오 URL과 면접 가능 시간을 조회합니다.")
+    @GetMapping("/{recruitId}/document-prep")
+    public DocumentPrepResponseDto prepDocument(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("recruitId") Long recruitId){
+        return applicationService.prepDocument(userDetails.getUser(), recruitId);
+    }
+
+    //TODO [지원서 작성하기] 지원자의 포트폴리오 url 입력 저장 및 운영진들의 면접 가능 시간 기반의 지원자의 면접 가능 시간 선택 저장
+
     // [지원서 작성하기] 제출 확정하기 - createdAt 저장
+    @Operation(summary = "[지원서 작성하기] 제출 확정하기", description = "지원서를 최종 제출 확정합니다.")
+    @PostMapping("/{recruitId}/complete")
+    public ResponseEntity<Void> applyComplete(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("recruitId") Long recruitId){
+        applicationService.applyComplete(userDetails.getUser(), recruitId);
+        return ResponseEntity.ok().build();
+    }
 
     @Operation(summary = "지원자 프로필 홈",description = "내 지원 상황 및 지원 캘린더를 확인할 수 있습니다")
     @GetMapping("/home")

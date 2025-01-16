@@ -35,6 +35,8 @@ public interface GroupRepository extends JpaRepository<Group,Long> {
    \s""")
     List<Group> findAllByRecruitIdForInterview(@Param("recruitId") Long recruitId);
 
+    Group findByRecruit_IdAndAndName(Long recruitId, String name);
+
     Optional<Group> findById(Long id);
 
     @Query("SELECT g FROM Group g WHERE g.name = :name AND g.recruit.id = :recruitId")
