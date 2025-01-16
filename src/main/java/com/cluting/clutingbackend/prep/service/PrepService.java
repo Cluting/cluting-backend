@@ -123,23 +123,81 @@ public class PrepService {
 
     @Transactional
     public void updatePreparation(Long recruitId, PrepDetailsDto prepDetailsDto) {
+
+        // 1. 모집 공고 유효성 검증
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집 공고를 찾을 수 없습니다. id: " + recruitId));
 
-        // 1. 리크루팅 일정 수정
+        // 2. 리크루팅 일정 수정
+        if (prepDetailsDto.getSchedule() != null) {
+            updateRecruitSchedule(recruitId, prepDetailsDto.getSchedule());
+        }
+
+        // 3. 모집 단계 수정
+        if (prepDetailsDto.getPrepStages() != null) {
+            updatePrepStages(recruit, prepDetailsDto.getPrepStages());
+        }
+
+        // 4. 지원자 그룹 수정
+        if (prepDetailsDto.getGroups() != null) {
+            updateApplicantGroups(recruit, prepDetailsDto.getGroups());
+        }
+
+
+
+//        Recruit recruit = recruitRepository.findById(recruitId)
+//                .orElseThrow(() -> new IllegalArgumentException("해당 모집 공고를 찾을 수 없습니다. id: " + recruitId));
+//
+//        // 1. 리크루팅 일정 수정
+//        RecruitSchedule recruitSchedule = recruitScheduleRepository.findByRecruitId(recruitId)
+//                .orElseThrow(() -> new IllegalArgumentException("리크루팅 일정이 존재하지 않습니다. id: " + recruitId));
+//
+//        RecruitScheduleDto scheduleDto = prepDetailsDto.getSchedule();
+//        mapSchedule(recruitSchedule, scheduleDto);
+//        recruitScheduleRepository.save(recruitSchedule);
+//
+//        // 2. 모집 단계 및 운영진 수정
+//        List<PrepStage> existingStages = prepStageRepository.findByRecruitId(recruitId);
+//
+//        // 삭제할 단계 찾기
+//        for (PrepStage stage : existingStages) {
+//            boolean existsInRequest = prepDetailsDto.getPrepStages().stream()
+//                    .anyMatch(dto -> dto.getStageOrder().equals(stage.getStageOrder()));
+//            if (!existsInRequest) {
+//                prepStageClubUserRepository.deleteAllByPrepStageId(stage.getId());
+//                prepStageRepository.delete(stage);
+//            }
+//        }
+//
+//        // 추가 및 수정
+//        for (PrepStageDto stageDto : prepDetailsDto.getPrepStages()) {
+//            PrepStage prepStage = prepStageRepository.findByRecruitIdAndStageOrder(recruitId, stageDto.getStageOrder())
+//                    .orElse(PrepStage.builder().build());
+//
+//            prepStage.setRecruit(recruit);
+//            prepStage.setStageName(stageDto.getStageName());
+//            prepStage.setStageOrder(stageDto.getStageOrder());
+//            prepStageRepository.save(prepStage);
+//
+//            updateClubUsers(prepStage, stageDto.getAdmins().stream().map(PrepStageDto.AdminInfoDto::getId).collect(Collectors.toList()));
+//        }
+//        // 3. 지원자 그룹 수정
+//        updateApplicantGroups(recruit, prepDetailsDto.getGroups());
+    }
+
+    private void updateRecruitSchedule(Long recruitId, RecruitScheduleDto scheduleDto) {
         RecruitSchedule recruitSchedule = recruitScheduleRepository.findByRecruitId(recruitId)
                 .orElseThrow(() -> new IllegalArgumentException("리크루팅 일정이 존재하지 않습니다. id: " + recruitId));
 
-        RecruitScheduleDto scheduleDto = prepDetailsDto.getSchedule();
-        mapSchedule(recruitSchedule, scheduleDto);
+        mapSchedule(recruitSchedule, scheduleDto); // DTO 데이터를 엔티티로 매핑
         recruitScheduleRepository.save(recruitSchedule);
+    }
+    private void updatePrepStages(Recruit recruit, List<PrepStageDto> prepStages) {
+        List<PrepStage> existingStages = prepStageRepository.findByRecruitId(recruit.getId());
 
-        // 2. 모집 단계 및 운영진 수정
-        List<PrepStage> existingStages = prepStageRepository.findByRecruitId(recruitId);
-
-        // 삭제할 단계 찾기
+        // 삭제 단계 처리
         for (PrepStage stage : existingStages) {
-            boolean existsInRequest = prepDetailsDto.getPrepStages().stream()
+            boolean existsInRequest = prepStages.stream()
                     .anyMatch(dto -> dto.getStageOrder().equals(stage.getStageOrder()));
             if (!existsInRequest) {
                 prepStageClubUserRepository.deleteAllByPrepStageId(stage.getId());
@@ -147,9 +205,9 @@ public class PrepService {
             }
         }
 
-        // 추가 및 수정
-        for (PrepStageDto stageDto : prepDetailsDto.getPrepStages()) {
-            PrepStage prepStage = prepStageRepository.findByRecruitIdAndStageOrder(recruitId, stageDto.getStageOrder())
+        // 추가 및 수정 처리
+        for (PrepStageDto stageDto : prepStages) {
+            PrepStage prepStage = prepStageRepository.findByRecruitIdAndStageOrder(recruit.getId(), stageDto.getStageOrder())
                     .orElse(PrepStage.builder().build());
 
             prepStage.setRecruit(recruit);
@@ -157,12 +215,17 @@ public class PrepService {
             prepStage.setStageOrder(stageDto.getStageOrder());
             prepStageRepository.save(prepStage);
 
-            updateClubUsers(prepStage, stageDto.getAdmins().stream().map(PrepStageDto.AdminInfoDto::getId).collect(Collectors.toList()));
+            List<Long> adminIds = stageDto.getAdmins().stream()
+                    .map(PrepStageDto.AdminInfoDto::getId)
+                    .collect(Collectors.toList());
+            updateClubUsers(prepStage, adminIds);
         }
-
-        // 3. 지원자 그룹 수정
-        updateApplicantGroups(recruit, prepDetailsDto.getGroups());
     }
+//    private void updateApplicantGroups(Recruit recruit, List<String> groups) {
+//        // 기존 그룹 삭제 및 새로운 그룹 등록 처리
+//        recruit.setGroupList(groups);
+//        recruitRepository.save(recruit);
+//    }
 
 
     private void updateClubUsers(PrepStage prepStage, List<Long> clubUserIds) {

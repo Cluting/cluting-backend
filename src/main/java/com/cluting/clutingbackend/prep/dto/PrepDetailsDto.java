@@ -12,5 +12,4 @@ public class PrepDetailsDto {
     private RecruitScheduleDto schedule;
     private List<PrepStageDto> prepStages;
     private List<String> groups;
-
 }
