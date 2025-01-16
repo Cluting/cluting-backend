@@ -24,9 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                         new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
                 );
         ClubUser clubUser = clubUserRepository.findFirstByUserId(user.getId())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
-                );
+                .orElse(null); // null 값 가능성 반영
 
         return CustomUserDetails.builder()
                 .selectedClubUser(clubUser)
@@ -40,13 +38,12 @@ public class CustomUserDetailsService implements UserDetailsService {
                         new UsernameNotFoundException("사용자를 찾을 수 없습니다. 이메일: " + email)
                 );
         ClubUser clubUser = clubUserRepository.findFirstByUserId(user.getId())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("동아리 사용자를 찾을 수 없습니다. 이메일: " + email)
-                );
+                .orElse(null); // null 값 가능성 반영
 
         return CustomUserDetails.builder()
-                .selectedClubUser(clubUser)
+                .selectedClubUser(clubUser) // null일 경우에도 처리 가능
                 .user(user)
                 .build();
     }
 }
+
