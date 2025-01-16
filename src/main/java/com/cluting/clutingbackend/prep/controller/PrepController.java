@@ -31,9 +31,9 @@ public class PrepController {
     @PostMapping
     public ResponseEntity<Void> savePreparationDetails(
             @RequestParam Long recruitId,
-            @RequestBody PrepRequestDto prepRequestDto
+            @RequestBody PrepDetailsDto prepDetailsDto
     ) {
-        prepService.savePreparation(recruitId, prepRequestDto);
+        prepService.savePreparation(recruitId, prepDetailsDto);
         return ResponseEntity.ok().build();
     }
 
