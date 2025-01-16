@@ -1,7 +1,6 @@
 package com.cluting.clutingbackend.prep.controller;
 
-import com.cluting.clutingbackend.global.enums.CurrentStage;
-import com.cluting.clutingbackend.prep.dto.PrepDetailsResponseDto;
+import com.cluting.clutingbackend.prep.dto.PrepDetailsDto;
 import com.cluting.clutingbackend.prep.dto.PrepRequestDto;
 import com.cluting.clutingbackend.prep.service.PrepService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,9 +51,9 @@ public class PrepController {
     @PatchMapping
     public ResponseEntity<Void> updatePreparationDetails(
             @RequestParam Long recruitId,
-            @RequestBody PrepRequestDto prepRequestDto
+            @RequestBody PrepDetailsDto prepDetailsDto
     ) {
-        prepService.updatePreparation(recruitId, prepRequestDto);
+        prepService.updatePreparation(recruitId, prepDetailsDto);
         return ResponseEntity.ok().build();
     }
 
@@ -69,7 +68,7 @@ public class PrepController {
             }
     )
     @GetMapping
-    public PrepDetailsResponseDto getPrepDetails(@RequestParam Long recruitId) {
+    public PrepDetailsDto getPrepDetails(@RequestParam Long recruitId) {
         return prepService.getPrepDetails(recruitId);
     }
 

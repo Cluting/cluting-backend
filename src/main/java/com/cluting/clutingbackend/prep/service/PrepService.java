@@ -3,16 +3,14 @@ package com.cluting.clutingbackend.prep.service;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.global.enums.CurrentStage;
-import com.cluting.clutingbackend.interview.domain.InterviewEvaluator;
 import com.cluting.clutingbackend.interview.repository.InterviewEvaluatorRepository;
 import com.cluting.clutingbackend.plan.domain.Group;
 import com.cluting.clutingbackend.plan.repository.*;
 import com.cluting.clutingbackend.prep.domain.PrepStage;
 import com.cluting.clutingbackend.prep.domain.PrepStageClubUser;
-import com.cluting.clutingbackend.prep.dto.PrepDetailsResponseDto;
+import com.cluting.clutingbackend.prep.dto.PrepDetailsDto;
 import com.cluting.clutingbackend.prep.dto.PrepRequestDto;
 import com.cluting.clutingbackend.prep.dto.PrepStageDto;
-import com.cluting.clutingbackend.prep.dto.PrepStageResponseDto;
 import com.cluting.clutingbackend.prep.repository.PrepStageClubUserRepository;
 import com.cluting.clutingbackend.prep.repository.PrepStageRepository;
 import com.cluting.clutingbackend.recruit.domain.Recruit;
@@ -26,8 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -48,7 +44,7 @@ public class PrepService {
 
     // [계획하기] 설정 완료하기
     @Transactional
-    public void savePreparation(Long recruitId, PrepRequestDto prepRequestDto) {
+    public void savePreparation(Long recruitId, PrepDetailsDto prepDetailsDto) {
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집 공고를 찾을 수 없습니다. id: " + recruitId));
 
@@ -56,13 +52,13 @@ public class PrepService {
         RecruitSchedule recruitSchedule = new RecruitSchedule();
         recruitSchedule.setRecruit(recruit);
 
-        RecruitScheduleDto scheduleDto = prepRequestDto.getRecruitSchedules().get(0);
+        RecruitScheduleDto scheduleDto = prepDetailsDto.getSchedule();
         mapSchedule(recruitSchedule, scheduleDto);
 
         recruitScheduleRepository.save(recruitSchedule);
 
         // 2. 모집 단계 및 운영진 저장
-        for (PrepStageDto stageDto : prepRequestDto.getPrepStages()) {
+        for (PrepStageDto stageDto : prepDetailsDto.getPrepStages()) {
             PrepStage prepStage = PrepStage.builder()
                     .recruit(recruit)
                     .stageName(stageDto.getStageName())
@@ -83,7 +79,7 @@ public class PrepService {
         }
 
         // 3. 지원자 그룹 저장
-        saveApplicantGroups(recruit, prepRequestDto.getApplicantGroups());
+        saveApplicantGroups(recruit, prepDetailsDto.getGroups());
 
         // 4. 현재 진행 중인 리크루팅 단계 PLAN으로 변경
         recruit.setCurrentStage(CurrentStage.PLAN);
@@ -126,7 +122,7 @@ public class PrepService {
     }
 
     @Transactional
-    public void updatePreparation(Long recruitId, PrepRequestDto prepRequestDto) {
+    public void updatePreparation(Long recruitId, PrepDetailsDto prepDetailsDto) {
         Recruit recruit = recruitRepository.findById(recruitId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집 공고를 찾을 수 없습니다. id: " + recruitId));
 
@@ -134,7 +130,7 @@ public class PrepService {
         RecruitSchedule recruitSchedule = recruitScheduleRepository.findByRecruitId(recruitId)
                 .orElseThrow(() -> new IllegalArgumentException("리크루팅 일정이 존재하지 않습니다. id: " + recruitId));
 
-        RecruitScheduleDto scheduleDto = prepRequestDto.getRecruitSchedules().get(0);
+        RecruitScheduleDto scheduleDto = prepDetailsDto.getSchedule();
         mapSchedule(recruitSchedule, scheduleDto);
         recruitScheduleRepository.save(recruitSchedule);
 
@@ -143,7 +139,7 @@ public class PrepService {
 
         // 삭제할 단계 찾기
         for (PrepStage stage : existingStages) {
-            boolean existsInRequest = prepRequestDto.getPrepStages().stream()
+            boolean existsInRequest = prepDetailsDto.getPrepStages().stream()
                     .anyMatch(dto -> dto.getStageOrder().equals(stage.getStageOrder()));
             if (!existsInRequest) {
                 prepStageClubUserRepository.deleteAllByPrepStageId(stage.getId());
@@ -152,7 +148,7 @@ public class PrepService {
         }
 
         // 추가 및 수정
-        for (PrepStageDto stageDto : prepRequestDto.getPrepStages()) {
+        for (PrepStageDto stageDto : prepDetailsDto.getPrepStages()) {
             PrepStage prepStage = prepStageRepository.findByRecruitIdAndStageOrder(recruitId, stageDto.getStageOrder())
                     .orElse(PrepStage.builder().build());
 
@@ -161,11 +157,11 @@ public class PrepService {
             prepStage.setStageOrder(stageDto.getStageOrder());
             prepStageRepository.save(prepStage);
 
-            updateClubUsers(prepStage, stageDto.getClubUserIds());
+            updateClubUsers(prepStage, stageDto.getAdmins().stream().map(PrepStageDto.AdminInfoDto::getId).collect(Collectors.toList()));
         }
 
         // 3. 지원자 그룹 수정
-        updateApplicantGroups(recruit, prepRequestDto.getApplicantGroups());
+        updateApplicantGroups(recruit, prepDetailsDto.getGroups());
     }
 
 
@@ -225,7 +221,7 @@ public class PrepService {
 
 
     // [계획하기] 불러오기
-    public PrepDetailsResponseDto getPrepDetails(Long recruitId) {
+    public PrepDetailsDto getPrepDetails(Long recruitId) {
         // 리크루팅 일정 가져오기
         RecruitSchedule schedule = recruitScheduleRepository.findByRecruitId(recruitId)
                 .orElse(null);
@@ -250,13 +246,13 @@ public class PrepService {
                 .build() : null;
 
         // 모집준비단계별 운영진 가져오기
-        List<PrepStageResponseDto> prepStages = prepStageRepository.findByRecruitId(recruitId).stream()
-                .map(prepStage -> {
-                    List<String> adminNames = prepStageClubUserRepository.findByPrepStageId(prepStage.getId()).stream()
-                            .map(prepStageClubUser -> prepStageClubUser.getClubUser().getUser().getName())
-                            .collect(Collectors.toList());
-                    return new PrepStageResponseDto(prepStage.getStageName(), adminNames);
-                }).collect(Collectors.toList());
+//        List<PrepStageDto> prepStages = prepStageRepository.findByRecruitId(recruitId).stream()
+//                .map(prepStage -> {
+//                    List<String> adminNames = prepStageClubUserRepository.findByPrepStageId(prepStage.getId()).stream()
+//                            .map(prepStageClubUser -> prepStageClubUser.getClubUser().getUser().getName())
+//                            .collect(Collectors.toList());
+//                    return new PrepStageDto(prepStage.getStageName(), prepStage.getStageOrder(),);
+//                }).collect(Collectors.toList());
 
         // 지원자 그룹 가져오기
         List<String> groups = groupRepository.findByRecruitId(recruitId).stream()
@@ -264,14 +260,30 @@ public class PrepService {
                 .collect(Collectors.toList());
 
         // 운영진 리스트 가져오기
-        List<PrepDetailsResponseDto.AdminInfoDto> adminList = clubUserRepository.findStaffNamesByRecruitId(recruitId).stream()
-                .map(result -> new PrepDetailsResponseDto.AdminInfoDto(
-                        ((Number) result[0]).longValue(), // 첫 번째 값: Long ID
-                        (String) result[1]               // 두 번째 값: String Name
-                ))
+//        List<PrepStageDto.AdminInfoDto> adminList = clubUserRepository.findStaffNamesByRecruitId(recruitId).stream()
+//                .map(result -> new PrepStageDto.AdminInfoDto(
+//                        ((Number) result[0]).longValue(), // 첫 번째 값: Long ID
+//                        (String) result[1]               // 두 번째 값: String Name
+//                ))
+//                .collect(Collectors.toList());
+
+        List<PrepStageDto> prepStages = prepStageRepository.findByRecruitId(recruitId).stream()
+                .map(prepStage -> {
+                    // 해당 PrepStage와 관련된 AdminInfoDto 목록 필터링
+                    List<PrepStageDto.AdminInfoDto> relatedAdmins = clubUserRepository.findStaffNamesByRecruitId(recruitId).stream()
+                            .map(result -> new PrepStageDto.AdminInfoDto(
+                                    ((Number) result[0]).longValue(), // 첫 번째 값: Long ID
+                                    (String) result[1]               // 두 번째 값: String Name
+                            ))
+                            .collect(Collectors.toList());
+
+                    // PrepStageDto 생성 시 adminList 포함
+                    return new PrepStageDto(prepStage.getStageName(), prepStage.getStageOrder(), relatedAdmins);
+                })
                 .collect(Collectors.toList());
 
-        return new PrepDetailsResponseDto(scheduleDto, prepStages, groups, adminList);
+
+        return new PrepDetailsDto(scheduleDto, prepStages, groups);
     }
 
 }

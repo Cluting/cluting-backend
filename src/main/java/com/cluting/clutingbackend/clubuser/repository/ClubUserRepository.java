@@ -1,14 +1,12 @@
 package com.cluting.clutingbackend.clubuser.repository;
 
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
-import com.cluting.clutingbackend.prep.dto.PrepDetailsResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Repository
