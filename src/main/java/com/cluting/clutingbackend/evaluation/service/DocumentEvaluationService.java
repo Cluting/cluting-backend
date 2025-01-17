@@ -250,7 +250,6 @@ public class DocumentEvaluationService {
         applications.forEach(application -> {
             // 그룹별 지원자 수 계산
             String groupName = application.getRecruit_group();
-            groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
 
             DocumentEvaluateResultResponseDto dto = DocumentEvaluateResultResponseDto.toDto(
                     application,
@@ -259,6 +258,7 @@ public class DocumentEvaluationService {
             // 합격/불합격 분류
             if (application.getState() == EvaluateStatus.PASS) {
                 passed.add(dto);
+                groupCountMap.put(groupName, groupCountMap.getOrDefault(groupName, 0) + 1);
             } else if (application.getState() == EvaluateStatus.FAIL) {
                 failed.add(dto);
             }
