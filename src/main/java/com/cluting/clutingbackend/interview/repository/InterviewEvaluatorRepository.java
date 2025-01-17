@@ -22,6 +22,8 @@ public interface InterviewEvaluatorRepository extends JpaRepository<InterviewEva
     List<InterviewEvaluator> findAllByInterviewIdIn(List<Long> interviewIds);
     InterviewEvaluator findByGroupId(Long groupId);
 
+//    List<InterviewEvaluator> findByInterviewId(Long applicationId);
+
     @Query("SELECT ie FROM InterviewEvaluator ie WHERE ie.interview.id = :interviewId")
     InterviewEvaluator findByInterview_Id(@Param("interviewId") Long interviewId);
 

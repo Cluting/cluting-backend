@@ -7,14 +7,17 @@ import com.cluting.clutingbackend.global.enums.EvaluateStatus;
 import com.cluting.clutingbackend.global.enums.Stage;
 import com.cluting.clutingbackend.global.exception.CustomException;
 import com.cluting.clutingbackend.global.security.CustomUserDetails;
+import com.cluting.clutingbackend.interview.domain.Interview;
 import com.cluting.clutingbackend.interview.domain.InterviewEvaluator;
 import com.cluting.clutingbackend.interview.repository.InterviewEvaluatorRepository;
+import com.cluting.clutingbackend.interview.repository.InterviewRepository;
 import com.cluting.clutingbackend.plan.domain.DocumentEvaluator;
 import com.cluting.clutingbackend.plan.repository.DocumentEvaluatorRepository;
 import com.cluting.clutingbackend.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +31,7 @@ public class TempService {
     private final ApplicationRepository applicationRepository;
     private final DocumentEvaluatorRepository documentEvaluatorRepository;
     private final InterviewEvaluatorRepository interviewEvaluatorRepository;
+    private final InterviewRepository interviewRepository;
 
 
     public List<EvaluationResponse> getEvaluationsByStage(
@@ -71,14 +75,13 @@ public class TempService {
                             return false;
                     }
                 })
-                .map(application -> mapToResponse(application, recruitId, currentUser))
+                .map(application -> mapToResponseWithDoc(application, currentUser))
                 .collect(Collectors.toList());
     }
 
 
-    private EvaluationResponse mapToResponse(
+    private EvaluationResponse mapToResponseWithDoc(
             Application application,
-            Long recruitId,
             CustomUserDetails currentUser
     ) {
         User user = application.getUser();
@@ -166,9 +169,27 @@ public class TempService {
             Stage stage,
             CustomUserDetails currentUser) {
 
-        // 모집 ID와 Stage에 해당하는 평가자 가져오기
-        List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByRecruitIdAndStage(recruitId, stage);
+        // Step 1: 모집 공고 ID로 Application 조회
+        List<Application> applications = applicationRepository.findByRecruitId(recruitId);
+        if (applications == null || applications.isEmpty()) {
+            return Collections.emptyList(); // Application이 없으면 빈 리스트 반환
+        }
 
+        // Step 2: Application ID로 Interview 조회
+        List<Interview> interviews = interviewRepository.findByApplicationIdIn(
+                applications.stream().map(Application::getId).collect(Collectors.toList()));
+        if (interviews == null || interviews.isEmpty()) {
+            return Collections.emptyList(); // Interview가 없으면 빈 리스트 반환
+        }
+
+        // Step 3: Interview ID로 InterviewEvaluator 조회 및 단계별 분리
+        List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByInterviewIdIn(
+                interviews.stream().map(Interview::getId).collect(Collectors.toList()));
+        if (evaluators == null || evaluators.isEmpty()) {
+            return Collections.emptyList(); // Evaluators가 없으면 빈 리스트 반환
+        }
+
+        ////////////////////////////
         // 그룹명 필터링
         if (groupName != null) {
             evaluators = evaluators.stream()
@@ -209,13 +230,11 @@ public class TempService {
         List<InterviewEvaluator> finalEvaluators = evaluators;
 
         return evaluators.stream()
-                .map(evaluator -> mapToResponse(evaluator, finalEvaluators))
+                .map(evaluator -> mapToResponseWithInterview(evaluator, finalEvaluators))
                 .collect(Collectors.toList());
     }
 
-
-
-    private EvaluationResponse mapToResponse(InterviewEvaluator evaluator, List<InterviewEvaluator> evaluators) {
+    private EvaluationResponse mapToResponseWithInterview(InterviewEvaluator evaluator, List<InterviewEvaluator> evaluators) {
         Application application = evaluator.getInterview().getApplication();
         User applicant = application.getUser();
 
@@ -274,7 +293,14 @@ public class TempService {
                 otherEvaluators
         );
     }
-
+    private int sortResponses(EvaluationResponse resp1, EvaluationResponse resp2, String sortOrder) {
+        if ("newest".equals(sortOrder)) {
+            return resp2.getEvaluationStage().compareTo(resp1.getEvaluationStage());
+        } else if ("oldest".equals(sortOrder)) {
+            return resp1.getEvaluationStage().compareTo(resp2.getEvaluationStage());
+        }
+        return 0;
+    }
 
 }
 
