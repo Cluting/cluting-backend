@@ -72,11 +72,11 @@ public class TempController {
 @GetMapping("/interview/before")
 public List<EvaluationResponse> getBeforeEvaluations(
         @PathVariable Long recruitId,
-        @AuthenticationPrincipal CustomUserDetails currentUser,
+        @AuthenticationPrincipal CustomUserDetails customUserDetails,
         @RequestParam(required = false) String groupName,
         @RequestParam(required = false) String sortOrder) {
 
-    return tempService.getEvaluationsByStage(recruitId, currentUser, groupName, sortOrder, Stage.BEFORE);
+    return tempService.getEvaluationsByStage(recruitId, groupName, sortOrder, Stage.BEFORE, customUserDetails);
 }
 
     @Operation(summary = "[면접] 평가 중 지원자 정보 불러오기",
@@ -84,11 +84,11 @@ public List<EvaluationResponse> getBeforeEvaluations(
     @GetMapping("/interview/ing")
     public List<EvaluationResponse> getInProgressEvaluations(
             @PathVariable Long recruitId,
-            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             @RequestParam(required = false) String groupName,
             @RequestParam(required = false) String sortOrder) {
 
-        return tempService.getEvaluationsByStage(recruitId, currentUser, groupName, sortOrder, Stage.ING);
+        return tempService.getEvaluationsByStage(recruitId, groupName, sortOrder, Stage.ING, customUserDetails);
     }
 
     @Operation(summary = "[면접] 평가 후 지원자 정보 불러오기",
@@ -100,7 +100,7 @@ public List<EvaluationResponse> getBeforeEvaluations(
             @RequestParam(required = false) String groupName,
             @RequestParam(required = false) String sortOrder) {
 
-        return tempService.getEvaluationsByStage(recruitId, currentUser, groupName, sortOrder, Stage.AFTER);
+        return tempService.getEvaluationsByStage(recruitId, groupName, sortOrder, Stage.AFTER, currentUser);
     }
 
 

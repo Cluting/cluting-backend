@@ -161,14 +161,15 @@ public class TempService {
 
     public List<EvaluationResponse> getEvaluationsByStage(
             Long recruitId,
-            CustomUserDetails currentUser,
             String groupName,
             String sortOrder,
-            Stage stage) {
+            Stage stage,
+            CustomUserDetails currentUser) {
 
-        // InterviewEvaluator에서 recruitId와 stage에 맞는 데이터 조회
+        // 모집 ID와 Stage에 해당하는 평가자 가져오기
         List<InterviewEvaluator> evaluators = interviewEvaluatorRepository.findByRecruitIdAndStage(recruitId, stage);
 
+        // 그룹명 필터링
         if (groupName != null) {
             evaluators = evaluators.stream()
                     .filter(evaluator -> evaluator.getGroup() != null
@@ -176,20 +177,42 @@ public class TempService {
                     .collect(Collectors.toList());
         }
 
+        // 평가 상태 필터링 (현재 유저 기준)
+        evaluators = evaluators.stream()
+                .filter(evaluator -> {
+                    switch (stage) {
+                        case BEFORE: // 평가 전
+                            return evaluator.getClubUser().getUser().getId().equals(currentUser.getId())
+                                    && evaluator.getStage() == Stage.BEFORE;
+
+                        case ING: // 평가 중
+                            return evaluator.getClubUser().getUser().getId().equals(currentUser.getId())
+                                    && evaluator.getStage() == Stage.ING;
+
+                        case AFTER: // 평가 후
+                            return evaluator.getStage() == Stage.AFTER;
+
+                        default:
+                            return false;
+                    }
+                })
+                .collect(Collectors.toList());
+
         // 정렬 로직
         if ("newest".equals(sortOrder)) {
-            evaluators.sort(Comparator.comparing(InterviewEvaluator::getInterviewTime).reversed());
+            evaluators.sort(Comparator.comparing(InterviewEvaluator::getInterviewTime, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
         } else if ("oldest".equals(sortOrder)) {
-            evaluators.sort(Comparator.comparing(InterviewEvaluator::getInterviewTime));
+            evaluators.sort(Comparator.comparing(InterviewEvaluator::getInterviewTime, Comparator.nullsLast(Comparator.naturalOrder())));
         }
 
-        // EvaluationResponse로 매핑 (evaluators 리스트를 mapToResponse에 전달)
+        // EvaluationResponse로 매핑
         List<InterviewEvaluator> finalEvaluators = evaluators;
 
         return evaluators.stream()
                 .map(evaluator -> mapToResponse(evaluator, finalEvaluators))
                 .collect(Collectors.toList());
     }
+
 
 
     private EvaluationResponse mapToResponse(InterviewEvaluator evaluator, List<InterviewEvaluator> evaluators) {
