@@ -1,5 +1,6 @@
 package com.cluting.clutingbackend.user.repository;
 
+import com.cluting.clutingbackend.global.enums.Status;
 import com.cluting.clutingbackend.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,9 +12,10 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
-
     Optional<User> findById(Long id);
 
     List<User> findAllByIdIn(List<Long> ids);
+
+    List<User> findAllByStatus(Status status);
 
 }

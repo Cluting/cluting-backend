@@ -4,11 +4,15 @@ import com.cluting.clutingbackend.application.dto.request.ApplicantProfileReques
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.global.enums.Role;
 import com.cluting.clutingbackend.global.enums.Semester;
+import com.cluting.clutingbackend.global.enums.Status;
 import com.cluting.clutingbackend.global.enums.StudentStatus;
+import com.cluting.clutingbackend.global.util.EncryptionUtil;
 import com.cluting.clutingbackend.todo.domain.Todo;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +67,13 @@ public class User {
     @Column(length = 255, nullable = true)
     private String profile;
 
+    @Column
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Status status;
 
     @Column(nullable = false)
     private Boolean termsOfService; // 클루팅 이용약관 동의 여부 (필수)
@@ -100,14 +111,6 @@ public class User {
         this.semester = dto.getSemester();
     }
 
-    public void setPortfolioFile(String portfolioFile) {
-        this.portfolioFile = portfolioFile;
-    }
-
-    public void setPortfolioUrl(String portfolioUrl) {
-        this.portfolioUrl = portfolioUrl;
-    }
-
     public void update(String name, String phone, String location, String school, String major, String doubleMajor, StudentStatus studentStatus, Semester semester) {
         this.name = name;
         this.phone = phone;
@@ -126,5 +129,15 @@ public class User {
     @Override
     public String toString(){
         return String.format("[User 객체] id : %s, name : %s, email : %s, password : %s", this.id, this.name , this.email, this.password);
+    }
+
+    public void encrypt() throws Exception {
+        this.setEmail(EncryptionUtil.encrypt(this.getEmail()));
+        this.setPhone(EncryptionUtil.encrypt(this.getPhone()));
+        this.setName(EncryptionUtil.encrypt(this.getName()));
+        this.setLocation(EncryptionUtil.encrypt(this.getLocation()));
+        this.setPortfolioFile(EncryptionUtil.encrypt(this.getPortfolioFile()));
+        this.setPortfolioUrl(EncryptionUtil.encrypt(this.getPortfolioUrl()));
+        this.setProfile(EncryptionUtil.encrypt(this.getProfile()));
     }
 }

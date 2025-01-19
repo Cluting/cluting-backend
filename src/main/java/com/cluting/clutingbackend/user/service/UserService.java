@@ -9,6 +9,7 @@ import com.cluting.clutingbackend.club.domain.Club;
 import com.cluting.clutingbackend.clubuser.domain.ClubUser;
 import com.cluting.clutingbackend.clubuser.repository.ClubUserRepository;
 import com.cluting.clutingbackend.global.enums.ClubRole;
+import com.cluting.clutingbackend.global.enums.Status;
 import com.cluting.clutingbackend.global.s3.AwsS3Service;
 import com.cluting.clutingbackend.recruit.domain.RecruitSchedule;
 import com.cluting.clutingbackend.recruit.repository.RecruitScheduleRepository;
@@ -23,6 +24,7 @@ import com.cluting.clutingbackend.global.util.StaticValue;
 import com.cluting.clutingbackend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +50,22 @@ public class UserService {
     private final AdminInviteRepository adminInviteRepository;
     private final ApplicationRepository applicationRepository;
     private final RecruitScheduleRepository recruitScheduleRepository;
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void deletePersonalInfo() {
+        LocalDateTime dueDate = LocalDateTime.now().minusYears(3);
+
+        userRepository.findAllByStatus(Status.WITHDRAW).stream()
+                .filter(user -> user.getUpdatedAt().isBefore(dueDate))
+                .forEach(user -> {
+                    try {
+                        user.encrypt();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    userRepository.save(user);
+                });
+    }
 
     @Transactional
     public UserResponseDto signUp(UserSignUpRequestDto userSignUpRequestDto) {
