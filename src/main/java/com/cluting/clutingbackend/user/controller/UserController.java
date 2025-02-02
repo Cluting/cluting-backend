@@ -114,4 +114,10 @@ public class UserController {
             @RequestPart("portfolio") MultipartFile portfolio) {
         return userService.updatePortfolioFile(userDetails.getUser(), portfolio);
     }
+
+    @Operation(description = "접속 테스트")
+    @PutMapping("/test")
+    public String test() {
+        return "Succeed";
+    }
 }
