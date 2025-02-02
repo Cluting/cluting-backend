@@ -55,6 +55,11 @@ jobs:
       - name: Install sshpass
         run: sudo apt-get install -y sshpass
 
+      - name: Create app directory on Server
+        run: |
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" ssh -o StrictHostKeyChecking=no -p ${{ secrets.SERVER_PORT }} \
+          ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} 'mkdir -p /home/ubuntu/app/'
+
       - name: SCP JAR to Server (Password Auth)
         run: |
           sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -o StrictHostKeyChecking=no -P ${{ secrets.SERVER_PORT }} \
