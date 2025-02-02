@@ -57,7 +57,7 @@ jobs:
 
       - name: SCP JAR to Server (Password Auth)
         run: |
-          sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -P ${{ secrets.SERVER_PORT }} \
+          sshpass -p "${{ secrets.SERVER_PASSWORD }}" scp -o StrictHostKeyChecking=no -P ${{ secrets.SERVER_PORT }} \
           *.jar ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/ubuntu/app/
 
       - name: Start Redis Server
